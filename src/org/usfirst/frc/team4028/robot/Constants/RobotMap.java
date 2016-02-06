@@ -33,18 +33,18 @@ public class RobotMap
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
-	public static final int PWM_PORT_GAMMA_MOTOR = 0;
-	public static final int PWM_PORT_DELTA_MOTOR = 1;
+	public static final int INFEED_ACQUIRE_MTR = 0;
+	public static final int INFEED_TILT_MTR = 1;
 	
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 0;
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 1;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 2;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 3;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 4;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 5;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 4;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 5;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 0;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 1;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 2;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 3;
 	
 	// ======================================
 	// define constants for air cylinder states / positions
@@ -89,15 +89,18 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN = LogitechF310.BACK_BUTTON;	
 	public static final int DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK = LogitechF310.LEFT_Y_AXIS;		
 	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
-	public static final int DRIVER_GAMEPAD_ALPHA_SOLENOID_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
-	public static final int DRIVER_GAMEPAD_BETA_SOLENOID_TOGGLE_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int DRIVER_GAMEPAD_SHOOTER_SOLENOID_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.RED_BUTTON_B;
+	public static final int DRIVER_GAMEPAD_SHOOTER_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
 	
 	public static final int DRIVER_GAMEPAD_SHOOTER_BTN = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
-	public static final int OPERATOR_GAMEPAD_TURRET_AXIS = LogitechF310.LEFT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	
+	public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_TURRET_AXIS = LogitechF310.LEFT_Y_AXIS;
 	// ======================================
 	// define constants for logging
 	// ======================================
