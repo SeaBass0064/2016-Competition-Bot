@@ -74,10 +74,9 @@ public class RobotData
 		public boolean IsScaleDriveSpeedUpBtnPressed;			// logic will latch output value (so this acts like a single shot)
 		public boolean IsScaleDriveSpeedDownBtnPressed;			// logic will latch output value (so this acts like a single shot)
 		
-		public boolean IsAlphaSolenoidOpenBtnPressed;
-		public boolean IsAlphaSolenoidClosedBtnPressed;
-		public boolean IsBetaSolenoidOpenBtnPressed;
-		public boolean IsBetaSolenoidClosedBtnPressed;
+		public boolean IsPumaFrontToggleBtnPressed;
+		public boolean IsPumaBackToggleBtnPressed;
+		public boolean IsShifterToggleBtnPressed;
  	
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;
@@ -112,10 +111,9 @@ public class RobotData
 			sb.append("InputData:FPGATimeMicroSecs" + "\t");
 			sb.append("InputData:IsScaleDriveSpeedUpBtnPressed" + "\t");
 			sb.append("InputData:IsScaleDriveSpeedDownBtnPressed" + "\t");
-			sb.append("InputData:IsAlphaSolenoidOpenBtnPressed" + "\t");
-			sb.append("InputData:IsAlphaSolenoidClosedBtnPressed" + "\t");
-			sb.append("InputData:IsBetaSolenoidOpenBtnPressed" + "\t");
-			sb.append("InputData:IsBetaSolenoidClosedBtnPressed" + "\t");
+			sb.append("InputData:IsPumaFrontToggleBtnPressed" + "\t");
+			sb.append("InputData:IsPumaBackToggleBtnPressed" + "\t");
+			sb.append("InputData:IsShifterToggleBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:ShooterRawVelocityCmd" + "\t");
@@ -148,10 +146,9 @@ public class RobotData
 			sb.append(FPGATimeMicroSecs + "\t");
 			sb.append(IsScaleDriveSpeedUpBtnPressed + "\t");
 			sb.append(IsScaleDriveSpeedDownBtnPressed + "\t");
-			sb.append(IsAlphaSolenoidOpenBtnPressed + "\t");
-			sb.append(IsAlphaSolenoidClosedBtnPressed + "\t");
-			sb.append(IsBetaSolenoidOpenBtnPressed + "\t");
-			sb.append(IsBetaSolenoidClosedBtnPressed + "\t");
+			sb.append(IsPumaFrontToggleBtnPressed + "\t");
+			sb.append(IsPumaBackToggleBtnPressed + "\t");
+			sb.append(IsShifterToggleBtnPressed + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
 			sb.append(ArcadeDriveTurnRawCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
@@ -189,6 +186,10 @@ public class RobotData
 		public boolean IsDriveSpeedScalingButtonPressedLastScan;
 		public double DriveSpeedScalingFactor;			// min = 0.0, max = 1.0, 1.0 = 100%, 
 		
+		public boolean IsPumaFrontToggleBtnPressedLastScan;
+		public boolean IsPumaBackToggleBtnPressedLastScan;
+		public boolean IsShifterToggleBtnPressedLastScan;
+		
 		public double LeftDriveEncoderInitialCount;
 		public double LeftDriveEncoderLastCount;
 		public double LeftDriveEncoderLastDeltaCount;
@@ -219,6 +220,10 @@ public class RobotData
 			
 			sb.append("WorkingData:IsDriveSpeedScalingButtonPressedLastScan" + "\t");
 			sb.append("WorkingData:DriveSpeedScalingFactor" + "\t");
+			
+			sb.append("IsPumaFrontToggleBtnPressedLastScan" + "\t");
+			sb.append("IsPumaBackToggleBtnPressedLastScan" + "\t");
+			sb.append("IsShifterToggleBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:LeftDriveEncoderInitialCount" + "\t");
 			sb.append("WorkingData:LeftDriveEncoderLastCount" + "\t");
@@ -254,6 +259,10 @@ public class RobotData
 			
 			sb.append(IsDriveSpeedScalingButtonPressedLastScan + "\t");
 			sb.append(DriveSpeedScalingFactor + "\t");
+			
+			sb.append(IsPumaFrontToggleBtnPressedLastScan + "\t");
+			sb.append(IsPumaBackToggleBtnPressedLastScan + "\t");
+			sb.append(IsShifterToggleBtnPressedLastScan + "\t");
 			
 			sb.append(LeftDriveEncoderInitialCount + "\t");
 			sb.append(LeftDriveEncoderLastCount + "\t");
@@ -291,8 +300,9 @@ public class RobotData
 		public double GammaMtrVelocityCmd;
 		public double DeltaMtrVelocityCmd;
 		
-		public Value AlphaSolenoidPosition;
-		public Value BetaSolenoidPosition;
+		public Value PumaFrontSolenoidPosition;
+		public Value PumaBackSolenoidPosition;
+		public Value ShifterSolenoidPosition;
 
 		public String DriversStationMsg;
 		
@@ -306,8 +316,9 @@ public class RobotData
 			sb.append("OutputData:TurretAdjVeloctyCmd" + "\t");
 			sb.append("OutputData:GammaMtrVelocityCmd" + "\t");
 			sb.append("OutputData:DeltaMtrVelocityCmd" + "\t");
-			sb.append("OutputData:AlphaSolenloidPosition" + "\t");
-			sb.append("OutputData:BetaSolenoidPosition" + "\t");
+			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
+			sb.append("OutputData:PumaBackSolenoidPosition" + "\t");
+			sb.append("OutputData:ShifterSolenoidPosition" + "\t");
 			sb.append("OutputData:DriversStationMsg");
 			
 					
@@ -326,36 +337,51 @@ public class RobotData
 			sb.append(DeltaMtrVelocityCmd + "\t");
 			sb.append(DriversStationMsg);
 			
-			String alphaSolenoidPositionDesc = "";
-			if (AlphaSolenoidPosition == RobotMap.ALPHA_SOLENOID_OPEN_POSITION)
+			String PumaFrontSolenoidPositionDesc = "";
+			if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_OPEN_POSITION)
 			{
-				alphaSolenoidPositionDesc = "ALPHA_SOLENOID_OPEN";
+				PumaFrontSolenoidPositionDesc = "PUMA_FRONT_SOLENOID_OPEN";
 			}
-			else if (AlphaSolenoidPosition == RobotMap.ALPHA_SOLENOID_CLOSED_POSITION)
+			else if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION)
 			{
-				alphaSolenoidPositionDesc = "ALPHA_SOLENOID_CLOSED";
-			}
-			else
-			{
-				alphaSolenoidPositionDesc = "UNKNOWN";
-			}
-			
-			String betaSolenoidPositionDesc = "";
-			if (BetaSolenoidPosition == RobotMap.BETA_SOLENOID_OPEN_POSITION)
-			{
-				betaSolenoidPositionDesc = "FRONT_CLIPS_OPEN";
-			}
-			else if (BetaSolenoidPosition == RobotMap.BETA_SOLENOID_CLOSED_POSITION)
-			{
-				betaSolenoidPositionDesc = "FRONT_CLIPS_CLOSED";
+				PumaFrontSolenoidPositionDesc = "PUMA_FRONT_SOLENOID_CLOSED";
 			}
 			else
 			{
-				betaSolenoidPositionDesc = "UNKNOWN";
+				PumaFrontSolenoidPositionDesc = "UNKNOWN";
 			}
 			
-			sb.append(alphaSolenoidPositionDesc + "\t");
-			sb.append(betaSolenoidPositionDesc + "\t");
+			String PumaBackSolenoidPositionDesc = "";
+			if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION)
+			{
+				PumaBackSolenoidPositionDesc = "PUMA_BACK_SOLENOID_OPEN";
+			}
+			else if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_CLOSED_POSITION)
+			{
+				PumaBackSolenoidPositionDesc = "PUMA_BACK_SOLENOID_CLOSED";
+			}
+			else
+			{
+				PumaBackSolenoidPositionDesc = "UNKNOWN";
+			}
+			
+			String shifterSolenoidPositionDesc = "";
+			if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION)
+			{
+				shifterSolenoidPositionDesc = "HIGH_GEAR";
+			}
+			else if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_CLOSED_POSITION)
+			{
+				shifterSolenoidPositionDesc = "LOW_GEAR";
+			}
+			else
+			{
+				shifterSolenoidPositionDesc = "UNKNOWN";
+			}
+			
+			sb.append(PumaFrontSolenoidPositionDesc + "\t");
+			sb.append(PumaBackSolenoidPositionDesc + "\t");
+			sb.append(shifterSolenoidPositionDesc + "\t");
 					
 			return sb.toString();
 		}

@@ -86,8 +86,9 @@ public class Robot extends IterativeRobot
 	private RobotDrive _robotDrive;
 	
 	// Pneumatic Solenoids for Air Cylinders
-	private DoubleSolenoid _alphaSolenoid;
-	private DoubleSolenoid _betaSolenoid;
+	private DoubleSolenoid _pumaFrontSolenoid;
+	private DoubleSolenoid _pumaBackSolenoid;
+	private DoubleSolenoid _shifterSolenoid;
 	
 	// Camera
 	CameraServer server;
@@ -104,6 +105,7 @@ public class Robot extends IterativeRobot
 
 	// wrapper around data logging (if it is enabled)
 	DataLogger _dataLogger;
+	
 	
     /*****************************************************************************************************
      * This function is run when the robot is first started up.
@@ -133,12 +135,12 @@ public class Robot extends IterativeRobot
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	/*
+    	
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_MTR);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
-    	*/
+    	
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -154,12 +156,12 @@ public class Robot extends IterativeRobot
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	/*
+    	
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
-    	*/
+    	
     	
     	// ===================
     	// Additional Talon Motors
@@ -188,9 +190,9 @@ public class Robot extends IterativeRobot
     	//===================
     	// Solenoids
     	//===================
-    	_alphaSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_ALPHA_SOLENOID_EXTEND, RobotMap.PCM_PORT_ALPHA_SOLENOID_RETRACT);
-    	_betaSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_BETA_SOLENOID_EXTEND, RobotMap.PCM_PORT_BETA_SOLENOID_RETRACT);
-    	
+    	_pumaFrontSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT);
+    	_pumaBackSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_RETRACT);
+    	_shifterSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_SHIFTER_SOLENOID_EXTEND, RobotMap.PCM_PORT_SHIFTER_SOLENOID_RETRACT);
     	//===
     	// Camera
     	//===
@@ -281,7 +283,6 @@ public class Robot extends IterativeRobot
     	
     	// init the drive speed scaling factor to full speed
     	_robotLiveData.WorkingDataValues.DriveSpeedScalingFactor = 1.0;
-    	_robotLiveData.WorkingDataValues.IsDriveSpeedScalingButtonPressedLastScan = false;
 
     	// initialize axis (Encoder) positions
     	_leftDriveMasterMtr.setPosition(0);
@@ -299,12 +300,19 @@ public class Robot extends IterativeRobot
     	setupLogging("telop");
     	
     	// set our desired default state for the test solenoids
-    	_robotLiveData.OutputDataValues.AlphaSolenoidPosition = RobotMap.ALPHA_SOLENOID_OPEN_POSITION;
-    	_robotLiveData.OutputDataValues.BetaSolenoidPosition = RobotMap.BETA_SOLENOID_OPEN_POSITION;
+    	_robotLiveData.OutputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION;
+    	_robotLiveData.OutputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION;
+    	_robotLiveData.OutputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    	
+    	// set inital state of "pressed last scan" working values to be false
+    	_robotLiveData.WorkingDataValues.IsPumaFrontToggleBtnPressedLastScan = false;
+    	_robotLiveData.WorkingDataValues.IsPumaBackToggleBtnPressedLastScan = false;
+    	_robotLiveData.WorkingDataValues.IsShifterToggleBtnPressedLastScan = false;
     	
     	// set the inital states to solenoids
-    	_alphaSolenoid.set(_robotLiveData.OutputDataValues.AlphaSolenoidPosition);
-    	_betaSolenoid.set(_robotLiveData.OutputDataValues.BetaSolenoidPosition);
+    	_pumaFrontSolenoid.set(_robotLiveData.OutputDataValues.PumaFrontSolenoidPosition);
+    	_pumaBackSolenoid.set(_robotLiveData.OutputDataValues.PumaBackSolenoidPosition);
+    	_shifterSolenoid.set(_robotLiveData.OutputDataValues.ShifterSolenoidPosition);
     	
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
@@ -346,7 +354,7 @@ public class Robot extends IterativeRobot
     	// === Step 2: Calc New Drive Motor Speeds ===
     	// =====================================
    
-    	// set the drive speed scale factor (currently we support 1 & 1.5)
+    	// set the drive speed scale factor (currently we support 0.7 & 1.0)
     	// 	notes: 	this is a toggle,  the previous value is retained between scans
     	//			need to de-bounce key press since the scan rate is so fast 
     	if((inputDataValues.IsScaleDriveSpeedUpBtnPressed == true) 
@@ -390,9 +398,6 @@ public class Robot extends IterativeRobot
     	// Turret
     	outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
     	
-    	
-    	_turret.set(outputDataValues.TurretAdjVelocityCmd);
-    	
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -401,42 +406,53 @@ public class Robot extends IterativeRobot
     	// =====================================
 
     	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, true);
+    	_turret.set(outputDataValues.TurretAdjVelocityCmd);
     	
     	// ==========================
-    	// 3.1 Handle test solenoids Alpha and Beta
+    	// 3.1 Handle Puma Front, Back and Shifter Solenoids
     	//		Solenoids work like a toggle, the current value is retained until it is changed
     	// ==========================
-    	if ((inputDataValues.IsAlphaSolenoidOpenBtnPressed == true) && (inputDataValues.IsAlphaSolenoidClosedBtnPressed == true))
+    	
+    	if (!workingDataValues.IsPumaFrontToggleBtnPressedLastScan && inputDataValues.IsPumaFrontToggleBtnPressed)
     	{
-    		// Don't change solenoid position if both buttons are pressed
-    	}
-    	else if (inputDataValues.IsAlphaSolenoidOpenBtnPressed == true)
-    	{
-    		outputDataValues.AlphaSolenoidPosition = RobotMap.ALPHA_SOLENOID_OPEN_POSITION;
-    	}
-    	else if (inputDataValues.IsAlphaSolenoidClosedBtnPressed == true)
-    	{
-    		outputDataValues.AlphaSolenoidPosition = RobotMap.ALPHA_SOLENOID_CLOSED_POSITION;
-    	}
-    	else 
-    	{
+    		if (outputDataValues.PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_OPEN_POSITION)
+    		{
+    			outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION;
+    		}
+    		else
+    		{
+    			outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_OPEN_POSITION;
+    		}
     	}
     	
-    	if ((inputDataValues.IsBetaSolenoidOpenBtnPressed == true) && (inputDataValues.IsBetaSolenoidClosedBtnPressed == true))
+    	if (!workingDataValues.IsPumaBackToggleBtnPressedLastScan && inputDataValues.IsPumaBackToggleBtnPressed)
     	{
-    		// Don't change solenoid position if both buttons are pressed
-    	}
-    	else if (inputDataValues.IsBetaSolenoidOpenBtnPressed == true)
-    	{
-    		outputDataValues.BetaSolenoidPosition = RobotMap.BETA_SOLENOID_OPEN_POSITION;
-    	}
-    	else if (inputDataValues.IsBetaSolenoidClosedBtnPressed == true)
-    	{
-    		outputDataValues.BetaSolenoidPosition = RobotMap.BETA_SOLENOID_CLOSED_POSITION;
+    		if (outputDataValues.PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION)
+    		{
+    			outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_CLOSED_POSITION;
+    		}
+    		else
+    		{
+    			outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION;
+    		}
     	}
     	
-    	_alphaSolenoid.set(outputDataValues.AlphaSolenoidPosition);
-    	_betaSolenoid.set(outputDataValues.BetaSolenoidPosition);
+    	if (!workingDataValues.IsShifterToggleBtnPressedLastScan && inputDataValues.IsPumaFrontToggleBtnPressed)
+    	{
+    		if (outputDataValues.ShifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_OPEN_POSITION)
+    		{
+    			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_CLOSED_POSITION;
+    		}
+    		else
+    		{
+    			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    		}
+    	}
+    	
+    	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
+    	_pumaBackSolenoid.set(outputDataValues.PumaBackSolenoidPosition);
+    	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);
+    	
     	// ==========================
     	// 4.0 Update Dashboard.
     	
@@ -465,9 +481,9 @@ public class Robot extends IterativeRobot
     	// ==========================
     	// 6.0 Stuff we want to do at the very end
     	// ==========================
-    	workingDataValues.IsDriveSpeedScalingButtonPressedLastScan 
-    						= (inputDataValues.IsScaleDriveSpeedUpBtnPressed
-    								|| inputDataValues.IsScaleDriveSpeedDownBtnPressed);
+    	workingDataValues.IsPumaFrontToggleBtnPressedLastScan = inputDataValues.IsPumaFrontToggleBtnPressed;
+    	workingDataValues.IsPumaBackToggleBtnPressedLastScan = inputDataValues.IsPumaBackToggleBtnPressed;
+    	workingDataValues.IsShifterToggleBtnPressedLastScan = inputDataValues.IsShifterToggleBtnPressed;
     }
     
     /**
@@ -485,10 +501,9 @@ public class Robot extends IterativeRobot
     	// ==========================
     	inputDataValues.IsScaleDriveSpeedUpBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN);
     	inputDataValues.IsScaleDriveSpeedDownBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN);
-    	inputDataValues.IsAlphaSolenoidOpenBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_ALPHA_SOLENOID_OPEN_BTN);
-    	inputDataValues.IsAlphaSolenoidClosedBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_ALPHA_SOLENOID_CLOSED_BTN);
-    	inputDataValues.IsBetaSolenoidOpenBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_BETA_SOLENOID_OPEN_BTN);
-    	inputDataValues.IsBetaSolenoidClosedBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_BETA_SOLENOID_CLOSED_BTN);
+    	inputDataValues.IsPumaFrontToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_ALPHA_SOLENOID_TOGGLE_BTN);
+    	inputDataValues.IsPumaBackToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_BETA_SOLENOID_TOGGLE_BTN);
+    	inputDataValues.IsShifterToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHOOTER_SOLENOID_TOGGLE_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -613,6 +628,8 @@ public class Robot extends IterativeRobot
 		
 		SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
 		SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
+
+		
 
 		// Logging
 		SmartDashboard.putBoolean("Log:IsLoggingEnabled", workingDataValues.IsLoggingEnabled);

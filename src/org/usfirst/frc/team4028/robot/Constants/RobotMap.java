@@ -39,19 +39,23 @@ public class RobotMap
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
-	public static final int PCM_PORT_ALPHA_SOLENOID_RETRACT = 0;
-	public static final int PCM_PORT_ALPHA_SOLENOID_EXTEND = 1;
-	public static final int PCM_PORT_BETA_SOLENOID_RETRACT = 2;
-	public static final int PCM_PORT_BETA_SOLENOID_EXTEND = 3;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 0;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 1;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 2;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 3;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 4;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 5;
 	
 	// ======================================
 	// define constants for air cylinder states / positions
 	//	(map the physical air cylinder position to logical state)
 	// ======================================
-	public static final Value ALPHA_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kReverse;
-	public static final Value ALPHA_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kForward;		
-	public static final Value BETA_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value BETA_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value PUMA_FRONT_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value PUMA_FRONT_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kForward;		
+	public static final Value PUMA_BACK_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value PUMA_BACK_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value SHIFTER_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value SHIFTER_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
 		
 	// ======================================
 	// define constants for Encoder Feedback
@@ -85,10 +89,10 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN = LogitechF310.BACK_BUTTON;	
 	public static final int DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK = LogitechF310.LEFT_Y_AXIS;		
 	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
-	public static final int DRIVER_GAMEPAD_ALPHA_SOLENOID_OPEN_BTN = LogitechF310.GREEN_BUTTON_A;
-	public static final int DRIVER_GAMEPAD_ALPHA_SOLENOID_CLOSED_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int DRIVER_GAMEPAD_BETA_SOLENOID_OPEN_BTN = LogitechF310.BLUE_BUTTON_X;
-	public static final int DRIVER_GAMEPAD_BETA_SOLENOID_CLOSED_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int DRIVER_GAMEPAD_ALPHA_SOLENOID_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int DRIVER_GAMEPAD_BETA_SOLENOID_TOGGLE_BTN = LogitechF310.RED_BUTTON_B;
+	public static final int DRIVER_GAMEPAD_SHOOTER_SOLENOID_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	
 	public static final int DRIVER_GAMEPAD_SHOOTER_BTN = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
