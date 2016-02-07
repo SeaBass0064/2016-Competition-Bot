@@ -323,7 +323,7 @@ public class RobotData
 			sb.append("OutputData:ArcadeDriveAdjThrottleCmd" + "\t");
 			sb.append("OutputData:ArcadeDriveAdjTurnCmd" + "\t");
 			//sb.append("OutputData:TurretAdjVeloctyCmd" + "\t");
-			sb.append("OutputData:GammaMtrVelocityCmd" + "\t");
+			sb.append("OutputData:InfeedAdjVelocityCmd" + "\t");
 			sb.append("OutputData:InfeedTiltAdjMtrVelocityCmd" + "\t");
 			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
 			sb.append("OutputData:PumaBackSolenoidPosition" + "\t");

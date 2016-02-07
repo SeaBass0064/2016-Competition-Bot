@@ -275,11 +275,12 @@ public class Robot extends IterativeRobot
     	// set a motors to 0 velocity command 
     	_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd = 0.0;
+    	_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd = 0.0;
+    	_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.0;
     	
     	_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
     	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
     	//_turret.set(_robotLiveData.OutputDataValues.TurretAdjVelocityCmd);
-    	
     	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
     	
@@ -316,6 +317,8 @@ public class Robot extends IterativeRobot
     	_pumaBackSolenoid.set(_robotLiveData.OutputDataValues.PumaBackSolenoidPosition);
     	_shifterSolenoid.set(_robotLiveData.OutputDataValues.ShifterSolenoidPosition);
     	
+    	_robotLiveData.InputDataValues.IsInfeedAcquireBtnPressed = false;
+    	_robotLiveData.InputDataValues.IsInfeedReleaseBtnPressed = false;
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
     	// ===================
@@ -388,21 +391,22 @@ public class Robot extends IterativeRobot
     			= inputDataValues.ArcadeDriveTurnRawCmd * 1.0 * workingDataValues.DriveSpeedScalingFactor;
 
     	// Infeed
-    	outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.5 * inputDataValues.InfeedRawTiltCmd;
+    	outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
     	
-    	if ((inputDataValues.IsInfeedAcquireBtnPressed = true) && (inputDataValues.IsInfeedReleaseBtnPressed = true))
+    	if(inputDataValues.IsInfeedAcquireBtnPressed && inputDataValues.IsInfeedReleaseBtnPressed)
     	{
     	}
-    	else if ((inputDataValues.IsInfeedAcquireBtnPressed = true) && (inputDataValues.IsInfeedReleaseBtnPressed = false))
+    	else if (inputDataValues.IsInfeedAcquireBtnPressed && !inputDataValues.IsInfeedReleaseBtnPressed)
     	{
     		outputDataValues.InfeedAdjVelocityCmd = 1.0;
     	}
-    	else if ((inputDataValues.IsInfeedAcquireBtnPressed = false) && (inputDataValues.IsInfeedReleaseBtnPressed = true))
+    	else if (!inputDataValues.IsInfeedAcquireBtnPressed && inputDataValues.IsInfeedReleaseBtnPressed)
     	{
     		outputDataValues.InfeedAdjVelocityCmd = -1.0;
     	}
     	else
     	{
+    		outputDataValues.InfeedAdjVelocityCmd = 0.0;
     	}
     	// Turret
     	//outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
@@ -522,7 +526,7 @@ public class Robot extends IterativeRobot
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_BTN);
     	//inputDataValues.TurretRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
-    	inputDataValues.InfeedRawTiltCmd = _driverGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
+    	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
  	
     	// ==========================
     	// 1.3 get values from axis position Encoders
@@ -643,8 +647,14 @@ public class Robot extends IterativeRobot
 		
 		//SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
 		//SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
-
 		
+		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
+		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);
+		SmartDashboard.putBoolean("IsPumaBackToggleBtnPressed", inputDataValues.IsPumaBackToggleBtnPressed);
+		SmartDashboard.putNumber("InfeedAdjVelocityCmd", outputDataValues.InfeedAdjVelocityCmd);
+		SmartDashboard.putNumber("InfeedTiltAdjMtrVelocityCmd", outputDataValues.InfeedTiltAdjMtrVelocityCmd);
+		SmartDashboard.putBoolean("IsInfeedAcquireBtnPressed", inputDataValues.IsInfeedAcquireBtnPressed);
+		SmartDashboard.putBoolean("IsInfeedReleaseBtnPressed", inputDataValues.IsInfeedReleaseBtnPressed);
 
 		// Logging
 		SmartDashboard.putBoolean("Log:IsLoggingEnabled", workingDataValues.IsLoggingEnabled);

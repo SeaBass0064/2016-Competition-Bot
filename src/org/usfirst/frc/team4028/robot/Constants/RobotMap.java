@@ -33,8 +33,8 @@ public class RobotMap
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
-	public static final int INFEED_ACQUIRE_MTR = 0;
-	public static final int INFEED_TILT_MTR = 1;
+	public static final int INFEED_ACQUIRE_MTR = 1;
+	public static final int INFEED_TILT_MTR = 0;
 	
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
