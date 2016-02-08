@@ -362,25 +362,25 @@ public class Robot extends IterativeRobot
     	// set the drive speed scale factor (currently we support 0.7 & 1.0)
     	// 	notes: 	this is a toggle,  the previous value is retained between scans
     	//			need to de-bounce key press since the scan rate is so fast 
-    	if((inputDataValues.IsScaleDriveSpeedUpBtnPressed == true) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed == true))
+    	if((inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
+    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed))
     	{
     		// Don't change scale factor if both buttons are pressed
     	}
-    	else if((inputDataValues.IsScaleDriveSpeedUpBtnPressed == true ) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed == false))
+    	else if((inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
+    			&& (!inputDataValues.IsScaleDriveSpeedDownBtnPressed))
     	{
     		// scale up
     		workingDataValues.DriveSpeedScalingFactor = 1;
     	}
-    	else if((inputDataValues.IsScaleDriveSpeedUpBtnPressed == false) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed == true))
+    	else if((!inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
+    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed))
     	{
     		// scale down
     		workingDataValues.DriveSpeedScalingFactor = 0.7;
     	}
-    	else if((inputDataValues.IsScaleDriveSpeedUpBtnPressed != true) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed != true))
+    	else if((!inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
+    			&& (!inputDataValues.IsScaleDriveSpeedDownBtnPressed))
     	{
     		// if neither button is pressed do nothing
     	}
@@ -391,7 +391,26 @@ public class Robot extends IterativeRobot
     			= inputDataValues.ArcadeDriveTurnRawCmd * 1.0 * workingDataValues.DriveSpeedScalingFactor;
 
     	// Infeed
-    	outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
+    	//outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
+    	
+    	if (inputDataValues.InfeedRawTiltCmd < 0.11)
+    	{
+    		if (inputDataValues.InfeedRawTiltCmd < 0)
+    		{
+    			outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
+    		}
+    		else
+    		{
+    		}
+    	}
+    	else if (inputDataValues.InfeedRawTiltCmd >= 0.11)
+    	{
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = (0.89 * inputDataValues.InfeedRawTiltCmd) + 0.11;
+    	}
+    	else
+    	{
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.11;
+    	}
     	
     	if(inputDataValues.IsInfeedAcquireBtnPressed && inputDataValues.IsInfeedReleaseBtnPressed)
     	{
