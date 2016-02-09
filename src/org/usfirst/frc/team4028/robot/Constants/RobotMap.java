@@ -96,6 +96,8 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_SHOOTER_BTN = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
+	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int OPERATOR_GAMEPAD_TURRET_TARGET_BTN = LogitechF310.RED_BUTTON_B;
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	

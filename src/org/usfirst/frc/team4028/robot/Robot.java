@@ -43,6 +43,7 @@ import com.kauailabs.navx.frc.AHRS;
 /**
  * Date			Rev		Author						Comments
  * -----------	------	-------------------------	---------------------------------- 
+ * 6.Feb.2016	0.6		Sebastian Rodriguez			Added Infeed code
  * 4.Feb.2016	0.5		Sebastian Rodriguez			Added Turret and turret encoder
  * 28.Jan.2016	0.4		Sebastian Rodriguez			Added untested navx code
  * 23.Jan.2016	0.3		Sebastian Rodriguez			Changed to 6 wheel drive train
@@ -135,12 +136,12 @@ public class Robot extends IterativeRobot
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	
+    	/*
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_MTR);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
-    	
+    	*/
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -156,21 +157,21 @@ public class Robot extends IterativeRobot
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	
+    	/*
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
-    	
+    	*/
     	
     	// ===================
     	// Additional Talon Motors
     	// ===================
-    	/*
+    	
     	_turret = new CANTalon(RobotMap.CAN_ADDR_TURRET);
     	_turret.setFeedbackDevice(FeedbackDevice.QuadEncoder);
     	_turret.enableBrakeMode(false);
-    	*/
+    	
     	
     	// ===================
     	// Additional Test Motors, function currently undefined
@@ -280,7 +281,7 @@ public class Robot extends IterativeRobot
     	
     	_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
     	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
-    	//_turret.set(_robotLiveData.OutputDataValues.TurretAdjVelocityCmd);
+    	_turret.set(_robotLiveData.OutputDataValues.TurretAdjVelocityCmd);
     	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
     	
@@ -290,12 +291,12 @@ public class Robot extends IterativeRobot
     	// initialize axis (Encoder) positions
     	_leftDriveMasterMtr.setPosition(0);
     	_rightDriveMasterMtr.setPosition(0);
-    	//_turret.setPosition(0);
+    	_turret.setPosition(0);
     	
     	// get initial values from Encoders
     	_robotLiveData.WorkingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
     	_robotLiveData.WorkingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
-    	//_robotLiveData.WorkingDataValues.TurretEncoderInitialCount = _turret.getPosition();
+    	_robotLiveData.WorkingDataValues.TurretEncoderInitialCount = _turret.getPosition();
     	
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
@@ -319,6 +320,7 @@ public class Robot extends IterativeRobot
     	
     	_robotLiveData.InputDataValues.IsInfeedAcquireBtnPressed = false;
     	_robotLiveData.InputDataValues.IsInfeedReleaseBtnPressed = false;
+    	_robotLiveData.WorkingDataValues.IsTurretEncoderDegreesZeroYet = false;
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
     	// ===================
@@ -390,8 +392,7 @@ public class Robot extends IterativeRobot
     	outputDataValues.ArcadeDriveTurnAdjCmd 
     			= inputDataValues.ArcadeDriveTurnRawCmd * 1.0 * workingDataValues.DriveSpeedScalingFactor;
 
-    	// Infeed
-    	//outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
+    	// ********** Infeed **********
     	
     	if (inputDataValues.InfeedRawTiltCmd < 0.11)
     	{
@@ -427,9 +428,58 @@ public class Robot extends IterativeRobot
     	{
     		outputDataValues.InfeedAdjVelocityCmd = 0.0;
     	}
-    	// Turret
+    	// ********** Turret **********
     	//outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
+    	//Turn turret, prevent encoder value from exceeding 360 or -360
+    	if (workingDataValues.TurretEncoderDegreesCount >= 360)
+    	{
+    		if (inputDataValues.TurretRawVelocityCmd >= 0)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = 0.0;
+    		}
+    		else if (inputDataValues.TurretRawVelocityCmd < 0)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
+    		}
+    	}
+    	else if (workingDataValues.TurretEncoderDegreesCount <= -360)
+    	{
+    		if (inputDataValues.TurretRawVelocityCmd <= 0)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = 0.0;
+    		}
+    		else if (inputDataValues.TurretRawVelocityCmd > 0)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
+    		}
+    	}
+    	else
+    	{
+    		outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
+    	}
     	
+    		// Add button that zeros encoder value for turret when pressed
+    	if (inputDataValues.IsTurretZeroFunctionBtnPressed || workingDataValues.IsTurretEncoderDegreesZeroYet)
+    	{
+    		if (workingDataValues.TurretEncoderDegreesCount >= 5)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = -1;
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
+    		}
+    		else if (workingDataValues.TurretEncoderDegreesCount <= -5)
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = 1;
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
+    		}
+    		else
+    		{
+    			outputDataValues.TurretAdjVelocityCmd = 0.0;
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
+    		}
+    	}
+    	else
+    	{
+    	}
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -438,7 +488,7 @@ public class Robot extends IterativeRobot
     	// =====================================
 
     	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, true);
-    	//_turret.set(outputDataValues.TurretAdjVelocityCmd);
+    	_turret.set(outputDataValues.TurretAdjVelocityCmd);
     	_infeedAcquireMtr.set(outputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(outputDataValues.InfeedTiltAdjMtrVelocityCmd);
     	// ==========================
@@ -537,14 +587,17 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsPumaFrontToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN);
     	inputDataValues.IsPumaBackToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN);
     	inputDataValues.IsShifterToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHOOTER_TOGGLE_BTN);
+    	
     	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
+    	inputDataValues.IsTurretZeroFunctionBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_ZERO_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_BTN);
-    	//inputDataValues.TurretRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
+    	
+    	inputDataValues.TurretRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
     	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
  	
     	// ==========================
@@ -552,10 +605,10 @@ public class Robot extends IterativeRobot
     	// ==========================
     	inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
     	inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
-    	//inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
+    	inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
     	
     	// ==========================
-    	// 1.5 get values from navX
+    	// 1.4 get values from navX
     	// ==========================
  
     	inputDataValues.NavxIsConnected = _navXSensor.isConnected();
@@ -618,13 +671,13 @@ public class Robot extends IterativeRobot
 														* RobotMap.RIGHT_DRIVE_GEAR_BOX_RATIO;
     	
     	// 2.3 Turret
-    	/*
+    	
     	workingDataValues.TurretEncoderTotalDeltaCount = (inputDataValues.TurretEncoderCurrentCount
     														- workingDataValues.TurretEncoderInitialCount);
     	
     	workingDataValues.TurretEncoderDegreesCount = (workingDataValues.TurretEncoderTotalDeltaCount)
     													* RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
-    	*/
+    	
     }
     
     /**
@@ -664,8 +717,8 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("Drive.Right:EncCurSpeedCPS", workingDataValues.RightDriveEncoderCurrentCPS);
 		SmartDashboard.putNumber("Drive.Right:WheelCurSpeedIPS", workingDataValues.RightDriveWheelsCurrentSpeedIPS);
 		
-		//SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
-		//SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
+		SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
+		SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
 		
 		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);
