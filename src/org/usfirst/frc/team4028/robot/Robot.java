@@ -26,8 +26,12 @@ import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Utility;
@@ -96,6 +100,12 @@ public class Robot extends IterativeRobot
 	
 	// navX
 	private AHRS _navXSensor;
+	
+	// ==================
+	// PID Controller
+	// ==================
+	//private PIDController _turretControl;
+	//private Encoder _turretEncoder;
 	
 	// ===========================================================
 	//   Define class level working variables 
@@ -170,6 +180,8 @@ public class Robot extends IterativeRobot
     	
     	_turret = new CANTalon(RobotMap.CAN_ADDR_TURRET);
     	_turret.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+    	_turret.changeControlMode(CANTalon.TalonControlMode.Position);
+    	_turret.reverseSensor(false);
     	_turret.enableBrakeMode(false);
     	
     	
@@ -196,7 +208,26 @@ public class Robot extends IterativeRobot
     	_pumaFrontSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT);
     	_pumaBackSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_RETRACT);
     	_shifterSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_SHIFTER_SOLENOID_EXTEND, RobotMap.PCM_PORT_SHIFTER_SOLENOID_RETRACT);
-    	//===
+    	
+    	//===================
+    	// PIDController
+    	//===================
+    	//Roborio PID
+    	/*
+    	_turretEncoder = new Encoder(0,0,1);
+    	_turretEncoder.setPIDSourceType(PIDSourceType.kDisplacement);
+    	_turretControl= new PIDController(1.0, 0.0, 0.0, _turretEncoder, _turret);
+    	*/
+    	//Talon SRX PID
+    	double p = 3.0; // Kp
+    	double i = 0.0; // Ki
+    	double d = 0.0; // Kd
+    	double f = 0.0; // Kf
+    	int izone = 0; // Encoder ticks/analog units
+    	double ramprate = 36; // Volts/second
+    	int profile = 0; // Two possible profiles, 0 or 1;
+    	_turret.setPID(p, i, d, f, izone, ramprate, profile);
+    	
     	// Camera
     	//===
         server = CameraServer.getInstance();
@@ -278,10 +309,11 @@ public class Robot extends IterativeRobot
     	_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.0;
+    	_robotLiveData.OutputDataValues.TurretTargetPositionCmd = 0.0;
     	
     	_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
     	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
-    	_turret.set(_robotLiveData.OutputDataValues.TurretAdjVelocityCmd);
+    	_turret.set(_robotLiveData.OutputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
     	
@@ -321,6 +353,8 @@ public class Robot extends IterativeRobot
     	_robotLiveData.InputDataValues.IsInfeedAcquireBtnPressed = false;
     	_robotLiveData.InputDataValues.IsInfeedReleaseBtnPressed = false;
     	_robotLiveData.WorkingDataValues.IsTurretEncoderDegreesZeroYet = false;
+    	_robotLiveData.WorkingDataValues.IsTurretEncoderDegreesTargetYet = false;
+    	
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
     	// ===================
@@ -429,57 +463,74 @@ public class Robot extends IterativeRobot
     		outputDataValues.InfeedAdjVelocityCmd = 0.0;
     	}
     	// ********** Turret **********
-    	//outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
-    	//Turn turret, prevent encoder value from exceeding 360 or -360
-    	if (workingDataValues.TurretEncoderDegreesCount >= 360)
-    	{
-    		if (inputDataValues.TurretRawVelocityCmd >= 0)
-    		{
-    			outputDataValues.TurretAdjVelocityCmd = 0.0;
-    		}
-    		else if (inputDataValues.TurretRawVelocityCmd < 0)
-    		{
-    			outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
-    		}
-    	}
-    	else if (workingDataValues.TurretEncoderDegreesCount <= -360)
-    	{
-    		if (inputDataValues.TurretRawVelocityCmd <= 0)
-    		{
-    			outputDataValues.TurretAdjVelocityCmd = 0.0;
-    		}
-    		else if (inputDataValues.TurretRawVelocityCmd > 0)
-    		{
-    			outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
-    		}
-    	}
-    	else
-    	{
-    		outputDataValues.TurretAdjVelocityCmd = inputDataValues.TurretRawVelocityCmd;
-    	}
     	
-    		// Add button that zeros encoder value for turret when pressed
-    	if (inputDataValues.IsTurretZeroFunctionBtnPressed || workingDataValues.IsTurretEncoderDegreesZeroYet)
+    	// Add button that zeros encoder value for turret when pressed
+    	/*
+    	if (inputDataValues.IsTurretZeroFunctionBtnPressed && !workingDataValues.IsTurretEncoderDegreesZeroYet)
     	{
     		if (workingDataValues.TurretEncoderDegreesCount >= 5)
     		{
-    			outputDataValues.TurretAdjVelocityCmd = -1;
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
+    			inputDataValues.TurretTurnDegreesCmd = 0;    			
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
     		}
     		else if (workingDataValues.TurretEncoderDegreesCount <= -5)
     		{
-    			outputDataValues.TurretAdjVelocityCmd = 1;
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
+    			inputDataValues.TurretTurnDegreesCmd = 0;
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
     		}
     		else
     		{
-    			outputDataValues.TurretAdjVelocityCmd = 0.0;
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
+    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
     		}
     	}
     	else
     	{
     	}
+    	*/
+    	
+    	/*
+    	if (inputDataValues.IsTurretTargetBtnPressed && !workingDataValues.IsTurretEncoderDegreesTargetYet)
+    	{
+    		inputDataValues.TurretTurnDegreesCmd = 90;
+    		if ((workingDataValues.TurretTargetDegreesCount - 90) >= 5)
+    		{
+    			workingDataValues.IsTurretEncoderDegreesTargetYet = false;
+    		}
+    		else if ((workingDataValues.TurretTargetDegreesCount - 90) <= 5)
+    		{
+    			workingDataValues.IsTurretEncoderDegreesTargetYet = false;
+    		}
+    		else
+    		{
+    			workingDataValues.IsTurretEncoderDegreesTargetYet = true;
+    		}
+    	}
+    	else
+    	{
+    	}
+    	*/
+    	if ((workingDataValues.TurretEncoderDegreesCount - 90) >= 5)
+    	{
+    		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
+    	}
+    	else if ((workingDataValues.TurretEncoderDegreesCount - 90) <= 5)
+    	{
+    		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
+    	}
+    	else 
+    	{
+    		workingDataValues.IsTurretEncoderDegreesTargetYet = true;
+    	}
+    	
+    	if (inputDataValues.IsTurretTargetBtnPressed && !workingDataValues.IsTurretEncoderDegreesTargetYet)
+    	{
+    		inputDataValues.TurretTurnDegreesCmd = 90;
+    	}
+    	else
+    	{
+    	}
+    	
+    	outputDataValues.TurretTargetPositionCmd = (inputDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT);
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -488,7 +539,7 @@ public class Robot extends IterativeRobot
     	// =====================================
 
     	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, true);
-    	_turret.set(outputDataValues.TurretAdjVelocityCmd);
+    	_turret.set(outputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(outputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(outputDataValues.InfeedTiltAdjMtrVelocityCmd);
     	// ==========================
@@ -591,13 +642,14 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
     	inputDataValues.IsTurretZeroFunctionBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_ZERO_BTN);
+    	inputDataValues.IsTurretTargetBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_TARGET_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_BTN);
     	
-    	inputDataValues.TurretRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
+    	inputDataValues.TurretTurnDegreesCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
     	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
  	
     	// ==========================
@@ -719,6 +771,8 @@ public class Robot extends IterativeRobot
 		
 		SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
 		SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
+		SmartDashboard.putBoolean("Turret.IsTurretTargetBtnPressed", inputDataValues.IsTurretTargetBtnPressed);
+		SmartDashboard.putBoolean("Turret.IsTurretEncoderDegreesTargetYet", workingDataValues.IsTurretEncoderDegreesTargetYet);
 		
 		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);
@@ -727,6 +781,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("InfeedTiltAdjMtrVelocityCmd", outputDataValues.InfeedTiltAdjMtrVelocityCmd);
 		SmartDashboard.putBoolean("IsInfeedAcquireBtnPressed", inputDataValues.IsInfeedAcquireBtnPressed);
 		SmartDashboard.putBoolean("IsInfeedReleaseBtnPressed", inputDataValues.IsInfeedReleaseBtnPressed);
+		
 
 		// Logging
 		SmartDashboard.putBoolean("Log:IsLoggingEnabled", workingDataValues.IsLoggingEnabled);

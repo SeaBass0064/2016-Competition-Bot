@@ -80,11 +80,12 @@ public class RobotData
 		public boolean IsInfeedAcquireBtnPressed;
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsTurretZeroFunctionBtnPressed;
+		public boolean IsTurretTargetBtnPressed;
  	
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;
 		public double ShooterRawVelocityCmd;
-		public double TurretRawVelocityCmd;
+		public double TurretTurnDegreesCmd;
 		public double InfeedRawTiltCmd;
     	    	
 		public double LeftDriveEncoderCurrentCount;	
@@ -121,10 +122,11 @@ public class RobotData
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsTurretZeroFunctionBtnPressed" + "\t");
+			sb.append("InputData:IsTurretTargetBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:ShooterRawVelocityCmd" + "\t");
-			sb.append("InputData:TurretRawVelocityCmd" + "\t");
+			sb.append("InputData:TurretTurnDegreesCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
 			sb.append("InputData:LeftDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:RightDriveEncoderCurrentCount" + "\t");
@@ -160,10 +162,11 @@ public class RobotData
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsTurretZeroFunctionBtnPressed + "\t");
+			sb.append(IsTurretTargetBtnPressed + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
 			sb.append(ArcadeDriveTurnRawCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
-			sb.append(TurretRawVelocityCmd + "\t");
+			sb.append(TurretTurnDegreesCmd + "\t");
 			sb.append(InfeedRawTiltCmd + "\t");
 			sb.append(LeftDriveEncoderCurrentCount + "\t");
 			sb.append(RightDriveEncoderCurrentCount + "\t");
@@ -202,6 +205,7 @@ public class RobotData
 		public boolean IsPumaBackToggleBtnPressedLastScan;
 		public boolean IsShifterToggleBtnPressedLastScan;
 		public boolean IsTurretEncoderDegreesZeroYet;
+		public boolean IsTurretEncoderDegreesTargetYet;
 		
 		public double LeftDriveEncoderInitialCount;
 		public double LeftDriveEncoderLastCount;
@@ -239,6 +243,7 @@ public class RobotData
 			sb.append("IsPumaBackToggleBtnPressedLastScan" + "\t");
 			sb.append("IsShifterToggleBtnPressedLastScan" + "\t");
 			sb.append("IsTurretEncoderDegreesZeroYet" + "\t");
+			sb.append("IsTurretEncoderDegreesTargetYet" + "\t");
 			
 			sb.append("WorkingData:LeftDriveEncoderInitialCount" + "\t");
 			sb.append("WorkingData:LeftDriveEncoderLastCount" + "\t");
@@ -279,7 +284,8 @@ public class RobotData
 			sb.append(IsPumaFrontToggleBtnPressedLastScan + "\t");
 			sb.append(IsPumaBackToggleBtnPressedLastScan + "\t");
 			sb.append(IsShifterToggleBtnPressedLastScan + "\t");
-			sb.append(IsTurretEncoderDegreesZeroYet);
+			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
+			sb.append(IsTurretEncoderDegreesTargetYet + "\t");
 			
 			sb.append(LeftDriveEncoderInitialCount + "\t");
 			sb.append(LeftDriveEncoderLastCount + "\t");
@@ -315,7 +321,7 @@ public class RobotData
 	{
 		public double ArcadeDriveThrottleAdjCmd;
 		public double ArcadeDriveTurnAdjCmd;
-		public double TurretAdjVelocityCmd;
+		public double TurretTargetPositionCmd;
 		public double InfeedAdjVelocityCmd;
 		public double InfeedTiltAdjMtrVelocityCmd;
 		
@@ -332,7 +338,7 @@ public class RobotData
 			
 			sb.append("OutputData:ArcadeDriveAdjThrottleCmd" + "\t");
 			sb.append("OutputData:ArcadeDriveAdjTurnCmd" + "\t");
-			sb.append("OutputData:TurretAdjVeloctyCmd" + "\t");
+			sb.append("OutputData:TurretTargetPositionCmd" + "\t");
 			sb.append("OutputData:InfeedAdjVelocityCmd" + "\t");
 			sb.append("OutputData:InfeedTiltAdjMtrVelocityCmd" + "\t");
 			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
@@ -351,7 +357,7 @@ public class RobotData
 			
 			sb.append(ArcadeDriveThrottleAdjCmd + "\t");
 			sb.append(ArcadeDriveTurnAdjCmd + "\t");
-			sb.append(TurretAdjVelocityCmd + "\t");
+			sb.append(TurretTargetPositionCmd + "\t");
 			sb.append(InfeedAdjVelocityCmd + "\t");
 			sb.append(InfeedTiltAdjMtrVelocityCmd + "\t");
 			sb.append(DriversStationMsg);
