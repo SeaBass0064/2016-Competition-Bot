@@ -85,7 +85,6 @@ public class RobotData
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;
 		public double ShooterRawVelocityCmd;
-		public double TurretTurnDegreesCmd;
 		public double InfeedRawTiltCmd;
     	    	
 		public double LeftDriveEncoderCurrentCount;	
@@ -126,7 +125,6 @@ public class RobotData
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:ShooterRawVelocityCmd" + "\t");
-			sb.append("InputData:TurretTurnDegreesCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
 			sb.append("InputData:LeftDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:RightDriveEncoderCurrentCount" + "\t");
@@ -166,7 +164,6 @@ public class RobotData
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
 			sb.append(ArcadeDriveTurnRawCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
-			sb.append(TurretTurnDegreesCmd + "\t");
 			sb.append(InfeedRawTiltCmd + "\t");
 			sb.append(LeftDriveEncoderCurrentCount + "\t");
 			sb.append(RightDriveEncoderCurrentCount + "\t");
@@ -231,6 +228,7 @@ public class RobotData
     	public double TurretEncoderTotalDeltaCount;
     	public double TurretEncoderDegreesCount;
     	public double TurretTargetDegreesCount;
+    	public double TurretTurnDegreesCmd;
 		// build a TSV for the header
 		public String BuildTSVHeader()
 		{
@@ -268,7 +266,8 @@ public class RobotData
 			sb.append("WorkingData:TurretEncoderInitialCount" + "\t");
 			sb.append("WorkingData:TurretEncoderTotalDeltaCount" + "\t");
 			sb.append("WorkingData:TurretEncoderDegreesCount" + "\t");
-			sb.append("WorkingData:TurretTargetDegreesCount");
+			sb.append("WorkingData:TurretTargetDegreesCount" + "\t");
+			sb.append("InputData:IsTurretTargetBtnPressed");
 					
 			return sb.toString();
 		}
@@ -310,7 +309,8 @@ public class RobotData
 			sb.append(TurretEncoderInitialCount + "\t");
 			sb.append(TurretEncoderTotalDeltaCount + "\t");
 			sb.append(TurretEncoderDegreesCount + "\t");
-			sb.append(TurretTargetDegreesCount);
+			sb.append(TurretTargetDegreesCount + "\t");
+			sb.append(TurretTurnDegreesCmd);
 					
 			return sb.toString();
 		}

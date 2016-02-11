@@ -183,7 +183,7 @@ public class Robot extends IterativeRobot
     	_turret.changeControlMode(CANTalon.TalonControlMode.Position);
     	_turret.reverseSensor(false);
     	_turret.enableBrakeMode(false);
-    	
+    	_turret.setPID(RobotMap.TURRET_KP, RobotMap.TURRET_KI, RobotMap.TURRET_KD, RobotMap.TURRET_KF, RobotMap.TURRET_IZONE, RobotMap.TURRET_RAMPRATE, RobotMap.TURRET_PROFILE);
     	
     	// ===================
     	// Additional Test Motors, function currently undefined
@@ -212,21 +212,11 @@ public class Robot extends IterativeRobot
     	//===================
     	// PIDController
     	//===================
-    	//Roborio PID
     	/*
     	_turretEncoder = new Encoder(0,0,1);
     	_turretEncoder.setPIDSourceType(PIDSourceType.kDisplacement);
     	_turretControl= new PIDController(1.0, 0.0, 0.0, _turretEncoder, _turret);
     	*/
-    	//Talon SRX PID
-    	double p = 3.0; // Kp
-    	double i = 0.0; // Ki
-    	double d = 0.0; // Kd
-    	double f = 0.0; // Kf
-    	int izone = 0; // Encoder ticks/analog units
-    	double ramprate = 36; // Volts/second
-    	int profile = 0; // Two possible profiles, 0 or 1;
-    	_turret.setPID(p, i, d, f, izone, ramprate, profile);
     	
     	// Camera
     	//===
@@ -304,7 +294,7 @@ public class Robot extends IterativeRobot
     {
     	_robotLiveData = new RobotData();
     	
-    	// set a motors to 0 velocity command 
+    	// set motors to 0 position/velocity command 
     	_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd = 0.0;
@@ -464,51 +454,7 @@ public class Robot extends IterativeRobot
     	}
     	// ********** Turret **********
     	
-    	// Add button that zeros encoder value for turret when pressed
-    	/*
-    	if (inputDataValues.IsTurretZeroFunctionBtnPressed && !workingDataValues.IsTurretEncoderDegreesZeroYet)
-    	{
-    		if (workingDataValues.TurretEncoderDegreesCount >= 5)
-    		{
-    			inputDataValues.TurretTurnDegreesCmd = 0;    			
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
-    		}
-    		else if (workingDataValues.TurretEncoderDegreesCount <= -5)
-    		{
-    			inputDataValues.TurretTurnDegreesCmd = 0;
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
-    		}
-    		else
-    		{
-    			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
-    		}
-    	}
-    	else
-    	{
-    	}
-    	*/
-    	
-    	/*
-    	if (inputDataValues.IsTurretTargetBtnPressed && !workingDataValues.IsTurretEncoderDegreesTargetYet)
-    	{
-    		inputDataValues.TurretTurnDegreesCmd = 90;
-    		if ((workingDataValues.TurretTargetDegreesCount - 90) >= 5)
-    		{
-    			workingDataValues.IsTurretEncoderDegreesTargetYet = false;
-    		}
-    		else if ((workingDataValues.TurretTargetDegreesCount - 90) <= 5)
-    		{
-    			workingDataValues.IsTurretEncoderDegreesTargetYet = false;
-    		}
-    		else
-    		{
-    			workingDataValues.IsTurretEncoderDegreesTargetYet = true;
-    		}
-    	}
-    	else
-    	{
-    	}
-    	*/
+    	// Check if turret encoder value is near target
     	if ((workingDataValues.TurretEncoderDegreesCount - 90) >= 5)
     	{
     		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
@@ -521,16 +467,36 @@ public class Robot extends IterativeRobot
     	{
     		workingDataValues.IsTurretEncoderDegreesTargetYet = true;
     	}
-    	
-    	if (inputDataValues.IsTurretTargetBtnPressed && !workingDataValues.IsTurretEncoderDegreesTargetYet)
+    	// Check if turret encoder value is near zero
+    	if (workingDataValues.TurretEncoderDegreesCount >= 5)
+		{  			
+			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
+		}
+		else if (workingDataValues.TurretEncoderDegreesCount <= -5)
+		{
+			workingDataValues.IsTurretEncoderDegreesZeroYet = false;
+		}
+		else
+		{
+			workingDataValues.IsTurretEncoderDegreesZeroYet = true;
+		}
+    	// Change turret position command based on operator input
+    	if (inputDataValues.IsTurretZeroFunctionBtnPressed && inputDataValues.IsTurretTargetBtnPressed)
     	{
-    		inputDataValues.TurretTurnDegreesCmd = 90;
+    	}
+    	else if (inputDataValues.IsTurretTargetBtnPressed && !inputDataValues.IsTurretZeroFunctionBtnPressed)
+    	{
+    		workingDataValues.TurretTurnDegreesCmd = 180;
+    	}
+    	else if (!inputDataValues.IsTurretTargetBtnPressed && inputDataValues.IsTurretZeroFunctionBtnPressed)
+    	{
+    		workingDataValues.TurretTurnDegreesCmd = 0;
     	}
     	else
     	{
     	}
     	
-    	outputDataValues.TurretTargetPositionCmd = (inputDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT);
+    	outputDataValues.TurretTargetPositionCmd = (workingDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT);
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -649,7 +615,6 @@ public class Robot extends IterativeRobot
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_BTN);
     	
-    	inputDataValues.TurretTurnDegreesCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AXIS);
     	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
  	
     	// ==========================
@@ -773,6 +738,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
 		SmartDashboard.putBoolean("Turret.IsTurretTargetBtnPressed", inputDataValues.IsTurretTargetBtnPressed);
 		SmartDashboard.putBoolean("Turret.IsTurretEncoderDegreesTargetYet", workingDataValues.IsTurretEncoderDegreesTargetYet);
+		SmartDashboard.putNumber("Turret.TurnDegreesCmd", workingDataValues.TurretTurnDegreesCmd);
 		
 		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);

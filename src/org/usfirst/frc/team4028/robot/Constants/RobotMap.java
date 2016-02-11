@@ -56,6 +56,17 @@ public class RobotMap
 	public static final Value PUMA_BACK_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value SHIFTER_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
+	
+	// ======================================
+	// Define constants for PID Loops
+	// ======================================
+	public static final double TURRET_KP = 1.9;   // Proportional 
+	public static final double TURRET_KI = 0.0;   // Integral
+	public static final double TURRET_KD = 0.0;   // Derivative
+	public static final double TURRET_KF = 0.0;   // Feed Forward
+	public static final int TURRET_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
+	public static final double TURRET_RAMPRATE = 36; // Volts/Second
+	public static final int TURRET_PROFILE = 0;
 		
 	// ======================================
 	// define constants for Encoder Feedback
