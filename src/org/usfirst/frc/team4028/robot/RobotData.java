@@ -3,9 +3,10 @@ package org.usfirst.frc.team4028.robot;
 import java.util.Date;
 
 import org.usfirst.frc.team4028.robot.Constants.RobotMap;
+import org.usfirst.frc.team4028.robot.Robot;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /* 
 * This class contains the dynamic data while the robot is running in Auton or Teleop
@@ -29,6 +30,16 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 */
 public class RobotData 
 {
+	
+	// ==========================================================
+	// define the different auton modes (selected on the Smart Dashboard)
+	// ==========================================================
+	public enum AutonMode
+	{
+		UNDEFINED,
+		DO_NOTHING,
+		TEST
+	}
 	// class constructor
 	public RobotData()
 	{
@@ -91,6 +102,8 @@ public class RobotData
 		public double RightDriveEncoderCurrentCount;
 		public double TurretEncoderCurrentCount;
 		
+		AutonMode AutonModeRequested;
+		
 		public boolean NavxIsConnected;
 		public boolean NavxIsCalibrating;
 		
@@ -129,6 +142,7 @@ public class RobotData
 			sb.append("InputData:LeftDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:RightDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:TurretEncoderCurrentCount" + "\t");
+			sb.append("InputData:AutonModeRequested" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
 			sb.append("InputData:NavxYaw" + "\t");
@@ -168,6 +182,7 @@ public class RobotData
 			sb.append(LeftDriveEncoderCurrentCount + "\t");
 			sb.append(RightDriveEncoderCurrentCount + "\t");
 			sb.append(TurretEncoderCurrentCount + "\t");
+			sb.append(AutonModeRequested + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
 			sb.append(NavxYaw + "\t");

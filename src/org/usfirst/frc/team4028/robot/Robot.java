@@ -1,4 +1,3 @@
-
 package org.usfirst.frc.team4028.robot;
 
 import java.io.BufferedWriter;
@@ -47,6 +46,7 @@ import com.kauailabs.navx.frc.AHRS;
 /**
  * Date			Rev		Author						Comments
  * -----------	------	-------------------------	---------------------------------- 
+ * 8.Feb.2016	0.7		Sebastian Rodriguez			PID control for the turret, untested auton mode
  * 6.Feb.2016	0.6		Sebastian Rodriguez			Added Infeed code
  * 4.Feb.2016	0.5		Sebastian Rodriguez			Added Turret and turret encoder
  * 28.Jan.2016	0.4		Sebastian Rodriguez			Added untested navx code
@@ -64,6 +64,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 public class Robot extends IterativeRobot
 {
+	
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Runtime controllable objects  
@@ -114,8 +115,11 @@ public class Robot extends IterativeRobot
 	// DTO (Data Transfer Object) holding all live Robot Data Values
 	RobotData _robotLiveData;
 
-	// wrapper around data logging (if it is enabled)
+	// Wrapper around data logging (if it is enabled)
 	DataLogger _dataLogger;
+	
+	// Smart Dashboard chooser
+	SendableChooser autonModeChooser;
 	
 	
     /*****************************************************************************************************
@@ -146,12 +150,12 @@ public class Robot extends IterativeRobot
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	/*
+    	
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_MTR);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
-    	*/
+    	
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -167,12 +171,12 @@ public class Robot extends IterativeRobot
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	/*
+    	
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
-    	*/
+    	
     	
     	// ===================
     	// Additional Talon Motors
@@ -200,7 +204,7 @@ public class Robot extends IterativeRobot
     	// Arcade Drive
     	//====================
     	_robotDrive = new RobotDrive(_leftDriveMasterMtr,_rightDriveMasterMtr);
-    	// Arcade Drive configured to drive in two motor setup, other two motors follow as slaves    	
+    	// Arcade Drive configured to drive in three motor setup, other two motors follow as slaves    	
     	
     	//===================
     	// Solenoids
@@ -224,6 +228,12 @@ public class Robot extends IterativeRobot
         server.setQuality(25);
         //the camera name (ex "cam0") can be found through the roborio web interface
         server.startAutomaticCapture("cam0");
+        
+        // Smart DashBoard User Input
+        autonModeChooser = new SendableChooser();
+        autonModeChooser.addDefault("Do Nothing", RobotData.AutonMode.DO_NOTHING);
+        autonModeChooser.addObject("Test", RobotData.AutonMode.TEST);
+        SmartDashboard.putData("Autonomous mode chooser", autonModeChooser);
     	
     	// write jar build d&t to the dashboard
     	try
@@ -279,11 +289,113 @@ public class Robot extends IterativeRobot
     }
 
     public void autonomousInit() {
+    	_robotLiveData = new RobotData();
+    	
+    	// Set desired inital solenoid positions
+    	_robotLiveData.OutputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION;
+    	_robotLiveData.OutputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION;
+    	_robotLiveData.OutputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    	
+    	// initialize axis (Encoder) positions
+    	_leftDriveMasterMtr.setPosition(0);
+    	_rightDriveMasterMtr.setPosition(0);
+    	_turret.setPosition(0);
+    	
+    	// get initial values from Encoders
+    	_robotLiveData.WorkingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
+    	_robotLiveData.WorkingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
+    	_robotLiveData.WorkingDataValues.TurretEncoderInitialCount = _turret.getPosition();
+    	
+    	// get user input values from the Smart Dashboard
+    	_robotLiveData.InputDataValues.AutonModeRequested = (RobotData.AutonMode) autonModeChooser.getSelected();
+    	
+    	// Setup logging to a usb stick
+    	setupLogging("auton");
     }
 
     public void autonomousPeriodic() {	
+    	//get local references to make variable references shorter
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	
+    	// ===============================
+    	// Step 1: Get Inputs
+    	// ===============================
+    	UpdateInputAndCalcWorkingDataValues(inputDataValues, workingDataValues);
+    	
+    	outputDataValues.DriversStationMsg = "";
+    	
+    	// ===============================
+    	// Step 2: call the appropriate auton mode
+    	// ===============================
+    	
+    	switch(inputDataValues.AutonModeRequested)
+    	{
+    	     case DO_NOTHING:
+    	     	 autonomousUndefined();
+    	     	 break;
+    	     
+    	     case TEST:
+    	    	 autonomousTest();
+    	    	 break;
+    	}
+    	
+    	// ===============================
+    	// Step 3: Set outputs
+    	// ===============================
+    	
+    	// only set the motor values in a real auton mode
+    	if (inputDataValues.AutonModeRequested != RobotData.AutonMode.DO_NOTHING)
+    	{
+    		_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
+        	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
+        	_turret.set(_robotLiveData.OutputDataValues.TurretTargetPositionCmd);
+        	
+        	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
+        	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
+        	
+        	_pumaFrontSolenoid.set(_robotLiveData.OutputDataValues.PumaFrontSolenoidPosition);
+        	_pumaBackSolenoid.set(_robotLiveData.OutputDataValues.PumaBackSolenoidPosition);
+        	_shifterSolenoid.set(_robotLiveData.OutputDataValues.ShifterSolenoidPosition);
+    	}
+    	
+    	// ==============================
+    	// Step 4: Update the Dashboard
+    	// ==============================
+    	UpdateDashboard(_robotLiveData);
+    	
+    	// set last scan DT
+    	_robotLiveData.WorkingDataValues.LastScanDT = new Date();
+    	
+    	// optionally send messages to the driver station
+    	if ((_robotLiveData.OutputDataValues.DriversStationMsg != null) && (_robotLiveData.OutputDataValues.DriversStationMsg.length() > 0))
+    	{
+    		DriverStation.reportError(_robotLiveData.OutputDataValues.DriversStationMsg, false);
+    	}
+    	
+    	// =============================
+    	// 5.0 Optional Data Logging
+    	// =============================
+    	
+    	if(workingDataValues.IsLoggingEnabled == true)
+    	{
+    		_dataLogger.WriteData(_robotLiveData);
+    	}
+    	
     }
     
+    public void autonomousUndefined()
+    {
+    }
+    
+    public void autonomousDoNothing()
+    {
+    }
+    
+    public void autonomousTest()
+    {
+    }
     /*
      *****************************************************************************************************
      * This function is called 1x each time the robot enters tele-operated mode
@@ -327,7 +439,7 @@ public class Robot extends IterativeRobot
     	
     	// set our desired default state for the test solenoids
     	_robotLiveData.OutputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION;
-    	_robotLiveData.OutputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION;
+    	_robotLiveData.OutputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_CLOSED_POSITION;
     	_robotLiveData.OutputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
     	
     	// set inital state of "pressed last scan" working values to be false
@@ -388,33 +500,33 @@ public class Robot extends IterativeRobot
     	// set the drive speed scale factor (currently we support 0.7 & 1.0)
     	// 	notes: 	this is a toggle,  the previous value is retained between scans
     	//			need to de-bounce key press since the scan rate is so fast 
-    	if((inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed))
+    	if(inputDataValues.IsScaleDriveSpeedUpBtnPressed 
+    			&& inputDataValues.IsScaleDriveSpeedDownBtnPressed)
     	{
     		// Don't change scale factor if both buttons are pressed
     	}
-    	else if((inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
-    			&& (!inputDataValues.IsScaleDriveSpeedDownBtnPressed))
+    	else if(inputDataValues.IsScaleDriveSpeedUpBtnPressed 
+    			&& !inputDataValues.IsScaleDriveSpeedDownBtnPressed)
     	{
     		// scale up
     		workingDataValues.DriveSpeedScalingFactor = 1;
     	}
-    	else if((!inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
-    			&& (inputDataValues.IsScaleDriveSpeedDownBtnPressed))
+    	else if(!inputDataValues.IsScaleDriveSpeedUpBtnPressed
+    			&& inputDataValues.IsScaleDriveSpeedDownBtnPressed)
     	{
     		// scale down
     		workingDataValues.DriveSpeedScalingFactor = 0.7;
     	}
-    	else if((!inputDataValues.IsScaleDriveSpeedUpBtnPressed) 
-    			&& (!inputDataValues.IsScaleDriveSpeedDownBtnPressed))
+    	else if(!inputDataValues.IsScaleDriveSpeedUpBtnPressed 
+    			&& !inputDataValues.IsScaleDriveSpeedDownBtnPressed)
     	{
     		// if neither button is pressed do nothing
     	}
     	
     	outputDataValues.ArcadeDriveThrottleAdjCmd 
-    			= inputDataValues.ArcadeDriveThrottleRawCmd * 1.0 * workingDataValues.DriveSpeedScalingFactor;  	
+    			= inputDataValues.ArcadeDriveThrottleRawCmd * -1.0 * workingDataValues.DriveSpeedScalingFactor;  	
     	outputDataValues.ArcadeDriveTurnAdjCmd 
-    			= inputDataValues.ArcadeDriveTurnRawCmd * 1.0 * workingDataValues.DriveSpeedScalingFactor;
+    			= inputDataValues.ArcadeDriveTurnRawCmd *  -1.0 *workingDataValues.DriveSpeedScalingFactor;
 
     	// ********** Infeed **********
     	
@@ -455,6 +567,7 @@ public class Robot extends IterativeRobot
     	// ********** Turret **********
     	
     	// Check if turret encoder value is near target
+    	
     	if ((workingDataValues.TurretEncoderDegreesCount - 90) >= 5)
     	{
     		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
@@ -496,7 +609,7 @@ public class Robot extends IterativeRobot
     	{
     	}
     	
-    	outputDataValues.TurretTargetPositionCmd = (workingDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT);
+    	outputDataValues.TurretTargetPositionCmd = workingDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -504,7 +617,7 @@ public class Robot extends IterativeRobot
     	// ======= Step 3: Set Outputs =========
     	// =====================================
 
-    	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, true);
+    	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
     	_turret.set(outputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(outputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(outputDataValues.InfeedTiltAdjMtrVelocityCmd);
@@ -548,6 +661,7 @@ public class Robot extends IterativeRobot
     			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
     		}
     	}
+    	
     	
     	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
     	_pumaBackSolenoid.set(outputDataValues.PumaBackSolenoidPosition);
@@ -706,7 +820,10 @@ public class Robot extends IterativeRobot
     	InputData inputDataValues = robotDataValues.InputDataValues;
     	WorkingData workingDataValues = robotDataValues.WorkingDataValues;
     	OutputData outputDataValues = robotDataValues.OutputDataValues;
-    			
+    	
+    	// Smart Dashboard Input
+    	//SmartDashboard.putString("SD:AutonMode", inputDataValues.AutonModeRequested.toString());
+    	
 		// Drive Motors
 		SmartDashboard.putNumber("Drive.Btn:SpeedScaleFactor", workingDataValues.DriveSpeedScalingFactor);
 		
@@ -734,19 +851,22 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("Drive.Right:EncCurSpeedCPS", workingDataValues.RightDriveEncoderCurrentCPS);
 		SmartDashboard.putNumber("Drive.Right:WheelCurSpeedIPS", workingDataValues.RightDriveWheelsCurrentSpeedIPS);
 		
+		// Turret
 		SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
 		SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
 		SmartDashboard.putBoolean("Turret.IsTurretTargetBtnPressed", inputDataValues.IsTurretTargetBtnPressed);
 		SmartDashboard.putBoolean("Turret.IsTurretEncoderDegreesTargetYet", workingDataValues.IsTurretEncoderDegreesTargetYet);
 		SmartDashboard.putNumber("Turret.TurnDegreesCmd", workingDataValues.TurretTurnDegreesCmd);
-		
+		// Infeed
 		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
-		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);
-		SmartDashboard.putBoolean("IsPumaBackToggleBtnPressed", inputDataValues.IsPumaBackToggleBtnPressed);
 		SmartDashboard.putNumber("InfeedAdjVelocityCmd", outputDataValues.InfeedAdjVelocityCmd);
 		SmartDashboard.putNumber("InfeedTiltAdjMtrVelocityCmd", outputDataValues.InfeedTiltAdjMtrVelocityCmd);
+		
+		// Puma Drive
 		SmartDashboard.putBoolean("IsInfeedAcquireBtnPressed", inputDataValues.IsInfeedAcquireBtnPressed);
 		SmartDashboard.putBoolean("IsInfeedReleaseBtnPressed", inputDataValues.IsInfeedReleaseBtnPressed);
+		SmartDashboard.putBoolean("IsPumaFrontToggleBtnPressed", inputDataValues.IsPumaFrontToggleBtnPressed);
+		SmartDashboard.putBoolean("IsPumaBackToggleBtnPressed", inputDataValues.IsPumaBackToggleBtnPressed);
 		
 
 		// Logging

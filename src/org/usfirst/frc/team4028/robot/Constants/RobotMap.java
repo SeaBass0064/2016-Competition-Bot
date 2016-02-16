@@ -50,8 +50,8 @@ public class RobotMap
 	// define constants for air cylinder states / positions
 	//	(map the physical air cylinder position to logical state)
 	// ======================================
-	public static final Value PUMA_FRONT_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kReverse;
-	public static final Value PUMA_FRONT_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kForward;		
+	public static final Value PUMA_FRONT_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value PUMA_FRONT_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;		
 	public static final Value PUMA_BACK_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value PUMA_BACK_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value SHIFTER_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
