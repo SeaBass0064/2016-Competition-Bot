@@ -82,6 +82,8 @@ public class Robot extends IterativeRobot
 	private CANTalon _rightDriveSlaveMtr;
 	private CANTalon _rightDriveSlave2Mtr;
 	private CANTalon _turret;
+	private CANTalon _leftShooter;
+	private CANTalon _rightShooter;
 	
 	
 	// CIM DC Motors on Victor SP Speed Controllers (via PWM Ports)
@@ -139,23 +141,23 @@ public class Robot extends IterativeRobot
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
+    	
+    	
     	_leftDriveMasterMtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveMasterMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
     	_leftDriveMasterMtr.enableBrakeMode(false);							// default to brake mode DISABLED
-    	_leftDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
+    	//_leftDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_leftDriveMasterMtr.reverseSensor(false);  							// do not invert encoder feedback
-    	
+    
     	_leftDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_MTR);	
     	_leftDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_MTR);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_MTR);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
-    	
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -163,7 +165,7 @@ public class Robot extends IterativeRobot
     	_rightDriveMasterMtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveMasterMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle.
     	_rightDriveMasterMtr.enableBrakeMode(false);						// default to brake mode DISABLED
-    	_rightDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
+    	//_rightDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_rightDriveMasterMtr.reverseSensor(true);  							// invert encoder feedback
     	
     	_rightDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_MTR);	
@@ -171,16 +173,15 @@ public class Robot extends IterativeRobot
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	
-    	
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_MTR);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
     	
+    	// ===================
+    	// Turret
+    	// ===================
     	
-    	// ===================
-    	// Additional Talon Motors
-    	// ===================
     	
     	_turret = new CANTalon(RobotMap.CAN_ADDR_TURRET);
     	_turret.setFeedbackDevice(FeedbackDevice.QuadEncoder);
@@ -189,6 +190,22 @@ public class Robot extends IterativeRobot
     	_turret.enableBrakeMode(false);
     	_turret.setPID(RobotMap.TURRET_KP, RobotMap.TURRET_KI, RobotMap.TURRET_KD, RobotMap.TURRET_KF, RobotMap.TURRET_IZONE, RobotMap.TURRET_RAMPRATE, RobotMap.TURRET_PROFILE);
     	
+    	
+    	// ===================
+    	// Shooter
+    	// ===================
+    	/*
+    	_leftShooter = new CANTalon(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_leftShooter.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    	//_leftShooter.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+    	//_leftShooter.reverseSensor(false);
+    	_leftShooter.enableBrakeMode(false);
+    	
+    	_rightShooter = new CANTalon(RobotMap.CAN_ADDR_RIGHT_SHOOTER);
+    	_rightShooter.changeControlMode(CANTalon.TalonControlMode.Follower);
+    	_rightShooter.set(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_rightShooter.enableBrakeMode(false);
+    	*/
     	// ===================
     	// Additional Test Motors, function currently undefined
     	// ===================
@@ -222,8 +239,9 @@ public class Robot extends IterativeRobot
     	_turretControl= new PIDController(1.0, 0.0, 0.0, _turretEncoder, _turret);
     	*/
     	
+    	//===================
     	// Camera
-    	//===
+    	//===================
         server = CameraServer.getInstance();
         server.setQuality(25);
         //the camera name (ex "cam0") can be found through the roborio web interface
@@ -411,13 +429,18 @@ public class Robot extends IterativeRobot
     	_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.0;
+    	//_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd = 0.0;
+    	
     	_robotLiveData.OutputDataValues.TurretTargetPositionCmd = 0.0;
     	
+    	// set motors to output velocity command 
     	_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
     	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
-    	_turret.set(_robotLiveData.OutputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
+    	//_leftShooter.set(_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd);
+    	
+    	_turret.set(_robotLiveData.OutputDataValues.TurretTargetPositionCmd);
     	
     	// init the drive speed scaling factor to full speed
     	_robotLiveData.WorkingDataValues.DriveSpeedScalingFactor = 1.0;
@@ -524,31 +547,50 @@ public class Robot extends IterativeRobot
     	}
     	
     	outputDataValues.ArcadeDriveThrottleAdjCmd 
-    			= inputDataValues.ArcadeDriveThrottleRawCmd * -1.0 * workingDataValues.DriveSpeedScalingFactor;  	
+    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor;  	
     	outputDataValues.ArcadeDriveTurnAdjCmd 
-    			= inputDataValues.ArcadeDriveTurnRawCmd *  -1.0 *workingDataValues.DriveSpeedScalingFactor;
+    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor;
 
     	// ********** Infeed **********
-    	
-    	if (inputDataValues.InfeedRawTiltCmd < 0.11)
+    	// Tilt the infeed up and down
+    	/*
+    	if (inputDataValues.InfeedRawTiltCmd < 0.09)
     	{
     		if (inputDataValues.InfeedRawTiltCmd < 0)
     		{
-    			outputDataValues.InfeedTiltAdjMtrVelocityCmd = inputDataValues.InfeedRawTiltCmd;
+    			outputDataValues.InfeedTiltAdjMtrVelocityCmd = (-0.08 * inputDataValues.InfeedRawTiltCmd) + 0.09;   // Infeed tilt down
     		}
     		else
     		{
+    			outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.09;
     		}
     	}
-    	else if (inputDataValues.InfeedRawTiltCmd >= 0.11)
+    	else if (inputDataValues.InfeedRawTiltCmd >= 0.09)
     	{
-    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = (0.89 * inputDataValues.InfeedRawTiltCmd) + 0.11;
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = (-0.05 * inputDataValues.InfeedRawTiltCmd) + 0.09;       // Infeed tilt up
     	}
     	else
     	{
-    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.11;
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.09;
+    	}
+    	*/
+    	
+    
+    	if ((inputDataValues.InfeedTiltUpCmd > 0.1) && (inputDataValues.InfeedTiltDownCmd < 0.1))
+    	{
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = (0.08 * inputDataValues.InfeedTiltUpCmd) + 0.09;
+    	}
+    	else if ((inputDataValues.InfeedTiltUpCmd < 0.1) && (inputDataValues.InfeedTiltDownCmd > 0.1))
+    	{
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = (-0.05 * inputDataValues.InfeedTiltDownCmd) + 0.09;
+    	}
+    	else 
+    	{
+    		outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.09;
     	}
     	
+    	
+    	// Run infeed motors based on command from acquire and release buttons
     	if(inputDataValues.IsInfeedAcquireBtnPressed && inputDataValues.IsInfeedReleaseBtnPressed)
     	{
     	}
@@ -564,15 +606,16 @@ public class Robot extends IterativeRobot
     	{
     		outputDataValues.InfeedAdjVelocityCmd = 0.0;
     	}
+    	
     	// ********** Turret **********
     	
     	// Check if turret encoder value is near target
     	
-    	if ((workingDataValues.TurretEncoderDegreesCount - 90) >= 5)
+    	if ((workingDataValues.TurretEncoderDegreesCount - 180) >= 5)
     	{
     		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
     	}
-    	else if ((workingDataValues.TurretEncoderDegreesCount - 90) <= 5)
+    	else if ((workingDataValues.TurretEncoderDegreesCount - 180) <= 5)
     	{
     		workingDataValues.IsTurretEncoderDegreesTargetYet = false;
     	}
@@ -610,6 +653,9 @@ public class Robot extends IterativeRobot
     	}
     	
     	outputDataValues.TurretTargetPositionCmd = workingDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
+    	// Shooter
+    	
+    	//outputDataValues.ShooterAdjVelocityCmd = inputDataValues.ShooterRawVelocityCmd;
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
@@ -621,6 +667,7 @@ public class Robot extends IterativeRobot
     	_turret.set(outputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(outputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(outputDataValues.InfeedTiltAdjMtrVelocityCmd);
+    	//_leftShooter.set(outputDataValues.ShooterAdjVelocityCmd);
     	// ==========================
     	// 3.1 Handle Puma Front, Back and Shifter Solenoids
     	//		Solenoids work like a toggle, the current value is retained until it is changed
@@ -717,26 +764,29 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsScaleDriveSpeedDownBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN);
     	inputDataValues.IsPumaFrontToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN);
     	inputDataValues.IsPumaBackToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN);
-    	inputDataValues.IsShifterToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHOOTER_TOGGLE_BTN);
+    	inputDataValues.IsShifterToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHIFTER_TOGGLE_BTN);
     	
-    	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
-    	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
+    	inputDataValues.IsInfeedAcquireBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_ACQUIRE_BTN);
+    	inputDataValues.IsInfeedReleaseBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_RELEASE_BTN);
+    	
     	inputDataValues.IsTurretZeroFunctionBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_ZERO_BTN);
     	inputDataValues.IsTurretTargetBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_TARGET_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
-    	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_BTN);
     	
-    	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
+    	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
+    	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
+    	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_BUMPER);
+    	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER);
  	
     	// ==========================
     	// 1.3 get values from axis position Encoders
     	// ==========================
-    	inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
-    	inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
-    	inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
+    	//inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
+    	//inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
+    	//inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
     	
     	// ==========================
     	// 1.4 get values from navX
@@ -861,6 +911,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		SmartDashboard.putNumber("InfeedAdjVelocityCmd", outputDataValues.InfeedAdjVelocityCmd);
 		SmartDashboard.putNumber("InfeedTiltAdjMtrVelocityCmd", outputDataValues.InfeedTiltAdjMtrVelocityCmd);
+		
 		
 		// Puma Drive
 		SmartDashboard.putBoolean("IsInfeedAcquireBtnPressed", inputDataValues.IsInfeedAcquireBtnPressed);

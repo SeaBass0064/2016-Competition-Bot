@@ -34,4 +34,13 @@ public class LogitechF310
 	public static final int RIGHT_X_AXIS = 4;
 	public static final int RIGHT_Y_AXIS = 5;
 	
+	// Constants for POV (dpad)
+	public static final int POV_1 = 1;
+	public static final int POV_2 = 2;
+	public static final int POV_3 = 3;
+	public static final int POV_4 = 4;
+	public static final int POV_5 = 5;
+	public static final int POV_6 = 6;
+	public static final int POV_7 = 7;
+	public static final int POV_8 = 8;
 }

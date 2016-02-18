@@ -19,7 +19,7 @@ public class RobotMap
 	// ======================================
 	
 	// define constant for PCM (Pneumatic Control Module)
-	public static final int CAN_ADDR_PCM = 4;				
+	public static final int CAN_ADDR_PCM = 0;				
 	
 	// define constants for Talon SRX CAN Bus Addresses
 	public static final int CAN_ADDR_LEFT_DRIVE_MASTER_MTR = 14;
@@ -29,22 +29,24 @@ public class RobotMap
 	public static final int CAN_ADDR_RIGHT_DRIVE_SLAVE_MTR = 13;
 	public static final int CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR = 10;
 	public static final int CAN_ADDR_TURRET = 16;
+	public static final int CAN_ADDR_LEFT_SHOOTER = 17;
+	public static final int CAN_ADDR_RIGHT_SHOOTER = 18;
 	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
-	public static final int INFEED_ACQUIRE_MTR = 1;
-	public static final int INFEED_TILT_MTR = 0;
+	public static final int INFEED_ACQUIRE_MTR = 8;
+	public static final int INFEED_TILT_MTR = 9;
 	
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 4;
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 5;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 0;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 1;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 2;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 3;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 0;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 1;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 2;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 3;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 6;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 7;
 	
 	// ======================================
 	// define constants for air cylinder states / positions
@@ -65,8 +67,16 @@ public class RobotMap
 	public static final double TURRET_KD = 0.0;   // Derivative
 	public static final double TURRET_KF = 0.0;   // Feed Forward
 	public static final int TURRET_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
-	public static final double TURRET_RAMPRATE = 36; // Volts/Second
+	public static final double TURRET_RAMPRATE = 64; // Volts/Second
 	public static final int TURRET_PROFILE = 0;
+	
+	public static final double SHOOTER_KP = 0.0;
+	public static final double SHOOTER_KI = 0.0;
+	public static final double SHOOTER_KD = 0.0;
+	public static final double SHOOTER_KF = 0.0;
+	public static final int SHOOTER_IZONE = 0;
+	public static final double SHOOTER_RAMPRATE = 64;
+	public static final int SHOOTER_PROFILE = 0;
 		
 	// ======================================
 	// define constants for Encoder Feedback
@@ -102,18 +112,22 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
 	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int DRIVER_GAMEPAD_SHOOTER_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
 	
-	public static final int DRIVER_GAMEPAD_SHOOTER_BTN = LogitechF310.LEFT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int DRIVER_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
+	
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_BUMPER = LogitechF310.RIGHT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int OPERATOR_GAMEPAD_TURRET_TARGET_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
-	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
+	//public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
+	//public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	
-	public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
-	public static final int OPERATOR_GAMEPAD_TURRET_AXIS = LogitechF310.LEFT_Y_AXIS;
+	//public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
 	// ======================================
 	// define constants for logging
 	// ======================================
