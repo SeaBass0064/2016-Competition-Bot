@@ -32,13 +32,13 @@ public class RobotMap
 	public static final int CAN_ADDR_LEFT_SHOOTER = 17;
 	public static final int CAN_ADDR_RIGHT_SHOOTER = 18;
 	public static final int CAN_ADDR_SHOOTER_SLIDER = 19;
+	public static final int CAN_ADDR_INFEED_TILT_MTR = 20;
 	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
-	public static final int SHOOTER_KICKER = 7;
 	public static final int INFEED_ACQUIRE_MTR = 8;
-	public static final int INFEED_TILT_MTR = 9;
+	public static final int SHOOTER_KICKER = 9;
 	
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
@@ -79,6 +79,14 @@ public class RobotMap
 	public static final int SHOOTER_IZONE = 0;
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 0;
+	
+	public static final double INFEED_TILT_KP = 0.0;
+	public static final double INFEED_TILT_KI = 0.0;
+	public static final double INFEED_TILT_KD = 0.0;
+	public static final double INFEED_TILT_KF = 0.0;
+	public static final int INFEED_TILT_IZONE = 0;
+	public static final double INFEED_TILT_RAMPRATE = 64;
+	public static final int INFEED_TILT_PROFILE = 0;
 		
 	// ======================================
 	// define constants for Encoder Feedback
@@ -119,17 +127,14 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	
-	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_BUMPER = LogitechF310.RIGHT_TRIGGER;
-	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER = LogitechF310.LEFT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER = LogitechF310.RIGHT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_TURRET_TARGET_BTN = LogitechF310.RED_BUTTON_B;
-	//public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
-	//public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_KICKER_BTN = LogitechF310.GREEN_BUTTON_A;
 	
-	//public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SLIDER_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	// ======================================

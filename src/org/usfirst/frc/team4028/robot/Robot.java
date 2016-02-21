@@ -87,10 +87,10 @@ public class Robot extends IterativeRobot
 	private CANTalon _masterShooter;
 	private CANTalon _slaveShooter;
 	private CANTalon _slider;
+	private CANTalon _infeedTiltMtr;
 	
 	// CIM DC Motors on Victor SP Speed Controllers (via PWM Ports)
 	private VictorSP _infeedAcquireMtr;
-	private VictorSP _infeedTiltMtr;
 	private VictorSP _kicker;
 	
 	// Arcade Drive with four drive motors
@@ -214,14 +214,24 @@ public class Robot extends IterativeRobot
     	_slider = new CANTalon(RobotMap.CAN_ADDR_SHOOTER_SLIDER);
     	_slider.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     	_slider.enableBrakeMode(false);
-    	// ===================
-    	// Additional Test Motors, function currently undefined
-    	// ===================
-    	
-    	_infeedAcquireMtr = new VictorSP(RobotMap.INFEED_ACQUIRE_MTR);
-    	_infeedTiltMtr = new VictorSP(RobotMap.INFEED_TILT_MTR);
     	
     	_kicker = new VictorSP(RobotMap.SHOOTER_KICKER);
+    	
+    	// ===================
+    	// Infeed
+    	// ===================
+    	
+    	_infeedTiltMtr = new CANTalon(RobotMap.CAN_ADDR_INFEED_TILT_MTR);
+    	_infeedTiltMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    	_infeedTiltMtr.enableBrakeMode(true);
+    	/* Code for PID loop, position control
+    	_infeedTiltMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+    	_infeedTiltMtr.reverseSensor(false);
+    	_infeedTiltMtr.setPID(RobotMap.INFEED_TILT_KP, RobotMap.INFEED_TILT_KI, RobotMap.INFEED_TILT_KD, RobotMap.INFEED_TILT_KF, RobotMap.INFEED_TILT_IZONE, RobotMap.INFEED_TILT_RAMPRATE, RobotMap.INFEED_TILT_PROFILE);
+    	_infeedTiltMtr.changeControlMode(CANTalon.TalonControlMode.Position);
+    	*/
+    	
+    	_infeedAcquireMtr = new VictorSP(RobotMap.INFEED_ACQUIRE_MTR);
     	
     	// ===================
     	// Gamepads
@@ -822,8 +832,8 @@ public class Robot extends IterativeRobot
     	
     	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
     	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
-    	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_BUMPER);
-    	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER);
+    	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
+    	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER);
     	inputDataValues.SliderRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SLIDER_AXIS);
  	
     	// ==========================
