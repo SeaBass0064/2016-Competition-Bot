@@ -31,10 +31,12 @@ public class RobotMap
 	public static final int CAN_ADDR_TURRET = 16;
 	public static final int CAN_ADDR_LEFT_SHOOTER = 17;
 	public static final int CAN_ADDR_RIGHT_SHOOTER = 18;
+	public static final int CAN_ADDR_SHOOTER_SLIDER = 19;
 	
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
+	public static final int SHOOTER_KICKER = 7;
 	public static final int INFEED_ACQUIRE_MTR = 8;
 	public static final int INFEED_TILT_MTR = 9;
 	
@@ -121,13 +123,15 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
-	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_TURRET_TARGET_BTN = LogitechF310.RED_BUTTON_B;
 	//public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
 	//public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_KICKER_BTN = LogitechF310.GREEN_BUTTON_A;
 	
 	//public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_SLIDER_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	// ======================================
 	// define constants for logging
 	// ======================================

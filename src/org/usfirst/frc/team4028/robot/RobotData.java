@@ -92,6 +92,7 @@ public class RobotData
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsTurretZeroFunctionBtnPressed;
 		public boolean IsTurretTargetBtnPressed;
+		public boolean IsKickerBtnPressed;
  	
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;
@@ -99,10 +100,12 @@ public class RobotData
 		public double InfeedRawTiltCmd;
 		public double InfeedTiltUpCmd;
 		public double InfeedTiltDownCmd;
+		public double SliderRawVelocityCmd;
     	    	
 		public double LeftDriveEncoderCurrentCount;	
 		public double RightDriveEncoderCurrentCount;
 		public double TurretEncoderCurrentCount;
+		public double ShooterEncoderCurrentCount;
 		
 		AutonMode AutonModeRequested;
 		
@@ -137,15 +140,18 @@ public class RobotData
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsTurretZeroFunctionBtnPressed" + "\t");
 			sb.append("InputData:IsTurretTargetBtnPressed" + "\t");
+			sb.append("InputData:IsKickerBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:ShooterRawVelocityCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
 			sb.append("InputData:InfeedTiltUpCmd" + "\t");
 			sb.append("InputData:InfeedTiltDownCmd" + "\t");
+			sb.append("InputData:SliderRawVelocityCmd" +"\t");
 			sb.append("InputData:LeftDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:RightDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:TurretEncoderCurrentCount" + "\t");
+			sb.append("InputData:ShooterEncoderCurrentCount" + "\t");
 			sb.append("InputData:AutonModeRequested" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
@@ -179,15 +185,18 @@ public class RobotData
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsTurretZeroFunctionBtnPressed + "\t");
 			sb.append(IsTurretTargetBtnPressed + "\t");
+			sb.append(IsKickerBtnPressed + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
 			sb.append(ArcadeDriveTurnRawCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(InfeedRawTiltCmd + "\t");
 			sb.append(InfeedTiltUpCmd + "\t");
 			sb.append(InfeedTiltDownCmd + "\t");
+			sb.append(SliderRawVelocityCmd + "\t");
 			sb.append(LeftDriveEncoderCurrentCount + "\t");
 			sb.append(RightDriveEncoderCurrentCount + "\t");
 			sb.append(TurretEncoderCurrentCount + "\t");
+			sb.append(ShooterEncoderCurrentCount + "\t");
 			sb.append(AutonModeRequested + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
@@ -250,6 +259,16 @@ public class RobotData
     	public double TurretEncoderDegreesCount;
     	public double TurretTargetDegreesCount;
     	public double TurretTurnDegreesCmd;
+    	
+    	public double ShooterEncoderInitialCount;
+    	public double ShooterEncoderLastCount;
+    	public double ShooterEncoderLastDeltaCount;
+    	public double ShooterEncoderTotalDeltaCount;
+    	
+    	public double ShooterMtrCurrentRPM;
+    	public double ShooterEncoderCurrentCPS;
+    	public double ShooterDriveShaftCurrentRPM;
+    	
 		// build a TSV for the header
 		public String BuildTSVHeader()
 		{
@@ -288,7 +307,16 @@ public class RobotData
 			sb.append("WorkingData:TurretEncoderTotalDeltaCount" + "\t");
 			sb.append("WorkingData:TurretEncoderDegreesCount" + "\t");
 			sb.append("WorkingData:TurretTargetDegreesCount" + "\t");
-			sb.append("InputData:IsTurretTargetBtnPressed");
+			sb.append("WorkingData:TurretTurnDegreesCmd" + "\t");
+			
+			sb.append("WorkingData:ShooterEncoderInitialCount" + "\t");
+			sb.append("WorkingData:ShooterEncoderLastCount" + "\t");
+			sb.append("WorkingData:ShooterEncoderLastDeltaCount" + "\t");
+			sb.append("WorkingData:ShooterEncoderTotalDeltaCount" + "\t");
+			
+			sb.append("WorkingData:ShooterMtrCurrentRPM" + "\t");
+			sb.append("WorkingData:ShooterEncoderCurrentCPS" + "\t");
+			sb.append("WorkingData:ShooterDriveShaftCurrentRM");
 					
 			return sb.toString();
 		}
@@ -346,6 +374,8 @@ public class RobotData
 		public double InfeedAdjVelocityCmd;
 		public double InfeedTiltAdjMtrVelocityCmd;
 		public double ShooterAdjVelocityCmd;
+		public double SliderAdjVelocityCmd;
+		public double KickerAdjVelocityCmd;
 		
 		public Value PumaFrontSolenoidPosition;
 		public Value PumaBackSolenoidPosition;
@@ -363,7 +393,9 @@ public class RobotData
 			sb.append("OutputData:TurretTargetPositionCmd" + "\t");
 			sb.append("OutputData:InfeedAdjVelocityCmd" + "\t");
 			sb.append("OutputData:InfeedTiltAdjMtrVelocityCmd" + "\t");
-			sb.append("OutputData:ShooterAdjVelocityCmd");
+			sb.append("OutputData:ShooterAdjVelocityCmd" + "\t");
+			sb.append("OutputData:SliderAdjVelocityCmd" + "\t");
+			sb.append("OutputData:KickerAdjVelocityCmd"+ "\t");
 			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
 			sb.append("OutputData:PumaBackSolenoidPosition" + "\t");
 			sb.append("OutputData:ShifterSolenoidPosition" + "\t");
@@ -384,6 +416,8 @@ public class RobotData
 			sb.append(InfeedAdjVelocityCmd + "\t");
 			sb.append(InfeedTiltAdjMtrVelocityCmd + "\t");
 			sb.append(ShooterAdjVelocityCmd + "\t");
+			sb.append(SliderAdjVelocityCmd + "\t");
+			sb.append(KickerAdjVelocityCmd + "\t");
 			
 			String PumaFrontSolenoidPositionDesc = "";
 			if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_OPEN_POSITION)

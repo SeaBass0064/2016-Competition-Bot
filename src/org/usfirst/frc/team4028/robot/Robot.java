@@ -45,7 +45,9 @@ import com.kauailabs.navx.frc.AHRS;
 
 /**
  * Date			Rev		Author						Comments
- * -----------	------	-------------------------	---------------------------------- 
+ * -----------	------	-------------------------	----------------------------------
+ * 18.Feb.2-16 	0.81	Sebastian Rodriguez			Updated controller to run infeed and drive off of one motor, added all shooter motors
+ * 15.Feb.2016	0.8		Sebastian Rodriguez			Added more untested auton base code, refined pid control for turret
  * 8.Feb.2016	0.7		Sebastian Rodriguez			PID control for the turret, untested auton mode
  * 6.Feb.2016	0.6		Sebastian Rodriguez			Added Infeed code
  * 4.Feb.2016	0.5		Sebastian Rodriguez			Added Turret and turret encoder
@@ -82,13 +84,14 @@ public class Robot extends IterativeRobot
 	private CANTalon _rightDriveSlaveMtr;
 	private CANTalon _rightDriveSlave2Mtr;
 	private CANTalon _turret;
-	private CANTalon _leftShooter;
-	private CANTalon _rightShooter;
-	
+	private CANTalon _masterShooter;
+	private CANTalon _slaveShooter;
+	private CANTalon _slider;
 	
 	// CIM DC Motors on Victor SP Speed Controllers (via PWM Ports)
 	private VictorSP _infeedAcquireMtr;
 	private VictorSP _infeedTiltMtr;
+	private VictorSP _kicker;
 	
 	// Arcade Drive with four drive motors
 	private RobotDrive _robotDrive;
@@ -194,23 +197,32 @@ public class Robot extends IterativeRobot
     	// ===================
     	// Shooter
     	// ===================
-    	/*
-    	_leftShooter = new CANTalon(RobotMap.CAN_ADDR_LEFT_SHOOTER);
-    	_leftShooter.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    	//_leftShooter.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-    	//_leftShooter.reverseSensor(false);
-    	_leftShooter.enableBrakeMode(false);
     	
-    	_rightShooter = new CANTalon(RobotMap.CAN_ADDR_RIGHT_SHOOTER);
-    	_rightShooter.changeControlMode(CANTalon.TalonControlMode.Follower);
-    	_rightShooter.set(RobotMap.CAN_ADDR_LEFT_SHOOTER);
-    	_rightShooter.enableBrakeMode(false);
-    	*/
+    	_masterShooter = new CANTalon(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_masterShooter.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    	//_masterShooter.changeControlMode(CANTalon.TalonControlMode.Velocity);  // Code for conversion to velocity control with PID loop
+    	//_masterShooter.setPID(RobotMap.SHOOTER_KP, RobotMap.SHOOTER_KI, RobotMap.SHOOTER_KD, RobotMap.SHOOTER_KF, RobotMap.SHOOTER_IZONE, RobotMap.SHOOTER_RAMPRATE, RobotMap.SHOOTER_PROFILE);
+    	_masterShooter.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+    	_masterShooter.reverseSensor(false);
+    	_masterShooter.enableBrakeMode(false);
+    	
+    	_slaveShooter = new CANTalon(RobotMap.CAN_ADDR_RIGHT_SHOOTER);
+    	_slaveShooter.changeControlMode(CANTalon.TalonControlMode.Follower);
+    	_slaveShooter.set(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_slaveShooter.enableBrakeMode(false);
+    	
+    	_slider = new CANTalon(RobotMap.CAN_ADDR_SHOOTER_SLIDER);
+    	_slider.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    	_slider.enableBrakeMode(false);
     	// ===================
     	// Additional Test Motors, function currently undefined
     	// ===================
+    	
     	_infeedAcquireMtr = new VictorSP(RobotMap.INFEED_ACQUIRE_MTR);
     	_infeedTiltMtr = new VictorSP(RobotMap.INFEED_TILT_MTR);
+    	
+    	_kicker = new VictorSP(RobotMap.SHOOTER_KICKER);
+    	
     	// ===================
     	// Gamepads
     	// ===================
@@ -233,6 +245,7 @@ public class Robot extends IterativeRobot
     	//===================
     	// PIDController
     	//===================
+    	// Test code for PID loop that runs on the Roborio, haven't figured out how to get PIDSourceType to provide an input values, not sure if it will be necessary though since we can run PID loops on the talons
     	/*
     	_turretEncoder = new Encoder(0,0,1);
     	_turretEncoder.setPIDSourceType(PIDSourceType.kDisplacement);
@@ -242,10 +255,12 @@ public class Robot extends IterativeRobot
     	//===================
     	// Camera
     	//===================
+    	
         server = CameraServer.getInstance();
         server.setQuality(25);
         //the camera name (ex "cam0") can be found through the roborio web interface
         server.startAutomaticCapture("cam0");
+        
         
         // Smart DashBoard User Input
         autonModeChooser = new SendableChooser();
@@ -425,20 +440,26 @@ public class Robot extends IterativeRobot
     	_robotLiveData = new RobotData();
     	
     	// set motors to 0 position/velocity command 
+    	
     	_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd = 0.0;
     	_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.0;
-    	//_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd = 0.0;
+    	_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd = 0.0;
+    	_robotLiveData.OutputDataValues.SliderAdjVelocityCmd = 0.0;
+    	_robotLiveData.OutputDataValues.KickerAdjVelocityCmd = 0.0;
     	
     	_robotLiveData.OutputDataValues.TurretTargetPositionCmd = 0.0;
     	
     	// set motors to output velocity command 
+    	
     	_leftDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveThrottleAdjCmd);
     	_rightDriveMasterMtr.set(_robotLiveData.OutputDataValues.ArcadeDriveTurnAdjCmd);
     	_infeedAcquireMtr.set(_robotLiveData.OutputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(_robotLiveData.OutputDataValues.InfeedTiltAdjMtrVelocityCmd);
-    	//_leftShooter.set(_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd);
+    	_masterShooter.set(_robotLiveData.OutputDataValues.ShooterAdjVelocityCmd);
+    	_slider.set(_robotLiveData.OutputDataValues.SliderAdjVelocityCmd);
+    	_kicker.set(_robotLiveData.OutputDataValues.KickerAdjVelocityCmd);
     	
     	_turret.set(_robotLiveData.OutputDataValues.TurretTargetPositionCmd);
     	
@@ -446,15 +467,18 @@ public class Robot extends IterativeRobot
     	_robotLiveData.WorkingDataValues.DriveSpeedScalingFactor = 1.0;
 
     	// initialize axis (Encoder) positions
+    	
     	_leftDriveMasterMtr.setPosition(0);
     	_rightDriveMasterMtr.setPosition(0);
     	_turret.setPosition(0);
     	
+    	_masterShooter.setPosition(0);
     	// get initial values from Encoders
+    	
     	_robotLiveData.WorkingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
     	_robotLiveData.WorkingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
     	_robotLiveData.WorkingDataValues.TurretEncoderInitialCount = _turret.getPosition();
-    	
+    	_robotLiveData.WorkingDataValues.ShooterEncoderInitialCount = _masterShooter.getPosition();
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
     	// ===================
@@ -553,7 +577,7 @@ public class Robot extends IterativeRobot
 
     	// ********** Infeed **********
     	// Tilt the infeed up and down
-    	/*
+    	
     	if (inputDataValues.InfeedRawTiltCmd < 0.09)
     	{
     		if (inputDataValues.InfeedRawTiltCmd < 0)
@@ -573,7 +597,7 @@ public class Robot extends IterativeRobot
     	{
     		outputDataValues.InfeedTiltAdjMtrVelocityCmd = 0.09;
     	}
-    	*/
+    	
     	
     
     	if ((inputDataValues.InfeedTiltUpCmd > 0.1) && (inputDataValues.InfeedTiltDownCmd < 0.1))
@@ -653,21 +677,40 @@ public class Robot extends IterativeRobot
     	}
     	
     	outputDataValues.TurretTargetPositionCmd = workingDataValues.TurretTurnDegreesCmd/RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
-    	// Shooter
+    	// ********** Shooter **********
     	
-    	//outputDataValues.ShooterAdjVelocityCmd = inputDataValues.ShooterRawVelocityCmd;
+    	// Shooter
+    	outputDataValues.ShooterAdjVelocityCmd = inputDataValues.ShooterRawVelocityCmd;
+    	
+    	// Slider
+    	outputDataValues.SliderAdjVelocityCmd = inputDataValues.SliderRawVelocityCmd;
+    	
+    	// Kicker
+    	
+    	if (inputDataValues.IsKickerBtnPressed)
+    	{
+    		outputDataValues.KickerAdjVelocityCmd = 1.0;
+    	}
+    	else
+    	{
+    		outputDataValues.KickerAdjVelocityCmd = 0.0;
+    	}
+    	
+    	
     	//Sets infeed speed based on values read from trigger
     	//NOTE: No code yet to prevent conflict between the buttons and triggers being pressed simultaneously, feature needs to be added
     	
     	// =====================================
     	// ======= Step 3: Set Outputs =========
     	// =====================================
-
+    	
     	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
     	_turret.set(outputDataValues.TurretTargetPositionCmd);
     	_infeedAcquireMtr.set(outputDataValues.InfeedAdjVelocityCmd);
     	_infeedTiltMtr.set(outputDataValues.InfeedTiltAdjMtrVelocityCmd);
-    	//_leftShooter.set(outputDataValues.ShooterAdjVelocityCmd);
+    	_masterShooter.set(outputDataValues.ShooterAdjVelocityCmd);
+    	_slider.set(outputDataValues.SliderAdjVelocityCmd);
+    	_kicker.set(outputDataValues.KickerAdjVelocityCmd);
     	// ==========================
     	// 3.1 Handle Puma Front, Back and Shifter Solenoids
     	//		Solenoids work like a toggle, the current value is retained until it is changed
@@ -771,6 +814,7 @@ public class Robot extends IterativeRobot
     	
     	inputDataValues.IsTurretZeroFunctionBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_ZERO_BTN);
     	inputDataValues.IsTurretTargetBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_TARGET_BTN);
+    	inputDataValues.IsKickerBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_KICKER_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -780,13 +824,14 @@ public class Robot extends IterativeRobot
     	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
     	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_BUMPER);
     	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_BUMPER);
+    	inputDataValues.SliderRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SLIDER_AXIS);
  	
     	// ==========================
     	// 1.3 get values from axis position Encoders
     	// ==========================
-    	//inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
-    	//inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
-    	//inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
+    	inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
+    	inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
+    	inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
     	
     	// ==========================
     	// 1.4 get values from navX
@@ -814,6 +859,7 @@ public class Robot extends IterativeRobot
     	//  1000 counts => 10 RPS (Rotation per second)
     	
     	// 2.1 Left Axis
+    	
 		workingDataValues.LeftDriveEncoderLastDeltaCount = (inputDataValues.LeftDriveEncoderCurrentCount 
 																- workingDataValues.LeftDriveEncoderLastCount);
 		workingDataValues.LeftDriveEncoderTotalDeltaCount = (inputDataValues.LeftDriveEncoderCurrentCount 
@@ -859,7 +905,18 @@ public class Robot extends IterativeRobot
     	workingDataValues.TurretEncoderDegreesCount = (workingDataValues.TurretEncoderTotalDeltaCount)
     													* RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
     	
-    }
+    	
+    	// 2.4 Shooter 
+    	
+    	workingDataValues.ShooterEncoderLastDeltaCount = (inputDataValues.ShooterEncoderCurrentCount
+    														- workingDataValues.ShooterEncoderLastCount);
+    	workingDataValues.ShooterEncoderTotalDeltaCount = (inputDataValues.ShooterEncoderCurrentCount
+    														- workingDataValues.ShooterEncoderInitialCount);
+    	workingDataValues.ShooterEncoderLastCount = inputDataValues.ShooterEncoderCurrentCount;
+    	workingDataValues.ShooterEncoderCurrentCPS = _masterShooter.getSpeed() * 3;
+    	
+    	
+    }	
     
     /**
     / This method updates the Smart Dashboard
@@ -912,7 +969,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("InfeedAdjVelocityCmd", outputDataValues.InfeedAdjVelocityCmd);
 		SmartDashboard.putNumber("InfeedTiltAdjMtrVelocityCmd", outputDataValues.InfeedTiltAdjMtrVelocityCmd);
 		
-		
+
 		// Puma Drive
 		SmartDashboard.putBoolean("IsInfeedAcquireBtnPressed", inputDataValues.IsInfeedAcquireBtnPressed);
 		SmartDashboard.putBoolean("IsInfeedReleaseBtnPressed", inputDataValues.IsInfeedReleaseBtnPressed);
