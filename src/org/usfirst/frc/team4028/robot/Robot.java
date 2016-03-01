@@ -198,17 +198,17 @@ public class Robot extends IterativeRobot
     	// Shooter
     	// ===================
     	
-    	_masterShooter = new CANTalon(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_masterShooter = new CANTalon(RobotMap.CAN_ADDR_MASTER_SHOOTER);
     	_masterShooter.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    	//_masterShooter.changeControlMode(CANTalon.TalonControlMode.Velocity);  // Code for conversion to velocity control with PID loop
+    	//_masterShooter.changeControlMode(CANTalon.TalonControlMode.Speed);  // Code for conversion to velocity control with PID loop
     	//_masterShooter.setPID(RobotMap.SHOOTER_KP, RobotMap.SHOOTER_KI, RobotMap.SHOOTER_KD, RobotMap.SHOOTER_KF, RobotMap.SHOOTER_IZONE, RobotMap.SHOOTER_RAMPRATE, RobotMap.SHOOTER_PROFILE);
     	_masterShooter.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-    	_masterShooter.reverseSensor(false);
+    	_masterShooter.reverseSensor(true);
     	_masterShooter.enableBrakeMode(false);
     	
-    	_slaveShooter = new CANTalon(RobotMap.CAN_ADDR_RIGHT_SHOOTER);
+    	_slaveShooter = new CANTalon(RobotMap.CAN_ADDR_SLAVE_SHOOTER);
     	_slaveShooter.changeControlMode(CANTalon.TalonControlMode.Follower);
-    	_slaveShooter.set(RobotMap.CAN_ADDR_LEFT_SHOOTER);
+    	_slaveShooter.set(RobotMap.CAN_ADDR_MASTER_SHOOTER);
     	_slaveShooter.enableBrakeMode(false);
     	
     	_slider = new CANTalon(RobotMap.CAN_ADDR_SHOOTER_SLIDER);
@@ -690,16 +690,24 @@ public class Robot extends IterativeRobot
     	// ********** Shooter **********
     	
     	// Shooter
-    	outputDataValues.ShooterAdjVelocityCmd = inputDataValues.ShooterRawVelocityCmd;
+    	if (inputDataValues.ShooterRawVelocityCmd > 0.1)
+    	{
+    		//outputDataValues.ShooterAdjVelocityCmd = 68;     // Velocity PID Control
+    		outputDataValues.ShooterAdjVelocityCmd = 0.95;
+    	}
+    	else
+    	{
+    		outputDataValues.ShooterAdjVelocityCmd = 0.0;
+    	}
     	
     	// Slider
     	outputDataValues.SliderAdjVelocityCmd = inputDataValues.SliderRawVelocityCmd;
     	
     	// Kicker
     	
-    	if (inputDataValues.IsKickerBtnPressed)
+    	if (inputDataValues.KickerRawVelocityCmd > 0.1)
     	{
-    		outputDataValues.KickerAdjVelocityCmd = 1.0;
+    		outputDataValues.KickerAdjVelocityCmd = 0.95;
     	}
     	else
     	{
@@ -821,19 +829,19 @@ public class Robot extends IterativeRobot
     	
     	inputDataValues.IsInfeedAcquireBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_ACQUIRE_BTN);
     	inputDataValues.IsInfeedReleaseBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_RELEASE_BTN);
+    	inputDataValues.KickerRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_KICKER_AXIS);
+    	inputDataValues.ShooterRawVelocityCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_SHOOTER_AXIS);
     	
     	inputDataValues.IsTurretZeroFunctionBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_ZERO_BTN);
     	inputDataValues.IsTurretTargetBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_TARGET_BTN);
-    	inputDataValues.IsKickerBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_KICKER_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	
-    	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
     	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
-    	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
-    	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER);
+    	//inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
+    	//inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER);
     	inputDataValues.SliderRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SLIDER_AXIS);
  	
     	// ==========================
@@ -842,6 +850,7 @@ public class Robot extends IterativeRobot
     	inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
     	inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
     	inputDataValues.TurretEncoderCurrentCount = _turret.getPosition();
+    	inputDataValues.ShooterEncoderCurrentCount = _masterShooter.getPosition();
     	
     	// ==========================
     	// 1.4 get values from navX
@@ -917,14 +926,14 @@ public class Robot extends IterativeRobot
     	
     	
     	// 2.4 Shooter 
-    	
+    	/*
     	workingDataValues.ShooterEncoderLastDeltaCount = (inputDataValues.ShooterEncoderCurrentCount
     														- workingDataValues.ShooterEncoderLastCount);
     	workingDataValues.ShooterEncoderTotalDeltaCount = (inputDataValues.ShooterEncoderCurrentCount
     														- workingDataValues.ShooterEncoderInitialCount);
     	workingDataValues.ShooterEncoderLastCount = inputDataValues.ShooterEncoderCurrentCount;
     	workingDataValues.ShooterEncoderCurrentCPS = _masterShooter.getSpeed() * 3;
-    	
+    	*/
     	
     }	
     

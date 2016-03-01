@@ -29,8 +29,8 @@ public class RobotMap
 	public static final int CAN_ADDR_RIGHT_DRIVE_SLAVE_MTR = 13;
 	public static final int CAN_ADDR_RIGHT_DRIVE_SLAVE_2_MTR = 10;
 	public static final int CAN_ADDR_TURRET = 16;
-	public static final int CAN_ADDR_LEFT_SHOOTER = 17;
-	public static final int CAN_ADDR_RIGHT_SHOOTER = 18;
+	public static final int CAN_ADDR_MASTER_SHOOTER = 17;
+	public static final int CAN_ADDR_SLAVE_SHOOTER = 18;
 	public static final int CAN_ADDR_SHOOTER_SLIDER = 19;
 	public static final int CAN_ADDR_INFEED_TILT_MTR = 20;
 	
@@ -72,7 +72,7 @@ public class RobotMap
 	public static final double TURRET_RAMPRATE = 64; // Volts/Second
 	public static final int TURRET_PROFILE = 0;
 	
-	public static final double SHOOTER_KP = 0.0;
+	public static final double SHOOTER_KP = 0.65;
 	public static final double SHOOTER_KI = 0.0;
 	public static final double SHOOTER_KD = 0.0;
 	public static final double SHOOTER_KF = 0.0;
@@ -127,13 +127,14 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
 	
-	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER = LogitechF310.RIGHT_TRIGGER;
-	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER = LogitechF310.LEFT_TRIGGER;
+	//public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER = LogitechF310.RIGHT_TRIGGER;
+	//public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER = LogitechF310.LEFT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_SHOOTER_AXIS = LogitechF310.RIGHT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_KICKER_AXIS = LogitechF310.LEFT_TRIGGER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_ZERO_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_TURRET_TARGET_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int OPERATOR_GAMEPAD_KICKER_BTN = LogitechF310.GREEN_BUTTON_A;
 	
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SLIDER_AXIS = LogitechF310.RIGHT_Y_AXIS;

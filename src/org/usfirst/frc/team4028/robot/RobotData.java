@@ -92,11 +92,11 @@ public class RobotData
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsTurretZeroFunctionBtnPressed;
 		public boolean IsTurretTargetBtnPressed;
-		public boolean IsKickerBtnPressed;
- 	
+	
+		public double KickerRawVelocityCmd;
+		public double ShooterRawVelocityCmd;
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;
-		public double ShooterRawVelocityCmd;
 		public double InfeedRawTiltCmd;
 		public double InfeedTiltUpCmd;
 		public double InfeedTiltDownCmd;
@@ -141,9 +141,9 @@ public class RobotData
 			sb.append("InputData:IsTurretZeroFunctionBtnPressed" + "\t");
 			sb.append("InputData:IsTurretTargetBtnPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
+			sb.append("InputData:IsShooterBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
-			sb.append("InputData:ShooterRawVelocityCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
 			sb.append("InputData:InfeedTiltUpCmd" + "\t");
 			sb.append("InputData:InfeedTiltDownCmd" + "\t");
@@ -185,10 +185,10 @@ public class RobotData
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsTurretZeroFunctionBtnPressed + "\t");
 			sb.append(IsTurretTargetBtnPressed + "\t");
-			sb.append(IsKickerBtnPressed + "\t");
+			sb.append(KickerRawVelocityCmd + "\t");
+			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
 			sb.append(ArcadeDriveTurnRawCmd + "\t");
-			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(InfeedRawTiltCmd + "\t");
 			sb.append(InfeedTiltUpCmd + "\t");
 			sb.append(InfeedTiltDownCmd + "\t");
