@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,14 +23,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataLogger 
 {
-	private static final DateFormat DF = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
     private PrintWriter _writer;
 
     // constructor, open a new timestamped log file in the target directory
     public DataLogger(String parentFolder, String fileSuffix) throws IOException 
     {
+    	SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+		outputFormatter.setTimeZone(TimeZone.getTimeZone("US/Eastern")); 
+		String newDateString = outputFormatter.format(new Date());
+    	
     	// build the new filename
-    	String fileName = DF.format(new Date()) + "_" + fileSuffix + ".tsv";
+    	String fileName = newDateString + "_" + fileSuffix + ".tsv";
     	// build the full file path name
     	this.LogFilePathName = parentFolder + File.separator + fileName;
     	
