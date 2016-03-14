@@ -87,6 +87,7 @@ public class RobotData
 		public boolean IsScaleDriveSpeedDownBtnPressed;			// logic will latch output value (so this acts like a single shot)
 		public boolean IsPumaFrontToggleBtnPressed;
 		public boolean IsPumaBackToggleBtnPressed;
+		public boolean IsPumaBothToggleBtnPressed;
 		public boolean IsShifterToggleHighBtnPressed;
 		public boolean IsShifterToggleLowBtnPressed;
 		public boolean IsInfeedAcquireBtnPressed;
@@ -101,6 +102,7 @@ public class RobotData
 		public boolean IsInfeedTiltDeployBtnPressed;
 		public boolean IsInfeedTiltAxisOnUpLimitSwitch;
 		public boolean IsPrintDataBtnPressed;
+		public boolean IsShooterManualOverrideBtnPressed;
 		
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;    	
@@ -130,6 +132,8 @@ public class RobotData
 		
 		public boolean IsTurretHomeLimitSwitchClosed;
 		public boolean IsTurretApproachingHomeLimitSwitchClosed;
+		
+		public boolean IsBallInPosition;
 		
 		public boolean IsValidData;
 		public double DistanceToTarget;
@@ -165,6 +169,7 @@ public class RobotData
 			sb.append("InputData:IsScaleDriveSpeedDownBtnPressed" + "\t");
 			sb.append("InputData:IsPumaFrontToggleBtnPressed" + "\t");
 			sb.append("InputData:IsPumaBackToggleBtnPressed" + "\t");
+			sb.append("InputData:IsPumaBothToggleBtnPressed" + "\t");
 			sb.append("InputData:IsShifterToggleHighBtnPressed" + "\t");
 			sb.append("InputData:IsShifterToggleLowBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
@@ -178,6 +183,7 @@ public class RobotData
 			sb.append("InputData:IsInfeedTiltStoreBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedTiltDeployBtnPressed" + "\t");
 			sb.append("InputData:IsPrintDataBtnPressed" + "\t");
+			sb.append("InputData:IsShooterManualOverrideBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
@@ -199,6 +205,7 @@ public class RobotData
 			sb.append("InputData:ShooterActualVToBusVRatio" + "\t");
 			sb.append("InputData:IsTurretHomeLimitSwitchClosed" + "\t");
 			sb.append("InputData:IsTurretApproachingHomeLimitSwitchClosed" + "\t");
+			sb.append("InputData:IsBallInPosition" + "\t");
 			sb.append("InputData:IsValidData" + "\t");
 			sb.append("InputData:DistanceToTarget" + "\t");
 			sb.append("InputData:EffectiveTargetWidth" + "\t");
@@ -234,6 +241,7 @@ public class RobotData
 			sb.append(IsScaleDriveSpeedDownBtnPressed + "\t");
 			sb.append(IsPumaFrontToggleBtnPressed + "\t");
 			sb.append(IsPumaBackToggleBtnPressed + "\t");
+			sb.append(IsPumaBothToggleBtnPressed + "\t");
 			sb.append(IsShifterToggleHighBtnPressed + "\t");
 			sb.append(IsShifterToggleLowBtnPressed + "\t");
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
@@ -245,6 +253,7 @@ public class RobotData
 			sb.append(IsInfeedTiltStoreBtnPressed + "\t");
 			sb.append(IsInfeedTiltDeployBtnPressed + "\t");
 			sb.append(IsPrintDataBtnPressed + "\t");
+			sb.append(IsShooterManualOverrideBtnPressed + "\t");
 			sb.append(KickerRawVelocityCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
@@ -268,6 +277,7 @@ public class RobotData
 			sb.append(ShooterActualVToBusVRatio  + "\t");
 			sb.append(IsTurretHomeLimitSwitchClosed + "\t");
 			sb.append(IsTurretApproachingHomeLimitSwitchClosed + "\t");
+			sb.append(IsBallInPosition + "\t");
 			sb.append(IsValidData + "\t");
 			sb.append(DistanceToTarget + "\t");
 			sb.append(EffectiveTargetWidth + "\t");
@@ -307,6 +317,7 @@ public class RobotData
 		
 		public boolean IsPumaFrontToggleBtnPressedLastScan;
 		public boolean IsPumaBackToggleBtnPressedLastScan;
+		public boolean IsPumaBothToggleBtnPressedLastScan;
 		public boolean IsShifterToggleBtnPressedLastScan;
 		public boolean IsSliderFwdBtnPressedLastScan;
 		public boolean IsSliderRevBtnPressedLastScan;
@@ -368,6 +379,7 @@ public class RobotData
 			
 			sb.append("WorkingData:IsPumaFrontToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsPumaBackToggleBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsPumaBothToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsShifterToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsSliderFwdBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsSliderRevBtnPressedLastScan" + "\t");
@@ -431,6 +443,7 @@ public class RobotData
 			
 			sb.append(IsPumaFrontToggleBtnPressedLastScan + "\t");
 			sb.append(IsPumaBackToggleBtnPressedLastScan + "\t");
+			sb.append(IsPumaBothToggleBtnPressedLastScan + "\t");
 			sb.append(IsShifterToggleBtnPressedLastScan + "\t");
 			sb.append(IsSliderFwdBtnPressedLastScan + "\t");
 			sb.append(IsSliderRevBtnPressedLastScan + "\t");
@@ -552,11 +565,11 @@ public class RobotData
 			sb.append(SliderVelocityCmd + "\t");
 			
 			String PumaFrontSolenoidPositionDesc = "";
-			if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_OPEN_POSITION)
+			if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION)
 			{
 				PumaFrontSolenoidPositionDesc = "PUMA_FRONT_SOLENOID_OPEN";
 			}
-			else if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_CLOSED_POSITION)
+			else if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION)
 			{
 				PumaFrontSolenoidPositionDesc = "PUMA_FRONT_SOLENOID_CLOSED";
 			}
@@ -566,11 +579,11 @@ public class RobotData
 			}
 			
 			String PumaBackSolenoidPositionDesc = "";
-			if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_OPEN_POSITION)
+			if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_UP_POSITION)
 			{
 				PumaBackSolenoidPositionDesc = "PUMA_BACK_SOLENOID_OPEN";
 			}
-			else if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_CLOSED_POSITION)
+			else if (PumaBackSolenoidPosition == RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION)
 			{
 				PumaBackSolenoidPositionDesc = "PUMA_BACK_SOLENOID_CLOSED";
 			}

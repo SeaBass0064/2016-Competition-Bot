@@ -18,8 +18,8 @@ public class RobotMap
 {	
 	
 	// define constants for the socket connecting to the vision PC
-	public static final int VISION_PC_PORT = 5800;  // Allowed to use 5800-5810
-	public static final String VISION_PC_IP_ADDRESS = "172.22.1.2";
+	public static final int VISION_PC_PORT = 5806;  // Allowed to use 5800-5810
+	public static final String VISION_PC_IP_ADDRESS = "10.40.28.78";
 	
 	// define constants for array values of vision data
 	public static final int IS_VALID_DATA_ARRAY_POSITION = 0;
@@ -63,13 +63,14 @@ public class RobotMap
 	// ======================================
 	public static final int TURRET_HOME_LIMIT_SWITCH_DIO_PORT = 0;
 	public static final int TURRET_APPROACHING_HOME_LIMIT_SWITCH_DIO_PORT = 1;
+	public static final int IS_BALL_IN_POSITION_LIMIT_SWITCH = 2;
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
 	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 0;
 	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 1;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 2;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 3;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 3;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 2;
 	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 6;
 	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 7;
 	
@@ -77,10 +78,10 @@ public class RobotMap
 	// define constants for air cylinder states / positions
 	//	(map the physical air cylinder position to logical state)
 	// ======================================
-	public static final Value PUMA_FRONT_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value PUMA_FRONT_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;		
-	public static final Value PUMA_BACK_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value PUMA_BACK_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value PUMA_FRONT_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value PUMA_FRONT_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;		
+	public static final Value PUMA_BACK_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
 	
@@ -127,7 +128,7 @@ public class RobotMap
 	public static final double PUMA_UP_INFEED_TILT_SOFT_LIMIT_DEGREES = 10;
 	
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
-	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.25;			// this is approx 90 deg
+	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.2;			// this is approx 90 deg
 	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.1;		// this is approx 0 deg
 	public static final double INFEED_TILT_LOWER_LIMIT = -0.25;
 	
@@ -139,15 +140,26 @@ public class RobotMap
 	public static final double TURRET_TRAVEL_DISTANCE_DEGREES_PER_REV = 37.674;			// 360deg / TURRET_GEAR_RATIO
 	
 	public static final double TURRET_MAX_TRAVEL_IN_ROTATIONS = 7.8;
-	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -2.9;
+	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -3.0;
+	public static final double TURRET_DEFAULT_POSITION_IN_ROTATIONS = 0.0; //-2.413;
 	
-	public static final double TURRET_KP = 0.15;   // Proportional 
-	public static final double TURRET_KI = 0.0;   // Integral
-	public static final double TURRET_KD = 0.0;   // Derivative
-	public static final double TURRET_KF = 0.0;   // Feed Forward
-	public static final int TURRET_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
-	public static final double TURRET_RAMPRATE = 64; // Volts/Second
-	public static final int TURRET_PROFILE = 0;
+	public static final double TURRET_SLOW_KP = 0.03;   // Proportional 
+	public static final double TURRET_SLOW_KI = 0.0;   // Integral
+	public static final double TURRET_SLOW_KD = 0.0;   // Derivative
+	public static final double TURRET_SLOW_KF = 0.0;   // Feed Forward
+	public static final int TURRET_SLOW_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
+	public static final double TURRET_SLOW_RAMPRATE = 64; // Volts/Second
+	public static final int TURRET_SLOW_PROFILE = 0;
+	
+	public static final double TURRET_FAST_KP = 0.4;   // Proportional 
+	public static final double TURRET_FAST_KI = 0.0;   // Integral
+	public static final double TURRET_FAST_KD = 0.0;   // Derivative
+	public static final double TURRET_FAST_KF = 0.0;   // Feed Forward
+	public static final int TURRET_FAST_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
+	public static final double TURRET_FAST_RAMPRATE = 64; // Volts/Second
+	public static final int TURRET_FAST_PROFILE = 1;
+	
+	
 	
 	public static final double TURRET_TRAVEL_DEGREES_PER_COUNT 
 			= TURRET_TRAVEL_DISTANCE_DEGREES_PER_REV / (4 * TURRET_ENCODER_COUNTS_PER_REV);
@@ -171,7 +183,7 @@ public class RobotMap
 	public static final int SHOOTER_IZONE = 0;
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 1;
-	public static final int SHOOTER_TARGET_MOTOR_RPM = 4000;
+	public static final int SHOOTER_TARGET_MOTOR_RPM = 3500;
 	public static final int SHOOTER_MAX_MOTOR_RPM = 4600;
 	
 	// ======================================
@@ -182,7 +194,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 50.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
@@ -196,15 +208,15 @@ public class RobotMap
 	// define constants for Driver Station Gamepad
 	// ======================================
 	public static final int DRIVER_GAMEPAD_USB_PORT = 0;
-	public static final int DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN = LogitechF310.YELLOW_BUTTON_Y;
-	public static final int DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN = LogitechF310.BLUE_BUTTON_X;	
+	public static final int DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN = LogitechF310.START_BUTTON;
+	public static final int DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN = LogitechF310.BACK_BUTTON;	
 	public static final int DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK = LogitechF310.LEFT_Y_AXIS;		
 	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
-	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.RED_BUTTON_B;
+	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_HIGH_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN = LogitechF310.RIGHT_BUMPER;
-	public static final int DRIVER_GAMEPAD_PRINT_DATA_BTN = LogitechF310.START_BUTTON;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_CW_BTN = LogitechF310.START_BUTTON;
@@ -217,6 +229,7 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.RIGHT_TRIGGER;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_MANUAL = LogitechF310.LEFT_TRIGGER;
 	
 	// ======================================
 	// define constants for logging
