@@ -900,10 +900,41 @@ public class Robot extends IterativeRobot
     	// =====================================
     	// Step 2.4: Turret 
     	// =====================================
+    	DriverStation.reportError(Double.toString(inputDataValues.TurretCCWRawVelocityCmd), false);
+    	DriverStation.reportError(Double.toString(inputDataValues.TurretCWRawVelocityCmd), false);
     	
     	// Change turret position command based on operator input
-    	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+    	if (((inputDataValues.TurretCCWRawVelocityCmd > 0.1) || (inputDataValues.TurretCWRawVelocityCmd > 0.1))
+    			&& (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position))
     	{
+    		_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    		DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    	}
+    	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+    	{
+    		// stop driving the axis
+    		outputDataValues.TurretVelocityCmd = 0;
+	    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
+    		
+	    	// now switch to position loop mode
+	    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.Position);
+	    	outputDataValues.TurretTargetPositionCmd = _turretMtr.getPosition();
+	    	DriverStation.reportError("Turret changing to Position mode", false);
+	    	
+
+	    	try {
+	    		// sleep a little to let the zero occur
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	
+    	}
+    	
+    	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+    	{	
+    		/*
     		if (inputDataValues.IsTurretCWButtonPressed && !inputDataValues.IsTurretCCWButtonPressed)
     		{
     			outputDataValues.TurretVelocityCmd = 0.1;
@@ -916,67 +947,53 @@ public class Robot extends IterativeRobot
     		{
     			outputDataValues.TurretVelocityCmd = 0.0;
     		}
+    		*/
+    		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.1) && (inputDataValues.TurretCWRawVelocityCmd < 0.1))
+    		{
+    			outputDataValues.TurretVelocityCmd = -(inputDataValues.TurretCCWRawVelocityCmd * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    		}
+    		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.1) && (inputDataValues.TurretCWRawVelocityCmd > 0.1))
+    		{
+    			outputDataValues.TurretVelocityCmd = (inputDataValues.TurretCWRawVelocityCmd * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    		}
     	}
     	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
     	{
-    		/*
 			if (inputDataValues.IsTurretCWButtonPressed && !inputDataValues.IsTurretCCWButtonPressed)		
 			{
 				if(!workingDataValues.IsTurretCWButtonPressedLastScan)
 				{
-					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + 0.03;
+					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + 0.06;
 					outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
-					
-					// If the position is greater than 90 degrees = 0.25 rotations, prevent infeed from continuing to drive up
-					//if (outputDataValues.InfeedTiltTargetPositionInRotationsCmd > RobotMap.INFEED_TILT_STORED_POSITION_CMD)
-					//{
-					//	outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
-					//}
-				}
-				else if (workingDataValues.IsTurretCWButtonPressedLastScan)
-				{
-					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + 0.03;
-					outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
-					// if the button is held down, not tapped, the turret target position is increased by twice as much
 				}
 			}
 			else if (!inputDataValues.IsTurretCWButtonPressed && inputDataValues.IsTurretCCWButtonPressed)	
 			{
 				if(!workingDataValues.IsTurretCCWButtonPressedLastScan)
 				{
-					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - 0.03;
+					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - 0.06;
 					outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
-					
-					// If the position is greater than 90 degrees = 0.25 rotations, prevent infeed from continuing to drive up
-					//if (outputDataValues.InfeedTiltTargetPositionInRotationsCmd > RobotMap.INFEED_TILT_STORED_POSITION_CMD)
-					//{
-					//	outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
-					//}
-				}
-				else if (workingDataValues.IsTurretCCWButtonPressedLastScan)
-				{
-					double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - 0.03;
-					outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
-					// if the button is held down, not tapped, the turret target position is decreased by twice as much
 				}
 			}
-			*/
-    		if ((inputDataValues.TurretLeftRawVelocityCmd > 0.1) && (inputDataValues.TurretRightRawVelocityCmd > 0.1))
+			
+			/*
+    		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.1) && (inputDataValues.TurretCWRawVelocityCmd > 0.1))
     		{
     		}
-    		else if ((inputDataValues.TurretLeftRawVelocityCmd > 0.1) && (inputDataValues.TurretRightRawVelocityCmd < 0.1))
+    		else if ((inputDataValues.TurretCCWRawVelocityCmd > 0.1) && (inputDataValues.TurretCWRawVelocityCmd < 0.1))
     		{
-    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - (0.03 * Math.cbrt(inputDataValues.TurretLeftRawVelocityCmd));
+    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - (0.03 * Math.cbrt(inputDataValues.TurretCCWRawVelocityCmd));
     			outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
     		}
-    		else if ((inputDataValues.TurretLeftRawVelocityCmd < 0.1) && (inputDataValues.TurretRightRawVelocityCmd > 0.1))
+    		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.1) && (inputDataValues.TurretCWRawVelocityCmd > 0.1))
     		{
-    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + (0.03 * Math.cbrt(inputDataValues.TurretRightRawVelocityCmd));
+    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + (0.03 * Math.cbrt(inputDataValues.TurretCWRawVelocityCmd));
     			outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
     		}
     		else
     		{
     		}
+    		*/
     	}
     	
     	//outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(workingDataValues.TurretTurnDegreesCmd);
@@ -1618,8 +1635,8 @@ public class Robot extends IterativeRobot
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	
     	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
-    	inputDataValues.TurretLeftRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_LEFT_AXIS);
-    	inputDataValues.TurretRightRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_RIGHT_AXIS);
+    	inputDataValues.TurretCCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS);
+    	inputDataValues.TurretCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS);
     	
     	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
     	//inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
