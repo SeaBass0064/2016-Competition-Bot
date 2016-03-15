@@ -221,15 +221,16 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_CW_BTN = LogitechF310.START_BUTTON;
 	public static final int OPERATOR_GAMEPAD_TURRET_CCW_BTN = LogitechF310.BACK_BUTTON;
-	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.LEFT_BUMPER;
-	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_INFEED_TILT_STORE_BTN = LogitechF310.RED_BUTTON_B;
 	public static final int OPERATOR_GAMEPAD_INFEED_TILT_DEPLOY_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BLUE_BUTTON_X;
-	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.RIGHT_TRIGGER;
-	public static final int OPERATOR_GAMEPAD_TURRET_AUTOAIM = LogitechF310.LEFT_TRIGGER;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_TURRET_LEFT_AXIS = LogitechF310.LEFT_TRIGGER;
+	public static final int OPERATOR_GAMEPAD_TURRET_RIGHT_AXIS = LogitechF310.RIGHT_TRIGGER;
 	
 	// ======================================
 	// define constants for logging

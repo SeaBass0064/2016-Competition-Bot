@@ -102,7 +102,9 @@ public class RobotData
 		public boolean IsInfeedTiltDeployBtnPressed;
 		public boolean IsInfeedTiltAxisOnUpLimitSwitch;
 		public boolean IsPrintDataBtnPressed;
-		public boolean IsTurretAutoAimBtnPressed;
+		
+		public double TurretLeftRawVelocityCmd;
+		public double TurretRightRawVelocityCmd;
 		
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;    	
@@ -185,7 +187,8 @@ public class RobotData
 			sb.append("InputData:IsInfeedTiltStoreBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedTiltDeployBtnPressed" + "\t");
 			sb.append("InputData:IsPrintDataBtnPressed" + "\t");
-			sb.append("InputData:IsTurretAutoAimBtnPressed" + "\t");
+			sb.append("InputData:TurretLeftRawVelocityCmd" + "\t");
+			sb.append("InputData:TurretRightRawVelocityCmd" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
@@ -256,7 +259,8 @@ public class RobotData
 			sb.append(IsInfeedTiltStoreBtnPressed + "\t");
 			sb.append(IsInfeedTiltDeployBtnPressed + "\t");
 			sb.append(IsPrintDataBtnPressed + "\t");
-			sb.append(IsTurretAutoAimBtnPressed + "\t");
+			sb.append(TurretLeftRawVelocityCmd + "\t");
+			sb.append(TurretRightRawVelocityCmd + "\t");
 			sb.append(KickerRawVelocityCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
@@ -328,9 +332,11 @@ public class RobotData
 		public boolean IsPrintDataBtnPressedLastScan;
 		public boolean IsTurretCWButtonPressedLastScan;
 		public boolean IsTurretCCWButtonPressedLastScan;
+		public boolean IsInfeedTiltStoreBtnPressedLastScan;
 		
 		public boolean IsTurretEncoderDegreesZeroYet;
 		public boolean IsTurretEncoderDegreesTargetYet;
+	
 		
 		public double LeftDriveEncoderInitialCount;
 		public double LeftDriveEncoderLastCount;
@@ -390,6 +396,7 @@ public class RobotData
 			sb.append("WorkingData:IsPrintDataBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsTurretCWButtonPressedLastScan" + "\t");
 			sb.append("WorkingData:IsTurretCCWButtonPressedLastScan" + "\t");
+			sb.append("WorkingData:IsInfeedTiltStoreBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
 			sb.append("WorkingData:IsTurretEncoderDegreesTargetYet" + "\t");
@@ -454,6 +461,7 @@ public class RobotData
 			sb.append(IsPrintDataBtnPressedLastScan + "\t");
 			sb.append(IsTurretCWButtonPressedLastScan + "\t");
 			sb.append(IsTurretCCWButtonPressedLastScan + "\t");
+			sb.append(IsInfeedTiltStoreBtnPressedLastScan + "\t");
 			
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
 			sb.append(IsTurretEncoderDegreesTargetYet + "\t");

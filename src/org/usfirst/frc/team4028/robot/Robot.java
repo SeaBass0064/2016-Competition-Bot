@@ -158,6 +158,8 @@ public class Robot extends IterativeRobot
 	boolean _isInfeedTiltAxisZeroedYet = false;
 	boolean _isSliderAxisZeroedYet = false;
 	
+	boolean _isInfeedPeriodZeroMode = false;
+	
     /*****************************************************************************************************
      * This function is run when the robot is first started up.
 	 * This is where we initialize the robot hardware configuration.
@@ -406,6 +408,8 @@ public class Robot extends IterativeRobot
      	_visionLiveData = new VisionData();
     	//SetupImageServerThread();
     }
+    
+   /*
 
     public void SetupImageServerThread()
     {	
@@ -480,6 +484,7 @@ public class Robot extends IterativeRobot
     			_pollingThread.start();
     		}
     }
+    */
     
     // ========================================================================
     //
@@ -507,6 +512,8 @@ public class Robot extends IterativeRobot
     	workingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
     	workingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
     	workingDataValues.TurretEncoderInitialCount = _turretMtr.getPosition();
+    	
+    	_isInfeedPeriodZeroMode = false;
     	
     	// get user input values from the Smart Dashboard
     	inputDataValues.AutonModeRequested = (RobotData.AutonMode) autonModeChooser.getSelected();
@@ -688,6 +695,8 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedReleaseBtnPressed = false;
     	workingDataValues.IsTurretEncoderDegreesTargetYet = false;
     	
+    	_isInfeedPeriodZeroMode = false;
+    	
     	if (!_isTurretAxisZeroedYet)
     	{
     		ZeroTurretAxis(_robotLiveData);
@@ -798,10 +807,26 @@ public class Robot extends IterativeRobot
     			// rotate down;
     			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_DEPLOYED_POSITION_CMD;
     		}
-    		else if (!inputDataValues.IsInfeedTiltDeployBtnPressed && inputDataValues.IsInfeedTiltStoreBtnPressed)
+    		else if (!inputDataValues.IsInfeedTiltDeployBtnPressed && inputDataValues.IsInfeedTiltStoreBtnPressed && !workingDataValues.IsInfeedTiltStoreBtnPressedLastScan)
     		{
     			// rotate up
-    			ZeroInfeedTiltAxis(_robotLiveData);
+    			//outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
+    			
+    			// special zero mode in periodic
+    			_isInfeedPeriodZeroMode = true;
+    			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_HOME_POSITION_IN_ROTATIONS;
+    		}
+    		else if (_isInfeedPeriodZeroMode && inputDataValues.IsInfeedTiltAxisOnUpLimitSwitch){
+    			_infeedTiltMtr.setPosition(RobotMap.INFEED_TILT_HOME_POSITION_IN_ROTATIONS);
+    			try {
+    	    		// sleep a little to let the zero occur
+    				Thread.sleep(1);
+    			} catch (InterruptedException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			}
+    			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
+    			_isInfeedPeriodZeroMode = false;
     		}
     		else if (!inputDataValues.IsInfeedTiltDeployBtnPressed && !inputDataValues.IsInfeedTiltStoreBtnPressed)
     		{
@@ -894,6 +919,7 @@ public class Robot extends IterativeRobot
     	}
     	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
     	{
+    		/*
 			if (inputDataValues.IsTurretCWButtonPressed && !inputDataValues.IsTurretCCWButtonPressed)		
 			{
 				if(!workingDataValues.IsTurretCWButtonPressedLastScan)
@@ -934,6 +960,23 @@ public class Robot extends IterativeRobot
 					// if the button is held down, not tapped, the turret target position is decreased by twice as much
 				}
 			}
+			*/
+    		if ((inputDataValues.TurretLeftRawVelocityCmd > 0.1) && (inputDataValues.TurretRightRawVelocityCmd > 0.1))
+    		{
+    		}
+    		else if ((inputDataValues.TurretLeftRawVelocityCmd > 0.1) && (inputDataValues.TurretRightRawVelocityCmd < 0.1))
+    		{
+    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - (0.03 * Math.cbrt(inputDataValues.TurretLeftRawVelocityCmd));
+    			outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
+    		}
+    		else if ((inputDataValues.TurretLeftRawVelocityCmd < 0.1) && (inputDataValues.TurretRightRawVelocityCmd > 0.1))
+    		{
+    			double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + (0.03 * Math.cbrt(inputDataValues.TurretRightRawVelocityCmd));
+    			outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
+    		}
+    		else
+    		{
+    		}
     	}
     	
     	//outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(workingDataValues.TurretTurnDegreesCmd);
@@ -969,7 +1012,7 @@ public class Robot extends IterativeRobot
     		{
     			if (!workingDataValues.IsSliderFwdBtnPressedLastScan)	// debounce keypress
     			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 8.0;
+    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 4.0;
     				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
     				DriverStation.reportError(String.format("..Info: New Forward Target Slider Position: {0}", newSliderTargetPosition), false);
     				
@@ -979,7 +1022,7 @@ public class Robot extends IterativeRobot
     		{
     			if (!workingDataValues.IsSliderRevBtnPressedLastScan)	// debounce keypress
     			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 8.0;
+    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 4.0;
     				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
     				DriverStation.reportError(String.format("..Info: New Reverse Target Slider Position: {0}", newSliderTargetPosition), false);
     			}
@@ -993,7 +1036,7 @@ public class Robot extends IterativeRobot
     	// ============================
     	//  Step 2.6: Shooter 
     	// ============================
-    	if (inputDataValues.ShooterRawVelocityCmd > 0.1)
+    	if (inputDataValues.ShooterRawVelocityCmd < -0.1)
     	{    	
     		if (_shooterMasterMtr.getControlMode() == CANTalon.TalonControlMode.Speed)
     		{
@@ -1155,6 +1198,7 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsSliderRevBtnPressedLastScan = inputDataValues.IsSliderRevBtnPressed;
     	workingDataValues.IsTurretCWButtonPressedLastScan = inputDataValues.IsTurretCWButtonPressed;
     	workingDataValues.IsTurretCCWButtonPressedLastScan = inputDataValues.IsTurretCCWButtonPressed;
+    	workingDataValues.IsInfeedTiltStoreBtnPressedLastScan = inputDataValues.IsInfeedTiltStoreBtnPressed;
     }
     
     public void disabledPeriodic()
@@ -1574,15 +1618,8 @@ public class Robot extends IterativeRobot
     	inputDataValues.ArcadeDriveTurnRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK);
     	
     	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
-    	if (_operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_AUTOAIM) > 0.1)
-    	{
-    		inputDataValues.IsTurretAutoAimBtnPressed = true;
-    	}
-    	else
-    	{
-    		inputDataValues.IsTurretAutoAimBtnPressed = false;
-    	}
-    		
+    	inputDataValues.TurretLeftRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_LEFT_AXIS);
+    	inputDataValues.TurretRightRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_RIGHT_AXIS);
     	
     	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
     	//inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
@@ -1606,7 +1643,7 @@ public class Robot extends IterativeRobot
     	//inputDataValues.ShooterCurrentBusVoltage = _shooterMasterMtr.getBusVoltage();
     	
     	
-    	inputDataValues.IsInfeedTiltAxisOnUpLimitSwitch = _infeedTiltMtr.isFwdLimitSwitchClosed();
+    	inputDataValues.IsInfeedTiltAxisOnUpLimitSwitch = !_infeedTiltMtr.isFwdLimitSwitchClosed();
     	
     	inputDataValues.SliderCurrentPosition = _sliderMtr.getPosition();
     	
@@ -1637,7 +1674,7 @@ public class Robot extends IterativeRobot
     	// ==========================
     	// 1.6 get values from the last available scan on the Vision PC
     	// ==========================
-    	
+    	/*
 		if (inputDataValues.IsValidData)
 		{
 			inputDataValues.IsValidData = _visionLiveData.IsValidData;
@@ -1653,7 +1690,7 @@ public class Robot extends IterativeRobot
 			inputDataValues.IsValidData = false;
 			DriverStation.reportError("No available vision data", false);
 		}
-		
+		*/
 
     	// =========================
     	// 2.0 Calc Working Values
@@ -1779,6 +1816,7 @@ public class Robot extends IterativeRobot
 		*/
 		// Shooter
 		//SmartDashboard.putNumber("Shooter.EncoderCurrentCP100MS", inputDataValues.ShooterEncoderCurrentCP100MS);
+    	SmartDashboard.putNumber("Shooter.TargetSpeed", RobotMap.SHOOTER_TARGET_MOTOR_RPM);
     	SmartDashboard.putNumber("Shooter.ActualSpeed", inputDataValues.ShooterActualSpeed);
 		
 		// Slider
@@ -1815,7 +1853,7 @@ public class Robot extends IterativeRobot
         SmartDashboard.putBoolean("NavX_IsMoving", inputDataValues.NavxIsMoving); 
         SmartDashboard.putBoolean("NavX_IsRotating", inputDataValues.NavxIsRotating); 
 		*/
-        SmartDashboard.putString("Misc:LastUpdateDT", ZonedDateTime.now().toString());
+        ///SmartDashboard.putString("Misc:LastUpdateDT", ZonedDateTime.now().toString());
     }
     
     /**
