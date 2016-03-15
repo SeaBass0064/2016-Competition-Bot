@@ -102,7 +102,7 @@ public class RobotData
 		public boolean IsInfeedTiltDeployBtnPressed;
 		public boolean IsInfeedTiltAxisOnUpLimitSwitch;
 		public boolean IsPrintDataBtnPressed;
-		public boolean IsShooterManualOverrideBtnPressed;
+		public boolean IsTurretAutoAimBtnPressed;
 		
 		public double ArcadeDriveThrottleRawCmd;
 		public double ArcadeDriveTurnRawCmd;    	
@@ -141,6 +141,8 @@ public class RobotData
 		public double DesiredSliderPosition;
 		public double DesiredTurretTurnInDegrees;
 		public boolean IsValidShot;
+		
+		public Date LastVisionDataRecievedDT;
 		
 		AutonMode AutonModeRequested;
 		
@@ -183,7 +185,7 @@ public class RobotData
 			sb.append("InputData:IsInfeedTiltStoreBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedTiltDeployBtnPressed" + "\t");
 			sb.append("InputData:IsPrintDataBtnPressed" + "\t");
-			sb.append("InputData:IsShooterManualOverrideBtnPressed" + "\t");
+			sb.append("InputData:IsTurretAutoAimBtnPressed" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
 			sb.append("InputData:ArcadeDriveTurnRawCmd" + "\t");
 			sb.append("InputData:InfeedRawTiltCmd" + "\t");
@@ -212,6 +214,7 @@ public class RobotData
 			sb.append("InputData:DesiredSliderPosition" + "\t");
 			sb.append("InputData:DesiredTurretTurnInDegrees" + "\t");
 			sb.append("InputData:IsValidShot" + "\t");
+			sb.append("InputData:LastVisionDataRecievedDT" + "\t");
 			sb.append("InputData:AutonModeRequested" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
@@ -253,7 +256,7 @@ public class RobotData
 			sb.append(IsInfeedTiltStoreBtnPressed + "\t");
 			sb.append(IsInfeedTiltDeployBtnPressed + "\t");
 			sb.append(IsPrintDataBtnPressed + "\t");
-			sb.append(IsShooterManualOverrideBtnPressed + "\t");
+			sb.append(IsTurretAutoAimBtnPressed + "\t");
 			sb.append(KickerRawVelocityCmd + "\t");
 			sb.append(ShooterRawVelocityCmd + "\t");
 			sb.append(ArcadeDriveThrottleRawCmd + "\t");
@@ -284,6 +287,7 @@ public class RobotData
 			sb.append(DesiredSliderPosition + "\t");
 			sb.append(DesiredTurretTurnInDegrees + "\t");
 			sb.append(IsValidShot + "\t");
+			sb.append(LastVisionDataRecievedDT + "\t");
 			sb.append(AutonModeRequested + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
