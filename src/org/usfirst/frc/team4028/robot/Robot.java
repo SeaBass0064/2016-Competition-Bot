@@ -503,16 +503,6 @@ public class Robot extends IterativeRobot
     	outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
     	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
     	
-    	// initialize axis (Encoder) positions
-    	_leftDriveMasterMtr.setPosition(0);
-    	_rightDriveMasterMtr.setPosition(0);
-    	_turretMtr.setPosition(0);
-    	
-    	// get initial values from Encoders
-    	workingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
-    	workingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
-    	workingDataValues.TurretEncoderInitialCount = _turretMtr.getPosition();
-    	
     	_isInfeedPeriodZeroMode = false;
     	
     	// get user input values from the Smart Dashboard
@@ -564,9 +554,10 @@ public class Robot extends IterativeRobot
     	     	 break;
     	     
     	     case TEST:
-    	    	 autonomousTest();
+    	    	 autonomousUndefined();
     	    	 break;
 			case UNDEFINED:
+				 autonomousUndefined();
 				break;
 			default:
 				break;
@@ -828,9 +819,13 @@ public class Robot extends IterativeRobot
     			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
     			_isInfeedPeriodZeroMode = false;
     		}
+    		else if (inputDataValues.IsInfeedTiltFixedBtnPressed && !workingDataValues.IsInfeedTiltFixedBtnPressedLastScan)
+    		{
+    			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_FIXED_POSITION_CMD;
+    		}
     		else if (!inputDataValues.IsInfeedTiltDeployBtnPressed && !inputDataValues.IsInfeedTiltStoreBtnPressed)
     		{
-    			if (inputDataValues.InfeedRawTiltCmd < -0.1)		// remember, "up" on the joystick is a - value, (we use .1 as joystick deadband)
+    			if ((inputDataValues.InfeedTiltUpCmd > 0.1) && (inputDataValues.InfeedTiltDownCmd < 0.1))		// remember, "up" on the joystick is a - value, (we use .1 as joystick deadband)
     			{
     				outputDataValues.InfeedTiltTargetPositionInRotationsCmd = outputDataValues.InfeedTiltTargetPositionInRotationsCmd + 0.01;
     				
@@ -840,7 +835,7 @@ public class Robot extends IterativeRobot
     					outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
     				}
     			}
-    			else if (inputDataValues.InfeedRawTiltCmd > 0.1)	// remember, "down" on the joystick is a + value, (we use .1 as joystick deadband)
+    			else if ((inputDataValues.InfeedTiltUpCmd < 0.1) && (inputDataValues.InfeedTiltDownCmd > 0.1))	// remember, "down" on the joystick is a + value, (we use .1 as joystick deadband)
     			{
     				outputDataValues.InfeedTiltTargetPositionInRotationsCmd = outputDataValues.InfeedTiltTargetPositionInRotationsCmd - 0.01;
     				
@@ -900,8 +895,6 @@ public class Robot extends IterativeRobot
     	// =====================================
     	// Step 2.4: Turret 
     	// =====================================
-    	DriverStation.reportError(Double.toString(inputDataValues.TurretCCWRawVelocityCmd), false);
-    	DriverStation.reportError(Double.toString(inputDataValues.TurretCWRawVelocityCmd), false);
     	
     	// Change turret position command based on operator input
     	if (((inputDataValues.TurretCCWRawVelocityCmd > 0.1) || (inputDataValues.TurretCWRawVelocityCmd > 0.1))
@@ -1216,6 +1209,7 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsTurretCWButtonPressedLastScan = inputDataValues.IsTurretCWButtonPressed;
     	workingDataValues.IsTurretCCWButtonPressedLastScan = inputDataValues.IsTurretCCWButtonPressed;
     	workingDataValues.IsInfeedTiltStoreBtnPressedLastScan = inputDataValues.IsInfeedTiltStoreBtnPressed;
+    	workingDataValues.IsInfeedTiltFixedBtnPressedLastScan = inputDataValues.IsInfeedTiltFixedBtnPressed;
     }
     
     public void disabledPeriodic()
@@ -1613,13 +1607,16 @@ public class Robot extends IterativeRobot
     	// ==========================
     	// 1.2 get values from the gamepads
     	// ==========================
-    	inputDataValues.IsScaleDriveSpeedUpBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN);
-    	inputDataValues.IsScaleDriveSpeedDownBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN);
+    	//inputDataValues.IsScaleDriveSpeedUpBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN);
+    	//inputDataValues.IsScaleDriveSpeedDownBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN);
     	inputDataValues.IsPumaFrontToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN);
     	inputDataValues.IsPumaBackToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN);
     	inputDataValues.IsPumaBothToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN);
     	inputDataValues.IsShifterToggleHighBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHIFTER_TOGGLE_HIGH_BTN);
     	inputDataValues.IsShifterToggleLowBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN);
+    	inputDataValues.IsInfeedTiltStoreBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN);
+    	inputDataValues.IsInfeedTiltDeployBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN);
+    	inputDataValues.IsInfeedTiltFixedBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN);
     	
     	inputDataValues.IsTurretCWButtonPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_CW_BTN);
     	inputDataValues.IsTurretCCWButtonPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_CCW_BTN);
@@ -1627,8 +1624,6 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsSliderRevBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SLIDER_REV_BTN);
     	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
-    	inputDataValues.IsInfeedTiltStoreBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_STORE_BTN);
-    	inputDataValues.IsInfeedTiltDeployBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_DEPLOY_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -1638,9 +1633,9 @@ public class Robot extends IterativeRobot
     	inputDataValues.TurretCCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS);
     	inputDataValues.TurretCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS);
     	
-    	inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
-    	//inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_TRIGGER);
-    	//inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_TRIGGER);
+    	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
+    	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS);
+    	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS);
  	
     	// ==========================
     	// 1.3 get values from motor controlllers
@@ -1940,7 +1935,7 @@ public class Robot extends IterativeRobot
     	long deltaCycleTime = 0;
     	
     	String visionData = "";
-    	boolean isPrintDataBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN);
+    	boolean isPrintDataBtnPressed = _driverGamepad.getRawButton(4);
     	
     	if (isPrintDataBtnPressed)
     	{
