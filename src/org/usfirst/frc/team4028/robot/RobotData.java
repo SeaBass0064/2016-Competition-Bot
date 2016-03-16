@@ -118,7 +118,7 @@ public class RobotData
 		public double InfeedTiltUpCmd;
 		public double InfeedTiltDownCmd;
 		
-		public double TurretEncoderCurrentCount;
+		public double TurretEncoderCurrentPosition;
 
 		public double KickerRawVelocityCmd;
 
@@ -276,7 +276,7 @@ public class RobotData
 			sb.append(LeftDriveEncoderCurrentCount + "\t");
 			sb.append(RightDriveEncoderCurrentCount + "\t");
 			sb.append(InfeedTiltEncoderCurrentCount + "\t");
-			sb.append(TurretEncoderCurrentCount + "\t");
+			sb.append(TurretEncoderCurrentPosition + "\t");
 			sb.append(SliderEncoderCurrentCount + "\t");
 			sb.append(IsInfeedTiltAxisOnUpLimitSwitch + "\t");
 			sb.append(InfeedTiltCurrentOutputVoltage + "\t");
@@ -362,7 +362,7 @@ public class RobotData
     	public double RightDriveWheelsCurrentSpeedIPS;
 		
     	public double TurretEncoderInitialCount;
-    	public double TurretEncoderTotalDeltaCount;
+    	//public double TurretEncoderTotalDeltaCount;
     	public double TurretEncoderDegreesCount;
     	public double TurretTargetDegreesCount;
     	public double TurretTurnRotationsCmd;
@@ -426,7 +426,7 @@ public class RobotData
 			sb.append("WorkingData:RightDriveWheelsCurrentSpeedIPS" + "\t");
 			
 			sb.append("WorkingData:TurretEncoderInitialCount" + "\t");
-			sb.append("WorkingData:TurretEncoderTotalDeltaCount" + "\t");
+			//sb.append("WorkingData:TurretEncoderTotalDeltaCount" + "\t");
 			sb.append("WorkingData:TurretEncoderDegreesCount" + "\t");
 			sb.append("WorkingData:TurretTargetDegreesCount" + "\t");
 			sb.append("WorkingData:TurretTurnDegreesCmd" + "\t");
@@ -492,7 +492,7 @@ public class RobotData
 			sb.append(RightDriveWheelsCurrentSpeedIPS + "\t");
 			
 			sb.append(TurretEncoderInitialCount + "\t");
-			sb.append(TurretEncoderTotalDeltaCount + "\t");
+			//sb.append(TurretEncoderTotalDeltaCount + "\t");
 			sb.append(TurretEncoderDegreesCount + "\t");
 			sb.append(TurretTargetDegreesCount + "\t");
 			sb.append(TurretTurnRotationsCmd + "\t");

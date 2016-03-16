@@ -903,7 +903,8 @@ public class Robot extends IterativeRobot
     		_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     		DriverStation.reportError("Turret changing to PercentVBus mode", false);
     	}
-    	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+    	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus 
+    			&& ((inputDataValues.TurretCCWRawVelocityCmd < 0.1) && (inputDataValues.TurretCWRawVelocityCmd < 0.1)))
     	{
     		// stop driving the axis
     		outputDataValues.TurretVelocityCmd = 0;
@@ -943,11 +944,41 @@ public class Robot extends IterativeRobot
     		*/
     		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.1) && (inputDataValues.TurretCWRawVelocityCmd < 0.1))
     		{
-    			outputDataValues.TurretVelocityCmd = -(inputDataValues.TurretCCWRawVelocityCmd * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    			//outputDataValues.TurretVelocityCmd = -(Math.pow(inputDataValues.TurretCCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    			if (inputDataValues.TurretCCWRawVelocityCmd < 0.25)
+    			{
+    				outputDataValues.TurretVelocityCmd = -0.1;
+    			}
+    			else if (inputDataValues.TurretCCWRawVelocityCmd < 0.75)
+    			{
+    				outputDataValues.TurretVelocityCmd = -0.125;
+    			}
+    			else
+    			{
+    				outputDataValues.TurretVelocityCmd = -0.25;
+    			}
+    			if (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS){
+    				outputDataValues.TurretVelocityCmd = 0.0;
+    			}
     		}
     		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.1) && (inputDataValues.TurretCWRawVelocityCmd > 0.1))
     		{
-    			outputDataValues.TurretVelocityCmd = (inputDataValues.TurretCWRawVelocityCmd * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    			//outputDataValues.TurretVelocityCmd = (Math.pow(inputDataValues.TurretCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
+    			if (inputDataValues.TurretCWRawVelocityCmd < 0.25)
+    			{
+    				outputDataValues.TurretVelocityCmd = 0.1;
+    			}
+    			else if (inputDataValues.TurretCWRawVelocityCmd < 0.75)
+    			{
+    				outputDataValues.TurretVelocityCmd = 0.125;
+    			}
+    			else
+    			{
+    				outputDataValues.TurretVelocityCmd = 0.25;
+    			}
+    			if (inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS){
+    				outputDataValues.TurretVelocityCmd = 0.0;
+    			}
     		}
     	}
     	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
@@ -1211,7 +1242,6 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsInfeedTiltStoreBtnPressedLastScan = inputDataValues.IsInfeedTiltStoreBtnPressed;
     	workingDataValues.IsInfeedTiltFixedBtnPressedLastScan = inputDataValues.IsInfeedTiltFixedBtnPressed;
     }
-    
     public void disabledPeriodic()
     {
     	if(_dataLogger != null)
@@ -1643,7 +1673,7 @@ public class Robot extends IterativeRobot
     	//inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
     	//inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
     	inputDataValues.InfeedTiltEncoderCurrentCount = _infeedTiltMtr.getPosition();
-    	inputDataValues.TurretEncoderCurrentCount = _turretMtr.getPosition();
+    	inputDataValues.TurretEncoderCurrentPosition = _turretMtr.getPosition();
     	inputDataValues.SliderEncoderCurrentCount = _sliderMtr.getPosition();
     	
     	
@@ -1752,11 +1782,11 @@ public class Robot extends IterativeRobot
     	
     	// 2.3 Turret
     	
-    	workingDataValues.TurretEncoderTotalDeltaCount = (inputDataValues.TurretEncoderCurrentCount
-    														- workingDataValues.TurretEncoderInitialCount);
+    	//workingDataValues.TurretEncoderTotalDeltaCount = (inputDataValues.TurretEncoderCurrentPosition
+    	//													- workingDataValues.TurretEncoderInitialCount);
     	
-    	workingDataValues.TurretEncoderDegreesCount = (workingDataValues.TurretEncoderTotalDeltaCount)
-    													* RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
+    	//workingDataValues.TurretEncoderDegreesCount = (workingDataValues.TurretEncoderTotalDeltaCount)
+    	//												* RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
     	
     	
     	// 2.4 Shooter 
@@ -2004,10 +2034,7 @@ public class Robot extends IterativeRobot
     	String deltaCycleTimeString = Long.toString(deltaCycleTime);
     	DriverStation.reportError(deltaCycleTimeString, false);
     	
-    	//LiveWindow.run();
-    	
-    	
-    }
-    
+    	//LiveWindow.run(); 	 	
+    } 
 }
 

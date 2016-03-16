@@ -140,8 +140,8 @@ public class RobotMap
 	public static final double TURRET_GEAR_RATIO = 9.5556;								// gear ratio from motor assy output shaft to big gear under the turret
 	public static final double TURRET_TRAVEL_DISTANCE_DEGREES_PER_REV = 37.674;			// 360deg / TURRET_GEAR_RATIO
 	
-	public static final double TURRET_MAX_TRAVEL_IN_ROTATIONS = 7.8;
-	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -3.0;
+	public static final double TURRET_MAX_TRAVEL_IN_ROTATIONS = 0.36;
+	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -1.41;
 	public static final double TURRET_DEFAULT_POSITION_IN_ROTATIONS = 0.0; //-2.413;
 	
 	public static final double TURRET_PERCENTVBUS_SCALING_FACTOR = 0.25;
@@ -197,7 +197,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 30.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
