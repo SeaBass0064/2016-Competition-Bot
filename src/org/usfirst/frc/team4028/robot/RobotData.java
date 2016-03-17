@@ -65,7 +65,10 @@ public class RobotData
 		ADJUST_SLIDER_2,
 		CHANGE_PUMA_3,
 		START_SHOOTER_4,
-		SHOOT_5
+		SHOOT_5,
+		WAIT_FOR_BALL_TO_SHOOT_6,
+		STOP_SHOOTER_7,
+		AUTON_FINISHED_10
 	}
 	
 	// class constructor

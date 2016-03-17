@@ -179,6 +179,7 @@ public class RobotMap
 	public static final int SHOOTER_ENCODER_QUAD_MULTIPLIER = 4;                  		//  x 4 (Quad Encoder)
 	
 	public static final int SHOOTER_AUTON_START_MAX_TIME = 6000;
+	public static final int SHOOTER_AUTON_RUN_MAX_TIME = 3000;
 	
 	// _shooterMasterMtr.setPID(.2, 0, 0, .032, 0, 0, RobotMap.SHOOTER_PROFILE);
 	public static final double SHOOTER_KP = 0.2;

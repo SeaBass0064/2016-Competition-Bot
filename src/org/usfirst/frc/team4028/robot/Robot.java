@@ -759,7 +759,27 @@ public class Robot extends IterativeRobot
     		
     		case SHOOT_5:
     			outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
-    			DriverStation.reportError("Auton Sequence Complete", false);
+    			DriverStation.reportError("ChangingAutonModeTo: WAIT_FOR_BALL_TO_SHOOT_6", false);
+    			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.WAIT_FOR_BALL_TO_SHOOT_6;
+    			workingDataValues.AutonShooterStartTime = new Date().getTime();
+    			break;
+    		
+    		case WAIT_FOR_BALL_TO_SHOOT_6:
+    			long shooterElapsedTime = (new Date().getTime() - workingDataValues.AutonShooterStartTime);
+    			if (shooterElapsedTime  >= RobotMap.SHOOTER_AUTON_RUN_MAX_TIME)
+	    		{
+    				workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.STOP_SHOOTER_7;
+    				DriverStation.reportError("ChangingAutonModeTo: STOP_SHOOTER_7", false);
+	    		}
+    			break;
+    		
+    		case STOP_SHOOTER_7:
+    			outputDataValues.ShooterMtrVelocityCmd = 0.0;
+    			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.AUTON_FINISHED_10;
+    			DriverStation.reportError("ChangingAutonModeTo: AUTON_FINISHED_10", false);
+    			break;
+    			
+    		case AUTON_FINISHED_10:
     			break;
     			
     		default:
