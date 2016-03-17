@@ -178,6 +178,8 @@ public class RobotMap
 	public static final int SHOOTER_ENCODER_COUNTS_PER_REV = 1024;						// 1024
 	public static final int SHOOTER_ENCODER_QUAD_MULTIPLIER = 4;                  		//  x 4 (Quad Encoder)
 	
+	public static final int SHOOTER_AUTON_START_MAX_TIME = 6000;
+	
 	// _shooterMasterMtr.setPID(.2, 0, 0, .032, 0, 0, RobotMap.SHOOTER_PROFILE);
 	public static final double SHOOTER_KP = 0.2;
 	public static final double SHOOTER_KI = 0.0;

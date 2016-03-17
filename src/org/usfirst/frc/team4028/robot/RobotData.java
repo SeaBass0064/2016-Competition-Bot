@@ -39,8 +39,35 @@ public class RobotData
 	{
 		UNDEFINED,
 		DO_NOTHING,
-		TEST
+		ZERO_ALL_AXIS,
+		SHOOT_BALL
 	}
+	
+	public enum Puma_Auton_Position
+	{
+		UNDEFINED,
+		PUMA_BACK_DOWN,
+		PUMA_BACK_UP
+	}
+	
+	public enum Slider_Auton_Position
+	{
+		UNDEFINED,
+		CLICKS_24,
+		CLICKS_30,
+		CLICKS_34
+	}
+	
+	public enum Auton_Shoot_Ball_State
+	{
+		UNDEFINED,
+		INFEED_1,
+		ADJUST_SLIDER_2,
+		CHANGE_PUMA_3,
+		START_SHOOTER_4,
+		SHOOT_5
+	}
+	
 	// class constructor
 	public RobotData()
 	{
@@ -148,6 +175,8 @@ public class RobotData
 		public Date LastVisionDataRecievedDT;
 		
 		AutonMode AutonModeRequested;
+		Puma_Auton_Position PumaAutonPositionRequested;
+		Slider_Auton_Position SliderAutonPositionRequested;
 		
 		public boolean NavxIsConnected;
 		public boolean NavxIsCalibrating;
@@ -221,6 +250,8 @@ public class RobotData
 			sb.append("InputData:IsValidShot" + "\t");
 			sb.append("InputData:LastVisionDataRecievedDT" + "\t");
 			sb.append("InputData:AutonModeRequested" + "\t");
+			sb.append("InputData:PumaAutonPositionRequested" + "\t");
+			sb.append("InputData:SliderAutonPositionRequested" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
 			sb.append("InputData:NavxYaw" + "\t");
@@ -296,6 +327,8 @@ public class RobotData
 			sb.append(IsValidShot + "\t");
 			sb.append(LastVisionDataRecievedDT + "\t");
 			sb.append(AutonModeRequested + "\t");
+			sb.append(PumaAutonPositionRequested + "\t");
+			sb.append(SliderAutonPositionRequested + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
 			sb.append(NavxYaw + "\t");
@@ -381,6 +414,10 @@ public class RobotData
     	
     	public double ShooterWheelCurrentRPM;
     	
+    	public Auton_Shoot_Ball_State AutonShootBallState;
+    	
+    	public long AutonShooterStartTime;
+    	
     	
 		// build a TSV for the header
 		public String BuildTSVHeader()
@@ -443,7 +480,11 @@ public class RobotData
 			sb.append("WorkingData:SliderTargetDegreesCount" + "\t");
 			sb.append("WorkingData:SliderTurnRotationsCmd" + "\t");
 			
-			sb.append("WorkingData:ShooterWheelCurrentRPM");
+			sb.append("WorkingData:ShooterWheelCurrentRPM" + "\t");
+			
+			sb.append("WorkingData:AutonShootBallState" + "\t");
+			
+			sb.append("WorkingData:AutonShooterStartTime");
 					
 			return sb.toString();
 		}
@@ -510,6 +551,10 @@ public class RobotData
 			sb.append(SliderTurnDegreesCmd + "\t");
 			
 			sb.append(ShooterWheelCurrentRPM + "\t");
+			
+			sb.append(AutonShootBallState + "\t");
+			
+			sb.append(AutonShooterStartTime);
 					
 			return sb.toString();
 		}
