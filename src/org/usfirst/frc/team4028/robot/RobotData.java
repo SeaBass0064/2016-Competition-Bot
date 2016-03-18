@@ -71,6 +71,31 @@ public class RobotData
 		AUTON_FINISHED_10
 	}
 	
+	public enum Camera_Selected
+	{
+		UNDEFINED,
+		SHOOTER_CAMERA,
+		INFEED_CAMERA
+	}
+	
+	public enum Slider_Zero_State
+	{
+		UNDEFINED,
+		DRIVE_TO_HOME,
+		ON_HOME,
+		GO_TO_REQUESTED_POSITION,
+		TIMEOUT
+	}
+	
+	public enum Infeed_Tilt_Zero_State
+	{
+		UNDEFINED,
+		TILT_TO_HOME,
+		ON_HOME,
+		GO_TO_REQUESTED_POSITION,
+		TIMEOUT
+	}
+	
 	// class constructor
 	public RobotData()
 	{
@@ -122,6 +147,7 @@ public class RobotData
 		public boolean IsShifterToggleLowBtnPressed;
 		public boolean IsInfeedAcquireBtnPressed;
 		public boolean IsInfeedReleaseBtnPressed;
+		public boolean IsCameraSwitchBtnPressed;
 		
 		public boolean IsTurretCWButtonPressed;
 		public boolean IsTurretCCWButtonPressed;
@@ -181,6 +207,8 @@ public class RobotData
 		Auton_Puma_Back_Position AutonPumaBackPositionRequested;
 		Auton_Slider_Position AutonSliderPositionRequested;
 		
+		Camera_Selected CameraSelected;
+		
 		public boolean NavxIsConnected;
 		public boolean NavxIsCalibrating;
 		
@@ -211,6 +239,7 @@ public class RobotData
 			sb.append("InputData:IsShifterToggleLowBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
+			sb.append("InputData:IsCameraSwitchBtnPressed" + "\t");
 			sb.append("InputData:IsTurretCWButtonPressed" + "\t");
 			sb.append("InputData:IsTurretCCWButtonPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
@@ -255,6 +284,7 @@ public class RobotData
 			sb.append("InputData:AutonModeRequested" + "\t");
 			sb.append("InputData:AutonPumaBackPositionRequested" + "\t");
 			sb.append("InputData:AutonSliderPositionRequested" + "\t");
+			sb.append("InputData:CameraSelected" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
 			sb.append("InputData:NavxYaw" + "\t");
@@ -288,6 +318,7 @@ public class RobotData
 			sb.append(IsShifterToggleLowBtnPressed + "\t");
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
+			sb.append(IsCameraSwitchBtnPressed + "\t");
 			sb.append(IsTurretCWButtonPressed + "\t");
 			sb.append(IsTurretCCWButtonPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
@@ -332,6 +363,7 @@ public class RobotData
 			sb.append(AutonModeRequested + "\t");
 			sb.append(AutonPumaBackPositionRequested + "\t");
 			sb.append(AutonSliderPositionRequested + "\t");
+			sb.append(CameraSelected + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
 			sb.append(NavxYaw + "\t");
@@ -373,6 +405,7 @@ public class RobotData
 		public boolean IsTurretCCWButtonPressedLastScan;
 		public boolean IsInfeedTiltStoreBtnPressedLastScan;
 		public boolean IsInfeedTiltFixedBtnPressedLastScan;
+		public boolean IsCameraSwitchBtnPressedLastScan;
 		
 		public boolean IsTurretEncoderDegreesZeroYet;
 		public boolean IsTurretEncoderDegreesTargetYet;
@@ -441,6 +474,7 @@ public class RobotData
 			sb.append("WorkingData:IsTurretCCWButtonPressedLastScan" + "\t");
 			sb.append("WorkingData:IsInfeedTiltStoreBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsInfeedTiltFixedBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsCameraSwitchBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
 			sb.append("WorkingData:IsTurretEncoderDegreesTargetYet" + "\t");
@@ -511,6 +545,7 @@ public class RobotData
 			sb.append(IsTurretCCWButtonPressedLastScan + "\t");
 			sb.append(IsInfeedTiltStoreBtnPressedLastScan + "\t");
 			sb.append(IsInfeedTiltFixedBtnPressedLastScan + "\t");
+			sb.append(IsCameraSwitchBtnPressedLastScan + "\t");
 			
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
 			sb.append(IsTurretEncoderDegreesTargetYet + "\t");

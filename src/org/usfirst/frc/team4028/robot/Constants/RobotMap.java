@@ -240,6 +240,7 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS = LogitechF310.LEFT_TRIGGER;
 	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS = LogitechF310.RIGHT_TRIGGER;
+	public static final int OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN = LogitechF310.GREEN_BUTTON_A;
 	
 	// ======================================
 	// define constants for logging
