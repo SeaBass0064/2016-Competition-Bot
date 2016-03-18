@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.usfirst.frc.team4028.robot.Constants.RobotMap;
+import org.usfirst.frc.team4028.robot.RobotData.AutonMode;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Shoot_Ball_State;
 import org.usfirst.frc.team4028.robot.RobotData.InputData;
 import org.usfirst.frc.team4028.robot.RobotData.OutputData;
@@ -154,7 +155,7 @@ public class Robot extends IterativeRobot
 	
 	// Smart Dashboard chooser
 	SendableChooser autonModeChooser;
-	SendableChooser autonPumaPositionChooser;
+	SendableChooser autonPumaBackPositionChooser;
 	SendableChooser autonSliderPositionChooser;
 
 	
@@ -186,16 +187,19 @@ public class Robot extends IterativeRobot
     	_leftDriveMasterMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	//_leftDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_leftDriveMasterMtr.reverseSensor(false);  							// do not invert encoder feedback
+    	_leftDriveMasterMtr.enableLimitSwitch(false, false);
     
     	_leftDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_TALON);	
     	_leftDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_TALON);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
+    	_leftDriveSlaveMtr.enableLimitSwitch(false, false);
     	
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_TALON);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_TALON);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
+    	_leftDriveSlave2Mtr.enableLimitSwitch(false, false);
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -205,16 +209,19 @@ public class Robot extends IterativeRobot
     	_rightDriveMasterMtr.enableBrakeMode(false);						// default to brake mode DISABLED
     	//_rightDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_rightDriveMasterMtr.reverseSensor(true);  							// invert encoder feedback
+    	_rightDriveMasterMtr.enableLimitSwitch(false, false);
     	
     	_rightDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_TALON);	
     	_rightDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_TALON);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
+    	_rightDriveSlaveMtr.enableLimitSwitch(false, false);
     	
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_TALON);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_TALON);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
+    	_rightDriveSlave2Mtr.enableLimitSwitch(false, false);
     	
     	// ===================
     	// Infeed Tilt
@@ -256,6 +263,7 @@ public class Robot extends IterativeRobot
     	_shooterMasterMtr.changeControlMode(CANTalon.TalonControlMode.Speed);
     	//_shooterMasterMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);  // 
     	_shooterMasterMtr.configEncoderCodesPerRev(RobotMap.SHOOTER_ENCODER_COUNTS_PER_REV);	// try to enable Unit Scaling
+    	_shooterMasterMtr.enableLimitSwitch(false, false);
     	
     	// setup shooter PID Loop
     	// shooterMaxVelociytInNativeUnitsPer100mSec = CalcShooterVelociytInNativeUnitsPer100mSec(RobotMap.SHOOTER_MAX_MOTOR_RPM);
@@ -267,6 +275,7 @@ public class Robot extends IterativeRobot
     	_shooterSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);
     	_shooterSlaveMtr.set(RobotMap.CAN_ADDR_MASTER_SHOOTER_TALON);
     	_shooterSlaveMtr.enableBrakeMode(false);
+    	_shooterSlaveMtr.enableLimitSwitch(false, false);
     	
     	// ===================
     	// Kicker
@@ -346,12 +355,25 @@ public class Robot extends IterativeRobot
         
         //===================
         // Smart DashBoard User Input
+        //   http://wpilib.screenstepslive.com/s/3120/m/7932/l/81109-choosing-an-autonomous-program-from-smartdashboard
         //===================
         autonModeChooser = new SendableChooser();
-        autonModeChooser.addDefault("Do Nothing", RobotData.AutonMode.ZERO_ALL_AXIS);
-        autonModeChooser.addObject("Test", RobotData.AutonMode.SHOOT_BALL);
-        SmartDashboard.putData("Autonomous mode chooser", autonModeChooser);
-    	
+        autonModeChooser.addDefault("Do Nothing", RobotData.AutonMode.DO_NOTHING);
+        autonModeChooser.addObject("Zero All Axis", RobotData.AutonMode.ZERO_ALL_AXIS);
+        autonModeChooser.addObject("Shoot Ball", RobotData.AutonMode.SHOOT_BALL);
+        SmartDashboard.putData("Auton mode chooser", autonModeChooser);
+        
+    	autonPumaBackPositionChooser = new SendableChooser();
+    	autonPumaBackPositionChooser.addDefault("Puma Down", RobotData.Auton_Puma_Back_Position.PUMA_BACK_DOWN);
+    	autonPumaBackPositionChooser.addObject("Puma Up", RobotData.Auton_Puma_Back_Position.PUMA_BACK_UP);
+        SmartDashboard.putData("Auton Puma Back Position", autonPumaBackPositionChooser);
+        
+    	autonSliderPositionChooser = new SendableChooser();
+    	autonSliderPositionChooser.addObject("24 Clicks", RobotData.Auton_Slider_Position.CLICKS_24);
+    	autonSliderPositionChooser.addObject("30 Clicks", RobotData.Auton_Slider_Position.CLICKS_30);
+    	autonSliderPositionChooser.addDefault("34 Clicks", RobotData.Auton_Slider_Position.CLICKS_34);
+        SmartDashboard.putData("Auton Slider Position", autonSliderPositionChooser);
+        
         //===================
     	// write jar (build) date & time to the dashboard
         //===================
@@ -495,8 +517,10 @@ public class Robot extends IterativeRobot
     // This method is called once at the start of Antonomous Mode
     //
     // ========================================================================
-    public void autonomousInit() {
+    public void autonomousInit() 
+    {
     	_robotLiveData = new RobotData();
+    	
     	//get local references to make variable references shorter
     	InputData inputDataValues = _robotLiveData.InputDataValues;
     	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
@@ -510,26 +534,16 @@ public class Robot extends IterativeRobot
     	_isInfeedPeriodZeroMode = false;
     	
     	// get user input values from the Smart Dashboard
+    	
     	inputDataValues.AutonModeRequested = (RobotData.AutonMode) autonModeChooser.getSelected();
-    	inputDataValues.PumaAutonPositionRequested = (RobotData.Puma_Auton_Position) autonPumaPositionChooser.getSelected();
-    	inputDataValues.SliderAutonPositionRequested = (RobotData.Slider_Auton_Position) autonSliderPositionChooser.getSelected();
+    	inputDataValues.AutonPumaBackPositionRequested = (RobotData.Auton_Puma_Back_Position) autonPumaBackPositionChooser.getSelected();
+    	inputDataValues.AutonSliderPositionRequested = (RobotData.Auton_Slider_Position) autonSliderPositionChooser.getSelected();
     	
     	DriverStation.reportError("AutonModeRequested: " + inputDataValues.AutonModeRequested.toString(), false);
-    	DriverStation.reportError("PumaAutonPositionRequested: " + inputDataValues.PumaAutonPositionRequested.toString(), false);
-    	DriverStation.reportError("SliderAutonPositionRequested: " + inputDataValues.SliderAutonPositionRequested.toString(), false);
+    	DriverStation.reportError("PumaAutonPositionRequested: " + inputDataValues.AutonPumaBackPositionRequested.toString(), false);
+    	DriverStation.reportError("SliderAutonPositionRequested: " + inputDataValues.AutonSliderPositionRequested.toString(), false);
     	
-    	
-    	/*
-    	if (!_isTurretAxisZeroedYet)
-    	{
-    		ZeroTurretAxis(_robotLiveData);
-    	}
-    	
-    	if (!_isInfeedTiltAxisZeroedYet)
-    	{
-    		ZeroInfeedTiltAxis(_robotLiveData);
-    	}
-    	*/
+    	//inputDataValues.AutonModeRequested = AutonMode.DO_NOTHING;
     	switch(inputDataValues.AutonModeRequested)
     	{
     		case DO_NOTHING:
@@ -553,7 +567,7 @@ public class Robot extends IterativeRobot
     			
     		case SHOOT_BALL:
     			double SliderAutonPosition;
-    	    	switch(inputDataValues.SliderAutonPositionRequested)
+    	    	switch(inputDataValues.AutonSliderPositionRequested)
     	    	{
     	    	    case CLICKS_24:
     	    	     	 SliderAutonPosition = 24;
@@ -577,29 +591,30 @@ public class Robot extends IterativeRobot
     	    		ZeroSliderAxis(_robotLiveData, SliderAutonPosition);
     	    	}
     	    	
-    	    	Value PumaBackSolenoidPosition;
-    	    	switch(inputDataValues.PumaAutonPositionRequested)
+    	    	Value PumaFrontSolenoidPosition;
+    	    	switch(inputDataValues.AutonPumaBackPositionRequested)
     	    	{
     	    	    case PUMA_BACK_DOWN:
-    	    	     	 PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
+    	    	     	 PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION;
     	    	     	 break;
     	    	     
     	    	    case PUMA_BACK_UP:
-    	    	    	 PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_UP_POSITION;
+    	    	    	 PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
     	    	    	 break;
     	    	    	
     				default:
-    					PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
+    					PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION;
     					break;
     	    	}
     	    	
-    	    	_pumaBackSolenoid.set(PumaBackSolenoidPosition);
+    	    	_pumaFrontSolenoid.set(PumaFrontSolenoidPosition);
     			break;
     			
     		default:
     			break;
     	}
     	workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.INFEED_1;
+    	DriverStation.reportError("ChangingAutonModeTo: INFEED_1", false);
     	
     	// Optionally Setup logging to a usb stick
     	setupLogging("auton");
@@ -618,8 +633,6 @@ public class Robot extends IterativeRobot
     	// Step 1: Get Inputs
     	// ===============================
     	UpdateInputAndCalcWorkingDataValues(inputDataValues, workingDataValues);
-    	
-    	outputDataValues.DriversStationMsg = "";
     	
     	// ===============================
     	// Step 2: call the appropriate auton mode
@@ -714,21 +727,22 @@ public class Robot extends IterativeRobot
     			if (!inputDataValues.IsBallInPosition)
         		{
         			outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+        			DriverStation.reportError("Ball not in position", false);
         		}
         		else if(inputDataValues.IsBallInPosition)
         		{
         			outputDataValues.InfeedAcqMtrVelocityCmd = 0.0;
         			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.ADJUST_SLIDER_2;
+        			DriverStation.reportError("ChangingAutonModeTo: ADJUST_SLIDER_2", false);
         		}
     			
     			outputDataValues.ShooterMtrVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
     			outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
     			
-    			DriverStation.reportError("ChangingAutonModeTo: ADJUST_SLIDER_2", false);
     			break;
     			
     		case ADJUST_SLIDER_2:
-    			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.ADJUST_SLIDER_2;
+    			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.CHANGE_PUMA_3;
     			DriverStation.reportError("ChangingAutonModeTo: CHANGE_PUMA_3", false);
     			break;
     			
@@ -748,12 +762,14 @@ public class Robot extends IterativeRobot
     				workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.SHOOT_5;
     				DriverStation.reportError("Shooter reached target speed", false);
     				DriverStation.reportError("ChangingAutonModeTo: SHOOT_5", false);
+    				DriverStation.reportError("Shooter motor speed: " + inputDataValues.ShooterActualSpeed, false);
     			}
     			else if (elapsedTime  >= RobotMap.SHOOTER_AUTON_START_MAX_TIME)
 	    		{
 	    			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.SHOOT_5;
 	    			DriverStation.reportError("Shooter Timeout: waiting for target speed", false);
 	    			DriverStation.reportError("ChangingAutonModeTo: SHOOT_5", false);
+	    			DriverStation.reportError("Shooter motor speed: " + inputDataValues.ShooterActualSpeed, false);
 	    		}
     			break;
     		
@@ -775,6 +791,8 @@ public class Robot extends IterativeRobot
     		
     		case STOP_SHOOTER_7:
     			outputDataValues.ShooterMtrVelocityCmd = 0.0;
+    			outputDataValues.InfeedAcqMtrVelocityCmd = 0.0;
+    			outputDataValues.KickerMtrVelocityCmd = 0.0;
     			workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.AUTON_FINISHED_10;
     			DriverStation.reportError("ChangingAutonModeTo: AUTON_FINISHED_10", false);
     			break;
@@ -1972,9 +1990,11 @@ public class Robot extends IterativeRobot
     	OutputData outputDataValues = robotDataValues.OutputDataValues;
     	
     	// Smart Dashboard Input
+    	/*
     	SmartDashboard.putString("SD:AutonMode", inputDataValues.AutonModeRequested.toString());
-    	SmartDashboard.putString("SD:AutonPumaPosition", inputDataValues.PumaAutonPositionRequested.toString());
-    	SmartDashboard.putString("SD:AutonSliderPosition", inputDataValues.SliderAutonPositionRequested.toString());
+    	SmartDashboard.putString("SD:AutonPumaBackPosition", inputDataValues.AutonPumaBackPositionRequested.toString());
+    	SmartDashboard.putString("SD:AutonSliderPosition", inputDataValues.AutonSliderPositionRequested.toString());
+    	*/
     	
 		// Drive Motors
 		//SmartDashboard.putNumber("Drive.Btn:SpeedScaleFactor", workingDataValues.DriveSpeedScalingFactor);
@@ -2028,6 +2048,7 @@ public class Robot extends IterativeRobot
 		
 		// Slider
 		SmartDashboard.putNumber("Slider.NumberOfClicks", outputDataValues.SliderTargetPositionCmd);
+		SmartDashboard.putNumber("Slider.DefaultNumberofClicks", RobotMap.SLIDER_DEFAULT_TARGET_POSITION);
 		
 		// Vision Data
 		//SmartDashboard.putBoolean("Vision.IsValidData", inputDataValues.IsValidData);

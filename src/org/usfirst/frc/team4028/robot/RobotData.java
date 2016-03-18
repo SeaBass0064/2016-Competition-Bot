@@ -43,14 +43,14 @@ public class RobotData
 		SHOOT_BALL
 	}
 	
-	public enum Puma_Auton_Position
+	public enum Auton_Puma_Back_Position
 	{
 		UNDEFINED,
 		PUMA_BACK_DOWN,
 		PUMA_BACK_UP
 	}
 	
-	public enum Slider_Auton_Position
+	public enum Auton_Slider_Position
 	{
 		UNDEFINED,
 		CLICKS_24,
@@ -178,8 +178,8 @@ public class RobotData
 		public Date LastVisionDataRecievedDT;
 		
 		AutonMode AutonModeRequested;
-		Puma_Auton_Position PumaAutonPositionRequested;
-		Slider_Auton_Position SliderAutonPositionRequested;
+		Auton_Puma_Back_Position AutonPumaBackPositionRequested;
+		Auton_Slider_Position AutonSliderPositionRequested;
 		
 		public boolean NavxIsConnected;
 		public boolean NavxIsCalibrating;
@@ -253,8 +253,8 @@ public class RobotData
 			sb.append("InputData:IsValidShot" + "\t");
 			sb.append("InputData:LastVisionDataRecievedDT" + "\t");
 			sb.append("InputData:AutonModeRequested" + "\t");
-			sb.append("InputData:PumaAutonPositionRequested" + "\t");
-			sb.append("InputData:SliderAutonPositionRequested" + "\t");
+			sb.append("InputData:AutonPumaBackPositionRequested" + "\t");
+			sb.append("InputData:AutonSliderPositionRequested" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
 			sb.append("InputData:NavxYaw" + "\t");
@@ -330,8 +330,8 @@ public class RobotData
 			sb.append(IsValidShot + "\t");
 			sb.append(LastVisionDataRecievedDT + "\t");
 			sb.append(AutonModeRequested + "\t");
-			sb.append(PumaAutonPositionRequested + "\t");
-			sb.append(SliderAutonPositionRequested + "\t");
+			sb.append(AutonPumaBackPositionRequested + "\t");
+			sb.append(AutonSliderPositionRequested + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
 			sb.append(NavxYaw + "\t");

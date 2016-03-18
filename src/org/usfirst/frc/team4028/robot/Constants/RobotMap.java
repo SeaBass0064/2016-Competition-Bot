@@ -130,7 +130,7 @@ public class RobotMap
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
 	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.05;
-	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.1;		// this is approx 0 deg
+	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.18;		// this is approx 0 deg
 	public static final double INFEED_TILT_LOWER_LIMIT = -0.25;
 	
 	// ======================================
@@ -200,7 +200,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 30.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
