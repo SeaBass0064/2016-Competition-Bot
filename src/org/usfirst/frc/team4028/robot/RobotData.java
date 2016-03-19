@@ -693,11 +693,11 @@ public class RobotData
 			}
 			
 			String shifterSolenoidPositionDesc = "";
-			if (ShifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_OPEN_POSITION)
+			if (ShifterSolenoidPosition == RobotMap.SHIFTER_HIGH_GEAR_POSITION)
 			{
 				shifterSolenoidPositionDesc = "HIGH_GEAR";
 			}
-			else if (ShifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_CLOSED_POSITION)
+			else if (ShifterSolenoidPosition == RobotMap.SHIFTER_LOW_GEAR_POSITION)
 			{
 				shifterSolenoidPositionDesc = "LOW_GEAR";
 			}

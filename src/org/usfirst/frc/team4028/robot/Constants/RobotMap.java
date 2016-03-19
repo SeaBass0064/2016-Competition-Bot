@@ -82,8 +82,8 @@ public class RobotMap
 	public static final Value PUMA_FRONT_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;		
 	public static final Value PUMA_BACK_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value SHIFTER_SOLENOID_OPEN_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value SHIFTER_SOLENOID_CLOSED_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value SHIFTER_HIGH_GEAR_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value SHIFTER_LOW_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
 	
 	// ======================================
 	// define constants for Left Drive Motor

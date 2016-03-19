@@ -131,6 +131,19 @@ public class Robot extends IterativeRobot
 	
 	// Camera
 	CameraServer server;
+	// image to push to the camera server
+	private Image _cameraFrame;
+	// The current camera we are viewing
+	private USBCamera _currentCamera;
+	private USBCamera _shooterCamera;
+	private USBCamera _infeedCamera;
+	// The maximum FPS for all the cameras
+	private final int CAMERA_MAX_FPS = 15;
+	// the quality of the image to push back to the drivers station (0-100)
+	private final int CAMERA_IMAGE_QUALITY = 25;
+	// time to sleep after changing camera views
+	private final long CAMERA_SWAP_SLEEP_TIME = 100;
+	
 	
 	// navX
 	private AHRS _navXSensor;
@@ -367,7 +380,25 @@ public class Robot extends IterativeRobot
         //the camera name (ex "cam0") can be found through the roborio web interface
         server.startAutomaticCapture("cam0");
         // note since the camera is initialized here, you cannot move it to another USB socket after the robot is powered up
-        
+    	/*
+        _cameraFrame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
+    	CameraServer.getInstance().setQuality(CAMERA_IMAGE_QUALITY);
+    	
+    	_shooterCamera = new USBCamera("cam0");
+    	_shooterCamera.setFPS(CAMERA_MAX_FPS);
+    	
+    	try
+    	{
+    		_infeedCamera = new USBCamera("cam1");
+    		_infeedCamera.setFPS(CAMERA_MAX_FPS);
+    	}
+    	catch (Exception e)
+    	{
+    		DriverStation.reportError("..Cannot find Infeed Camera" , false);
+    	}
+    	_currentCamera = _shooterCamera; 
+    	*/
+    	
         //===================
         // Smart DashBoard User Input
         //   http://wpilib.screenstepslive.com/s/3120/m/7932/l/81109-choosing-an-autonomous-program-from-smartdashboard
@@ -544,7 +575,7 @@ public class Robot extends IterativeRobot
     	// Set desired initial (default) solenoid positions
     	outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION;
     	outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
-    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_HIGH_GEAR_POSITION;
     	
     	_isInfeedPeriodZeroMode = false;
     	
@@ -937,7 +968,7 @@ public class Robot extends IterativeRobot
     	// set our desired default state for the puma solenoids
     	outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION;
     	outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
-    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_HIGH_GEAR_POSITION;
     	
     	// set initial state of "pressed last scan" working values to be false
     	workingDataValues.IsPumaFrontToggleBtnPressedLastScan = false;
@@ -1220,39 +1251,45 @@ public class Robot extends IterativeRobot
     			outputDataValues.TurretVelocityCmd = 0.0;
     		}
     		*/
-    		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.1) && (inputDataValues.TurretCWRawVelocityCmd < 0.1))
+    		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.05) && (inputDataValues.TurretCWRawVelocityCmd < 0.05))
     		{
     			//outputDataValues.TurretVelocityCmd = -(Math.pow(inputDataValues.TurretCCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
-    			if (inputDataValues.TurretCCWRawVelocityCmd < 0.25)
+    			if (inputDataValues.TurretCCWRawVelocityCmd < 0.5)
     			{
     				outputDataValues.TurretVelocityCmd = -0.1;
+    				DriverStation.reportError("Driving at -10%", false);
     			}
     			else if (inputDataValues.TurretCCWRawVelocityCmd < 0.75)
     			{
     				outputDataValues.TurretVelocityCmd = -0.125;
+    				DriverStation.reportError("Driving at -12.5%", false);
     			}
     			else
     			{
     				outputDataValues.TurretVelocityCmd = -0.25;
+    				DriverStation.reportError("Driving at -25%", false);
     			}
     			if (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS){
     				outputDataValues.TurretVelocityCmd = 0.0;
     			}
     		}
-    		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.1) && (inputDataValues.TurretCWRawVelocityCmd > 0.1))
+    		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.05) && (inputDataValues.TurretCWRawVelocityCmd > 0.05))
     		{
     			//outputDataValues.TurretVelocityCmd = (Math.pow(inputDataValues.TurretCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
-    			if (inputDataValues.TurretCWRawVelocityCmd < 0.25)
+    			if (inputDataValues.TurretCWRawVelocityCmd < 0.5)
     			{
     				outputDataValues.TurretVelocityCmd = 0.1;
+    				DriverStation.reportError("Driving at 10%", false);
     			}
     			else if (inputDataValues.TurretCWRawVelocityCmd < 0.75)
     			{
     				outputDataValues.TurretVelocityCmd = 0.125;
+    				DriverStation.reportError("Driving at 12.5%", false);
     			}
     			else
     			{
     				outputDataValues.TurretVelocityCmd = 0.25;
+    				DriverStation.reportError("Driving at 25%", false);
     			}
     			if (inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS){
     				outputDataValues.TurretVelocityCmd = 0.0;
@@ -1386,10 +1423,29 @@ public class Robot extends IterativeRobot
     	// ===========================
     	// Step 2.8: Camera
     	// ===========================
-    	if (inputDataValues.IsCameraSwitchBtnPressed && !workingDataValues.IsCameraSwitchBtnPressedLastScan)
+    	/*
+    	if (inputDataValues.IsCameraSwitchBtnPressed 
+    			&& !workingDataValues.IsCameraSwitchBtnPressedLastScan
+    			&& _infeedCamera != null)
     	{
+			_currentCamera.stopCapture();
+			_currentCamera.closeCamera();
+			
+    		if(_currentCamera == _shooterCamera )
+    		{
+    			_currentCamera = _infeedCamera;
+    			DriverStation.reportError("Camera switching to infeed", false);
+    		}
+    		else
+    		{
+    			_currentCamera = _shooterCamera;
+    			DriverStation.reportError("Camera switching to shooter", false);
+    		}
     		
+			_currentCamera.openCamera();
+			_currentCamera.startCapture();
     	}
+    	*/
     	    	
     	// =====================================
     	// Step 3: Push the target Outputs out to the physical devices
@@ -1440,11 +1496,11 @@ public class Robot extends IterativeRobot
     	
     	if (inputDataValues.IsShifterToggleHighBtnPressed && !inputDataValues.IsShifterToggleLowBtnPressed)
     	{
-    		outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_OPEN_POSITION;
+    		outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_HIGH_GEAR_POSITION;
     	}
     	else if (!inputDataValues.IsShifterToggleHighBtnPressed && inputDataValues.IsShifterToggleLowBtnPressed)
     	{
-    		outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_CLOSED_POSITION;
+    		outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
     	}
     	else
     	{
@@ -1492,7 +1548,13 @@ public class Robot extends IterativeRobot
     	}
     	
     	// ==========================
-    	// 4.0 Update Dashboard
+    	// 4.0 publish image from currently selected Camera to the dashboard
+    	// ==========================
+    	//_currentCamera.getImage(_cameraFrame);
+    	//CameraServer.getInstance().setImage(_cameraFrame);
+    	
+    	// ==========================
+    	// 5.0 Update Dashboard
     	// ==========================
     	UpdateDashboard(_robotLiveData);
     	
@@ -1506,7 +1568,7 @@ public class Robot extends IterativeRobot
     	}
     	
     	// ==========================
-    	// 5.0 Optional Data logging
+    	// 6.0 Optional Data logging
     	// ==========================
     	if(workingDataValues.IsLoggingEnabled == true)
     	{
@@ -1515,7 +1577,7 @@ public class Robot extends IterativeRobot
     	// set last scan DT
 
     	// ==========================
-    	// 6.0 Stuff we want to do at the very end (because they operate as toggles)
+    	// 7.0 Stuff we want to do at the very end (because they operate as toggles)
     	// ==========================
     	workingDataValues.IsPumaFrontToggleBtnPressedLastScan = inputDataValues.IsPumaFrontToggleBtnPressed;
     	workingDataValues.IsPumaBackToggleBtnPressedLastScan = inputDataValues.IsPumaBackToggleBtnPressed;
@@ -2311,8 +2373,18 @@ public class Robot extends IterativeRobot
     	SmartDashboard.putNumber("Shooter.ActualSpeed", inputDataValues.ShooterActualSpeed);
 		
 		// Slider
-		SmartDashboard.putNumber("Slider.NumberOfClicks", outputDataValues.SliderTargetPositionCmd);
+		SmartDashboard.putNumber("Slider.NumberOfClicks", inputDataValues.SliderCurrentPosition);
 		SmartDashboard.putNumber("Slider.DefaultNumberofClicks", RobotMap.SLIDER_DEFAULT_TARGET_POSITION);
+		
+		// Shifter
+		if (outputDataValues.ShifterSolenoidPosition == RobotMap.SHIFTER_HIGH_GEAR_POSITION)
+		{
+			SmartDashboard.putString("Shifter: ", "HIGH GEAR");
+		}
+		else
+		{
+			SmartDashboard.putString("Shifter: ", "LOW GEAR");
+		}
 		
 		// Vision Data
 		//SmartDashboard.putBoolean("Vision.IsValidData", inputDataValues.IsValidData);
