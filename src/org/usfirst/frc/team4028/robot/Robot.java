@@ -1254,20 +1254,15 @@ public class Robot extends IterativeRobot
     		if ((inputDataValues.TurretCCWRawVelocityCmd > 0.05) && (inputDataValues.TurretCWRawVelocityCmd < 0.05))
     		{
     			//outputDataValues.TurretVelocityCmd = -(Math.pow(inputDataValues.TurretCCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
-    			if (inputDataValues.TurretCCWRawVelocityCmd < 0.5)
+    			if (inputDataValues.TurretCCWRawVelocityCmd < 0.75)
     			{
-    				outputDataValues.TurretVelocityCmd = -0.1;
-    				DriverStation.reportError("Driving at -10%", false);
-    			}
-    			else if (inputDataValues.TurretCCWRawVelocityCmd < 0.75)
-    			{
-    				outputDataValues.TurretVelocityCmd = -0.125;
-    				DriverStation.reportError("Driving at -12.5%", false);
+    				outputDataValues.TurretVelocityCmd = -0.09;
+    				DriverStation.reportError("Driving at -9%", false);
     			}
     			else
     			{
-    				outputDataValues.TurretVelocityCmd = -0.25;
-    				DriverStation.reportError("Driving at -25%", false);
+    				outputDataValues.TurretVelocityCmd = -0.125;
+    				DriverStation.reportError("Driving at -12.5%", false);
     			}
     			if (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS){
     				outputDataValues.TurretVelocityCmd = 0.0;
@@ -1276,20 +1271,15 @@ public class Robot extends IterativeRobot
     		else if ((inputDataValues.TurretCCWRawVelocityCmd < 0.05) && (inputDataValues.TurretCWRawVelocityCmd > 0.05))
     		{
     			//outputDataValues.TurretVelocityCmd = (Math.pow(inputDataValues.TurretCWRawVelocityCmd, 3) * RobotMap.TURRET_PERCENTVBUS_SCALING_FACTOR);
-    			if (inputDataValues.TurretCWRawVelocityCmd < 0.5)
+    			if (inputDataValues.TurretCWRawVelocityCmd < 0.75)
     			{
-    				outputDataValues.TurretVelocityCmd = 0.1;
-    				DriverStation.reportError("Driving at 10%", false);
-    			}
-    			else if (inputDataValues.TurretCWRawVelocityCmd < 0.75)
-    			{
-    				outputDataValues.TurretVelocityCmd = 0.125;
-    				DriverStation.reportError("Driving at 12.5%", false);
+    				outputDataValues.TurretVelocityCmd = 0.09;
+    				DriverStation.reportError("Driving at 9%", false);
     			}
     			else
     			{
-    				outputDataValues.TurretVelocityCmd = 0.25;
-    				DriverStation.reportError("Driving at 25%", false);
+    				outputDataValues.TurretVelocityCmd = 0.125;
+    				DriverStation.reportError("Driving at 12.5%", false);
     			}
     			if (inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS){
     				outputDataValues.TurretVelocityCmd = 0.0;
@@ -1685,8 +1675,8 @@ public class Robot extends IterativeRobot
 	    	// start out in %VBUS mode
 	    	_infeedTiltMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 	    	
-	    	// drive the axis up at 15%
-	    	outputDataValues.InfeedTiltMtrVelocityCmd = 0.19;
+	    	// drive the axis up at 19%
+	    	outputDataValues.InfeedTiltMtrVelocityCmd = 0.35;
 	    	_infeedTiltMtr.set(outputDataValues.InfeedTiltMtrVelocityCmd);
 	    	
 	    	long startTime = System.currentTimeMillis();
@@ -2379,11 +2369,11 @@ public class Robot extends IterativeRobot
 		// Shifter
 		if (outputDataValues.ShifterSolenoidPosition == RobotMap.SHIFTER_HIGH_GEAR_POSITION)
 		{
-			SmartDashboard.putString("Shifter: ", "HIGH GEAR");
+			SmartDashboard.putString("Shifter: ", "LOW GEAR");
 		}
 		else
 		{
-			SmartDashboard.putString("Shifter: ", "LOW GEAR");
+			SmartDashboard.putString("Shifter: ", "HIGH GEAR");
 		}
 		
 		// Vision Data
