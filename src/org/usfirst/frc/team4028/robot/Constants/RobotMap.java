@@ -64,15 +64,16 @@ public class RobotMap
 	public static final int TURRET_HOME_LIMIT_SWITCH_DIO_PORT = 0;
 	public static final int TURRET_APPROACHING_HOME_LIMIT_SWITCH_DIO_PORT = 1;
 	public static final int IS_BALL_IN_POSITION_LIMIT_SWITCH = 2;
+	
 	// ======================================
 	// Define constants for solenoid ports on Pneumatic Control Module (PCM)
 	// ======================================
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 0;
-	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 1;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 3;
-	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 2;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 6;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 7;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT = 2;
+	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 3;
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 0;   	// 3
+	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 1;		// 2
+	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 7;
+	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 6;
 	
 	// ======================================
 	// define constants for air cylinder states / positions
@@ -80,8 +81,8 @@ public class RobotMap
 	// ======================================
 	public static final Value PUMA_FRONT_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value PUMA_FRONT_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;		
-	public static final Value PUMA_BACK_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kReverse;
-	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value PUMA_BACK_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kForward;
+	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value SHIFTER_HIGH_GEAR_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_LOW_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
 	
@@ -113,7 +114,7 @@ public class RobotMap
 	public static final double INFEED_TILT_GEAR_RATIO = 34.0 / 22.0;						// 1.5455
 	public static final double INFEED_TILT_TRAVEL_DISTANCE_DEGREES_PER_REV = 360.0  / INFEED_TILT_GEAR_RATIO;
 	
-	public static final double INFEED_TILT_KP = 0.4;
+	public static final double INFEED_TILT_KP = 0.5; //0.4;
 	public static final double INFEED_TILT_KI = 0.0;
 	public static final double INFEED_TILT_KD = 30.0;
 	public static final double INFEED_TILT_KF = 0.0;
@@ -129,9 +130,9 @@ public class RobotMap
 	
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
-	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.05;
+	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.18; //0.05;
 	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.18;		// this is approx 0 deg
-	public static final double INFEED_TILT_LOWER_LIMIT = -0.25;
+	public static final double INFEED_TILT_LOWER_LIMIT = -0.36; //-0.25;
 	
 	// ======================================
 	// Define constants for Turret Motor
@@ -146,7 +147,7 @@ public class RobotMap
 	
 	public static final double TURRET_PERCENTVBUS_SCALING_FACTOR = 0.25;
 	
-	public static final double TURRET_SLOW_KP = 0.03;   // Proportional 
+	public static final double TURRET_SLOW_KP = 0.04;   // Proportional 
 	public static final double TURRET_SLOW_KI = 0.0;   // Integral
 	public static final double TURRET_SLOW_KD = 0.0;   // Derivative
 	public static final double TURRET_SLOW_KF = 0.0;   // Feed Forward
@@ -221,8 +222,8 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.BACK_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.START_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
-	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_HIGH_BTN = LogitechF310.LEFT_BUMPER;
-	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_HIGH_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN = LogitechF310.RED_BUTTON_B;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN = LogitechF310.YELLOW_BUTTON_Y;
@@ -247,4 +248,10 @@ public class RobotMap
 	// ======================================
 	// this is where the USB stick is mounted on the RoboRIO filesystem.  You can confirm by logging into the RoboRIO using WinSCP
 	public static final String LOG_FILE_PATH = "/media/sda1/logging";
+	
+	// ======================================
+	// define constants for usb cameras
+	// ======================================
+	public static final String SHOOTER_CAMERA_NAME = "cam0";
+	public static final String INFEED_CAMERA_NAME = "cam1";
 }
