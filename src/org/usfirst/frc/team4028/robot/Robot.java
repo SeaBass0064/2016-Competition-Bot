@@ -32,6 +32,7 @@ import org.usfirst.frc.team4028.robot.RobotData.InputData;
 import org.usfirst.frc.team4028.robot.RobotData.OutputData;
 import org.usfirst.frc.team4028.robot.RobotData.Slider_Zero_State;
 import org.usfirst.frc.team4028.robot.RobotData.Teleop_Elevator_State;
+import org.usfirst.frc.team4028.robot.RobotData.Turret_Zero_State;
 import org.usfirst.frc.team4028.robot.RobotData.WorkingData;
 
 import edu.wpi.first.wpilibj.CANTalon;
@@ -176,9 +177,10 @@ public class Robot extends IterativeRobot
 	SendableChooser autonDriveTimeChooser;
 	SendableChooser autonDriveThrottleChooser;
 	SendableChooser autonCrossDefenseTypeChooser;
-	SendableChooser autonAutoShooterModeChooser;
+	SendableChooser autonCrossDefensePositionChooser;
 	
 	double _sliderAutonPosition = 0.0;
+	double _turretAutonPosition = 0.0;
 	boolean _isTurretAxisZeroedYet = false;
 	boolean _isInfeedTiltAxisZeroedYet = false;
 	boolean _isSliderAxisZeroedYet = false;
@@ -188,11 +190,16 @@ public class Robot extends IterativeRobot
 	boolean  _isAutonAutoShooterEnabled = false;
 	
 	boolean _isInfeedPeriodZeroMode = false;
+	boolean _isInfeedTiltAxisZeroTimedOut = false;
+	
+	boolean _isSliderAxisZeroTimedOut = false;
 	
 	Slider_Zero_State _sliderZeroState;
 	long _sliderZeroStartTime;
 	Infeed_Tilt_Zero_State _infeedTiltZeroState;
 	long _infeedTiltZeroStartTime;
+	Turret_Zero_State _turretZeroState;
+	long _turretZeroStartTime;
 
 	
     /*****************************************************************************************************
@@ -445,10 +452,13 @@ public class Robot extends IterativeRobot
     	autonCrossDefenseTypeChooser.addObject("ROUGH_TERRAIN", RobotData.Auton_Cross_Defense_Type.ROUGH_TERRAIN);
     	SmartDashboard.putData("Auton Cross Defense", autonCrossDefenseTypeChooser);
     	
-    	autonAutoShooterModeChooser = new SendableChooser();
-    	autonAutoShooterModeChooser.addDefault("Auto Shot Disabled", RobotData.Auton_Auto_Shooter_Mode.DISABLED);
-    	autonAutoShooterModeChooser.addObject("Auto Shot Enabled", RobotData.Auton_Auto_Shooter_Mode.ENABLED);
-    	SmartDashboard.putData("Auton Auto Shooter Mode", autonAutoShooterModeChooser);
+    	autonCrossDefensePositionChooser = new SendableChooser();
+    	autonCrossDefensePositionChooser.addDefault("Disabled", RobotData.Auton_Cross_Defense_Position.ZERO);
+    	autonCrossDefensePositionChooser.addObject("Position 2", RobotData.Auton_Cross_Defense_Position.TWO);
+    	autonCrossDefensePositionChooser.addObject("Position 3", RobotData.Auton_Cross_Defense_Position.THREE);
+    	autonCrossDefensePositionChooser.addObject("Position 4", RobotData.Auton_Cross_Defense_Position.FOUR);
+    	autonCrossDefensePositionChooser.addObject("Position 5", RobotData.Auton_Cross_Defense_Position.FIVE);
+    	SmartDashboard.putData("Auton Auto Shooter Mode", autonCrossDefensePositionChooser);
     	
         //===================
     	// write jar (build) date & time to the dashboard
@@ -624,7 +634,7 @@ public class Robot extends IterativeRobot
     	inputDataValues.AutonDriveTimeInSecsRequested = (RobotData.Auton_Drive_Time_In_Secs) autonDriveTimeChooser.getSelected();
     	inputDataValues.AutonDriveThrottlePercentRequested = (RobotData.Auton_Drive_Throttle_Percent) autonDriveThrottleChooser.getSelected();
     	inputDataValues.AutonCrossDefenseTypeRequested = (RobotData.Auton_Cross_Defense_Type) autonCrossDefenseTypeChooser.getSelected();
-    	inputDataValues.AutonAutoShooterMode = (RobotData.Auton_Auto_Shooter_Mode) autonAutoShooterModeChooser.getSelected();
+    	inputDataValues.AutonCrossDefensePosition = (RobotData.Auton_Cross_Defense_Position) autonCrossDefensePositionChooser.getSelected();
     	
     	// write out the selected Auton Mode
     	DriverStation.reportError("AutonModeRequested: [" + inputDataValues.AutonModeRequested.toString() + "]", false);
@@ -683,7 +693,7 @@ public class Robot extends IterativeRobot
     					_sliderAutonPosition = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
     					break;
     	    	}
-    	    	
+    	    
     	    	// set the desired target shooter speed
     	    	switch(inputDataValues.AutonShooterWheelRPMRequested)
     	    	{
@@ -712,7 +722,7 @@ public class Robot extends IterativeRobot
     	    	if (!_isSliderAxisZeroedYet)
     	    	{
     	    		_sliderZeroState = Slider_Zero_State.DRIVE_TO_HOME;
-    	    		ZeroSliderAxisReEntrant(_robotLiveData, _sliderAutonPosition);
+    	    		ZeroSliderAxisReEntrant(_robotLiveData);
     	    	}
     	    	
     	    	// set the requested position of the back pumas
@@ -838,42 +848,53 @@ public class Robot extends IterativeRobot
     			switch(inputDataValues.AutonCrossDefenseTypeRequested)
     	    	{
     				case MOAT:
-    					_autonTargetDriveTimeMSecs = 1 * 1000;
-    					_autonTargetDriveThrottlePercent = 0.10;
+    					_autonTargetDriveTimeMSecs = 3 * 1000;
+    					_autonTargetDriveThrottlePercent = 0.70;
     					break;
     					
     				case RAMPARTS:
-    					_autonTargetDriveTimeMSecs = 2 * 1000;
-    					_autonTargetDriveThrottlePercent = 0.10;
+    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROCKWALL:
-    					_autonTargetDriveTimeMSecs = 3 * 1000;
-    					_autonTargetDriveThrottlePercent = 0.10;
+    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROUGH_TERRAIN:
-    					_autonTargetDriveTimeMSecs = 4 * 1000;
-    					_autonTargetDriveThrottlePercent = 0.10;
+    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     	    	}
     			
     	    	// determine the requested auto shooter mode
-    			switch(inputDataValues.AutonAutoShooterMode)
+    			switch(inputDataValues.AutonCrossDefensePosition)
     	    	{
-    				case DISABLED:
-    					_isAutonAutoShooterEnabled = false;
+    				case ZERO:
+    					_turretAutonPosition = 0.0;
     					break;
     					
-    				case ENABLED:
-    					_isAutonAutoShooterEnabled = true;
+    				case TWO:
+    					_turretAutonPosition = 0.18;
+    					break;
+    					
+    				case THREE:
+    					_turretAutonPosition = -0.13;
+    					break;
+    					
+    				case FOUR:
+    					_turretAutonPosition = -0.55;
+    					break;
+    					
+    				case FIVE:
+    					_turretAutonPosition = -1.0;
     					break;
     	    	}
     			
-    	    	
     			DriverStation.reportError("DriveTimeInSecs: [" + _autonTargetDriveTimeMSecs + "]", false);
     	    	DriverStation.reportError("DriveThrottlePercent: [" + _autonTargetDriveThrottlePercent + "]", false);
-    	    	DriverStation.reportError("AutoShooterMode: [" + inputDataValues.AutonAutoShooterMode.toString() + "]", false);
+    	    	DriverStation.reportError("CrossDefensePosition: [" + inputDataValues.AutonCrossDefensePosition.toString() + "]", false);
     			
     			// puma up to cross defenses
     			outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
@@ -882,6 +903,12 @@ public class Robot extends IterativeRobot
     			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
     			
     			workingDataValues.AutonDriveFwdStartTime = new Date().getTime();
+    			
+    			_sliderZeroStartTime = System.currentTimeMillis();
+	    		_sliderZeroState = Slider_Zero_State.DRIVE_TO_HOME;
+	    		
+	    		_turretZeroStartTime = System.currentTimeMillis();
+	    		_turretZeroState = Turret_Zero_State.BEFORE_APPROACHING_SWITCH;
     	    	break;
     			
     		default:
@@ -948,7 +975,7 @@ public class Robot extends IterativeRobot
         	_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
         	_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
         	
-        	// set solenoids
+        	// set slider
         	if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.Position)
         	{
         		_sliderMtr.set(outputDataValues.SliderTargetPositionCmd);
@@ -1007,14 +1034,24 @@ public class Robot extends IterativeRobot
         	//_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
         	//_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
         	
-        	//if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
-        	//{
-        	//	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
-        	//}
-        	//else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
-        	//{
-        	//	_turretMtr.set(outputDataValues.TurretVelocityCmd);
-        	//}
+        	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
+        	{
+        		_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
+        	}
+        	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+        	{
+        		_turretMtr.set(outputDataValues.TurretVelocityCmd);
+        	}
+        	
+        	// set slider
+        	if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.Position)
+        	{
+        		_sliderMtr.set(outputDataValues.SliderTargetPositionCmd);
+        	}
+        	else if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+        	{
+        		_sliderMtr.set(outputDataValues.SliderVelocityCmd);
+        	}
         	
         	// set solenoids
         	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
@@ -1061,7 +1098,11 @@ public class Robot extends IterativeRobot
     	
     	if(!_isSliderAxisZeroedYet)
     	{
-    		ZeroSliderAxisReEntrant(_robotLiveData, RobotMap.SLIDER_DEFAULT_TARGET_POSITION);
+    		ZeroSliderAxisReEntrant(_robotLiveData);
+    	}
+    	else
+    	{
+    		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
     	}
     	
     	if(!_isInfeedTiltAxisZeroedYet)
@@ -1207,14 +1248,19 @@ public class Robot extends IterativeRobot
     	
     	if(!_isSliderAxisZeroedYet)
     	{
-    		//ZeroSliderAxisReEntrant(_robotLiveData, _sliderAutonPosition);
-    		ZeroSliderAxis(_robotLiveData, _sliderAutonPosition);
+    		ZeroSliderAxisReEntrant(_robotLiveData);
+    		//ZeroSliderAxis(_robotLiveData, _sliderAutonPosition);
+    	}
+    	else
+    	{
+    		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
     	}
     	
     	if (!_isTurretAxisZeroedYet)
     	{
-    		ZeroTurretAxis(_robotLiveData);
+    		ZeroTurretAxisReEntrant(_robotLiveData);
     	}
+    
     	
     	// how long have we been driving
     	long driveFwdElapsedTime = (new Date().getTime() - workingDataValues.AutonDriveFwdStartTime);
@@ -1228,7 +1274,37 @@ public class Robot extends IterativeRobot
     	{
         	outputDataValues.ArcadeDriveThrottleAdjCmd = 0;
         	outputDataValues.ArcadeDriveTurnAdjCmd = 0;
+        	
+    		// drive to default position
+	    	outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(_turretAutonPosition);
+	    	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
+	    	DriverStation.reportError("Turret target psotion: " + Double.toString(_turretAutonPosition), false);
+	    	/*
+	    	long startTime = System.currentTimeMillis();
+	    	long elapsedTime = 0L;
+	    	long maxTimeInMSec = 5000; // 5 secs
+	    	
+	    	// wait until we get close to the target
+	    	while((Math.abs(_turretMtr.getClosedLoopError()) > 400) && !isTimeout)
+	    	{	
+	        	elapsedTime = (new Date().getTime() - startTime);
+	    		
+	    		if (elapsedTime  >= maxTimeInMSec)
+	    		{
+	    			isTimeout = true;
+	    		}
+	    	}
+	    	*/
+	    	// now move to regular gains after the big move
+	    	if (Math.abs(_turretMtr.getClosedLoopError()) < 400)
+	    	{
+	    		_turretMtr.setPID(RobotMap.TURRET_FAST_KP, RobotMap.TURRET_FAST_KI, RobotMap.TURRET_FAST_KD, RobotMap.TURRET_FAST_KF, RobotMap.TURRET_FAST_IZONE, RobotMap.TURRET_FAST_RAMPRATE, RobotMap.TURRET_FAST_PROFILE);
+	    		_turretMtr.setProfile(RobotMap.TURRET_FAST_PROFILE);
+	    		DriverStation.reportError("Fast turret profile set", false);
+	    	}
     	}
+		
+		
     }
     
     /*
@@ -1275,9 +1351,9 @@ public class Robot extends IterativeRobot
     	workingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
 
     	// set our desired default state for the puma solenoids
-    	outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_DOWN_POSITION;
-    	outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
-    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_HIGH_GEAR_POSITION;
+    	outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
+    	outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_UP_POSITION;
+    	outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
     	
     	// set initial state of "pressed last scan" working values to be false
     	workingDataValues.IsPumaFrontToggleBtnPressedLastScan = false;
@@ -1431,7 +1507,8 @@ public class Robot extends IterativeRobot
     		}
     		else if (inputDataValues.IsInfeedTiltFixedBtnPressed && !workingDataValues.IsInfeedTiltFixedBtnPressedLastScan)
     		{
-    			outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_FIXED_POSITION_CMD;
+    			//outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_FIXED_POSITION_CMD;
+    			// No longer required with smaller infeed (originally used as a counterweight)
     		}
     		else if (!inputDataValues.IsInfeedTiltDeployBtnPressed && !inputDataValues.IsInfeedTiltStoreBtnPressed)
     		{
@@ -1464,9 +1541,23 @@ public class Robot extends IterativeRobot
     	}
     	else if (_infeedTiltMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
     	{
-    		if (_isInfeedPeriodZeroMode)
+    		if (_isInfeedPeriodZeroMode && !_isInfeedTiltAxisZeroTimedOut)
     		{
     			ZeroInfeedTiltAxisReEntrant(_robotLiveData);
+    		}
+    		else if (_isInfeedPeriodZeroMode && _isInfeedTiltAxisZeroTimedOut && inputDataValues.IsInfeedTiltStoreBtnPressed)
+    		{
+    			// if infeed fails to zero (ex. if ball was in the elevator) restart the zero function 
+    			
+    			// special zero mode in periodic
+    			_isInfeedPeriodZeroMode = true;
+    			_isInfeedTiltAxisZeroedYet = false;
+    			_isInfeedTiltAxisZeroTimedOut = false;
+    			_infeedTiltZeroState = Infeed_Tilt_Zero_State.TILT_TO_HOME;
+    			_infeedTiltZeroStartTime = System.currentTimeMillis();
+    			
+    			ZeroInfeedTiltAxisReEntrant(_robotLiveData);
+    			
     		}
     		else
     		{
@@ -1539,6 +1630,11 @@ public class Robot extends IterativeRobot
     					workingDataValues.TeleopElevatorState = Teleop_Elevator_State.POST_DELAY_TRIGGER_RELEASED;
     	    			DriverStation.reportError("Elevator switching to POST_DELAY_TRIGGER_RELEASED state", false);
     				}
+    				else if (inputDataValues.IsElevatorTimerOverrideBtnPressed)
+    				{
+    					workingDataValues.TeleopElevatorState = Teleop_Elevator_State.POST_DELAY_TRIGGER_RELEASED;
+    	    			DriverStation.reportError("Elevator switching to POST_DELAY_TRIGGER_RELEASED state", false);
+    				}
     			}
     			break;
     			
@@ -1572,6 +1668,10 @@ public class Robot extends IterativeRobot
     				{
     					outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
     				}
+    			}
+    			else if (!inputDataValues.IsInfeedAcquireBtnPressed && !inputDataValues.IsInfeedReleaseBtnPressed)
+    			{
+    				outputDataValues.InfeedAcqMtrVelocityCmd = 0.0;
     			}
     			break;
     	}
@@ -2043,6 +2143,7 @@ public class Robot extends IterativeRobot
 	    		if (elapsedTime  >= maxTimeInMSec)
 	    		{
 	    			isTimeout = true;
+	    			_isInfeedTiltAxisZeroTimedOut = true;
 	    		}
 	    		isOnHomeSwitch = !_infeedTiltMtr.isFwdLimitSwitchClosed();	// switch is normally closed
 	    	}
@@ -2052,7 +2153,7 @@ public class Robot extends IterativeRobot
     	if(!isTimeout)
     	{
 	    	_infeedTiltMtr.changeControlMode(CANTalon.TalonControlMode.Position);
-	    	
+	    	_isInfeedTiltAxisZeroTimedOut = false;
 	    	// once we hit the home switch, reset the encoder	- this is at approx 106deg
 	    	
 	    	_infeedTiltMtr.setPosition(RobotMap.INFEED_TILT_HOME_POSITION_IN_ROTATIONS);	
@@ -2130,6 +2231,7 @@ public class Robot extends IterativeRobot
     			break;
     		
     		case ON_HOME:
+    			_isInfeedTiltAxisZeroTimedOut = false;
     			outputDataValues.InfeedTiltMtrVelocityCmd = 0.0;
     			_infeedTiltMtr.changeControlMode(CANTalon.TalonControlMode.Position);
     	    	
@@ -2163,6 +2265,7 @@ public class Robot extends IterativeRobot
     			break;
     			
     		case TIMEOUT:
+    			_isInfeedTiltAxisZeroTimedOut = true;
     			DriverStation.reportError("Infeed Tilt Zero procedure timed out", false);
     			outputDataValues.InfeedTiltMtrVelocityCmd = 0.0;
     			break;	
@@ -2249,7 +2352,7 @@ public class Robot extends IterativeRobot
 	}
 	
  // This method Zeros (ie Homes) the Slider Axis
-    private void ZeroSliderAxisReEntrant(RobotData p_robotLiveData, double DesiredSliderPositionAfterZero) 
+    private void ZeroSliderAxisReEntrant(RobotData p_robotLiveData) 
     {
     	//get local references to make variable references shorter
     	InputData inputDataValues = _robotLiveData.InputDataValues;
@@ -2314,15 +2417,18 @@ public class Robot extends IterativeRobot
     	    	_sliderMtr.setPID(RobotMap.SLIDER_KP, RobotMap.SLIDER_KI, RobotMap.SLIDER_KD, RobotMap.SLIDER_KF, RobotMap.SLIDER_IZONE, RobotMap.SLIDER_RAMPRATE, RobotMap.SLIDER_PROFILE);
     	    	_sliderMtr.setProfile(RobotMap.SLIDER_PROFILE);
     	    	// write to the operator's console log window
+    	    	
+    	    	_isSliderAxisZeroedYet = true;
+    	    	
     	    	DriverStation.reportError("..Slider Axis Zeroed, Chging to Position Ctrl Mode.", false);
-    	    	_sliderZeroState = Slider_Zero_State.GO_TO_REQUESTED_POSITION;
     			break;
     			
-    		case GO_TO_REQUESTED_POSITION:
-    			outputDataValues.SliderTargetPositionCmd = DesiredSliderPositionAfterZero;
-    	    	// finally mark the axis as zeroed
-    	    	_isSliderAxisZeroedYet = true;
-    			break;
+    		case TIMEOUT:
+    			_isSliderAxisZeroTimedOut = true;
+    			DriverStation.reportError("Slider Axis Zero procedure timed out", false);
+    			outputDataValues.SliderVelocityCmd = 0.0;
+    			break;	
+    			
     	
     	}
 	}
@@ -2419,7 +2525,7 @@ public class Robot extends IterativeRobot
 	    	// write to the operator's console log window
 	    	DriverStation.reportError("..Turret Axis Zeroed, Chg to Positon Ctrl Mode.", false);
 	    	
-	    	// drive to default positio
+	    	// drive to default position
 	    	outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(RobotMap.TURRET_DEFAULT_POSITION_IN_ROTATIONS);
 	    	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
 	    	
@@ -2450,6 +2556,114 @@ public class Robot extends IterativeRobot
     		// write to the operator's console log window
 	    	DriverStation.reportError("..ERROR: Timeout in Turret Axis Zero procedure.", false);
     	}
+	}
+	
+	private void ZeroTurretAxisReEntrant(RobotData p_robotLiveData)
+	{
+		//get local references to make variable references shorter
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	
+    	boolean isTimeout = false; //control whether we want this method to run at startup
+    	boolean isOnApproachingHomeSwitch = _turretApproachingHomeLimitSwitch.get();
+    	boolean isOnHomeSwitch = _turretHomeLimitSwitch.get();	// switches are normally closed
+    	
+    	switch (_turretZeroState)
+    	{
+    		case BEFORE_APPROACHING_SWITCH:
+    			if(!isOnApproachingHomeSwitch)
+    	    	{
+    		    	// start out in %VBUS mode
+    	    		DriverStation.reportError("..Turret Chg to %VBus Mode.", false);
+    		    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    		    	
+    		    	// drive the axis up at 15%
+    		    	outputDataValues.TurretVelocityCmd = 0.1;
+    		    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
+    		    	
+    		    	long elapsedTime = 0L;
+    		    	long maxTimeInMSec = 5000; // 5 secs
+    		    	
+    		    	// if we are not on the limit switch, drive up until we hit it but only wait for 5 secs max
+		        	elapsedTime = (new Date().getTime() - _turretZeroStartTime);
+		    		
+		    		if (elapsedTime  >= maxTimeInMSec)
+		    		{
+		    			_turretZeroState = Turret_Zero_State.TIMEOUT;
+		    		}
+    	    	}
+    			else
+    			{
+    				_turretZeroState = Turret_Zero_State.ON_APPROACHING_SWITCH;
+    				DriverStation.reportError("Turret Zero State: ON_APPROACHING_SWITCH", false);
+    			}
+    			break;
+    		
+    		case ON_APPROACHING_SWITCH:
+    			_turretZeroStartTime = System.currentTimeMillis();
+    			_turretZeroState = Turret_Zero_State.BEFORE_HOME_SWITCH;
+    			DriverStation.reportError("Turret Approaching Switch hit", false);
+    			break;
+    			
+    		case BEFORE_HOME_SWITCH:
+    	    	long elapsedTime = 0L;
+    	    	long maxTimeInMSec = 5000; // 5 secs
+    	    	
+    	    	// if we are not on the limit switch, drive up until we hit it but only wait for 5 secs max
+    	    	if(!isOnHomeSwitch)
+    	    	{
+    	        	elapsedTime = (new Date().getTime() - _turretZeroStartTime);
+    	    		if (elapsedTime  >= maxTimeInMSec)
+    	    		{
+    	    			_turretZeroState = Turret_Zero_State.TIMEOUT;
+    	    		}
+
+    	    	}
+    	    	else
+    	    	{
+    	    		_turretZeroState = Turret_Zero_State.ON_HOME_SWITCH;
+    	    		DriverStation.reportError("Turret Zero State: ON_HOME_SWITCH", false);
+    	    	}
+    			break;
+    			
+    		case ON_HOME_SWITCH:
+    			// stop driving the axis
+        		outputDataValues.TurretVelocityCmd = 0;
+    	    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
+        		
+    	    	// now switch to position loop mode
+    	    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.Position);
+    	    	
+    	    	// once we hit it reset the encoder
+    	    	double homePosition = 0;
+    	    	_turretMtr.setPosition(homePosition);	
+
+    	    	try {
+    	    		// sleep a little to let the zero occur
+    				Thread.sleep(1);
+    			} catch (InterruptedException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			}
+    	    	
+    	    	// setup the PID Loop
+    	    	_turretMtr.setPID(RobotMap.TURRET_SLOW_KP, RobotMap.TURRET_SLOW_KI, RobotMap.TURRET_SLOW_KD, RobotMap.TURRET_SLOW_KF, RobotMap.TURRET_SLOW_IZONE, RobotMap.TURRET_SLOW_RAMPRATE, RobotMap.TURRET_SLOW_PROFILE);
+    	    	_turretMtr.setProfile(RobotMap.TURRET_SLOW_PROFILE);
+    	    	DriverStation.reportError("Turret set to Slow Profile", false);
+    	    	
+    	    	// write to the operator's console log window
+    	    	DriverStation.reportError("..Turret Axis Zeroed, Chg to Positon Ctrl Mode.", false);
+    	    	
+    	    	// finally mark the axis as zeroed
+    	    	_isTurretAxisZeroedYet = true;
+    			break;
+    			
+    		case TIMEOUT:
+    			DriverStation.reportError("Turret Axis Zero timed out", false);
+    			break;
+    	}
+    	
 	}
 		
 	// For PID velocity control we need to convert Target RPM into encoder counts per 100mSec
@@ -2503,6 +2717,7 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
     	inputDataValues.IsCameraSwitchBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN);
+    	inputDataValues.IsElevatorTimerOverrideBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -2901,4 +3116,3 @@ public class Robot extends IterativeRobot
     	//LiveWindow.run(); 	 	
     } 
 }
-

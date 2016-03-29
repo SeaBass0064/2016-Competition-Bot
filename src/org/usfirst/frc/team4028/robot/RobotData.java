@@ -107,11 +107,14 @@ public class RobotData
 		ROUGH_TERRAIN
 	}
 	
-	public enum Auton_Auto_Shooter_Mode
+	public enum Auton_Cross_Defense_Position
 	{
 		UNDEFINED,
-		DISABLED,
-		ENABLED
+		ZERO,
+		TWO,
+		THREE,
+		FOUR,
+		FIVE
 	}
 	
 	public enum Auton_Shoot_Ball_State
@@ -139,7 +142,6 @@ public class RobotData
 		UNDEFINED,
 		DRIVE_TO_HOME,
 		ON_HOME,
-		GO_TO_REQUESTED_POSITION,
 		TIMEOUT
 	}
 	
@@ -161,6 +163,17 @@ public class RobotData
 		POST_DELAY_TRIGGER_RELEASED,
 		HONOR_INFEED_TRIGGERS_AFTER_SWITCH
 	}
+	
+	public enum Turret_Zero_State
+	{
+		UNDEFINED,
+		BEFORE_APPROACHING_SWITCH,
+		ON_APPROACHING_SWITCH,
+		BEFORE_HOME_SWITCH,
+		ON_HOME_SWITCH,
+		TIMEOUT
+	}
+
 	
 	// class constructor
 	public RobotData()
@@ -225,6 +238,7 @@ public class RobotData
 		public boolean IsInfeedTiltFixedBtnPressed;
 		public boolean IsInfeedTiltAxisOnUpLimitSwitch;
 		public boolean IsPrintDataBtnPressed;
+		public boolean IsElevatorTimerOverrideBtnPressed;
 		
 		public double TurretCCWRawVelocityCmd;
 		public double TurretCWRawVelocityCmd;
@@ -276,7 +290,7 @@ public class RobotData
 		Auton_Drive_Time_In_Secs AutonDriveTimeInSecsRequested;
 		Auton_Drive_Throttle_Percent AutonDriveThrottlePercentRequested;
 		Auton_Cross_Defense_Type AutonCrossDefenseTypeRequested;
-		Auton_Auto_Shooter_Mode AutonAutoShooterMode;
+		Auton_Cross_Defense_Position AutonCrossDefensePosition;;
 		
 		Camera_Selected CameraSelected;
 		
@@ -321,6 +335,7 @@ public class RobotData
 			sb.append("InputData:IsInfeedTiltDeployBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedTiltFixedBtnPressed" + "\t");
 			sb.append("InputData:IsPrintDataBtnPressed" + "\t");
+			sb.append("InputData:IsElevatorTimerOverrideBtnPressed" + "\t");
 			sb.append("InputData:TurretCCWRawVelocityCmd" + "\t");
 			sb.append("InputData:TurretCWRawVelocityCmd" + "\t");
 			sb.append("InputData:ArcadeDriveThrottleRawCmd" + "\t");
@@ -359,7 +374,7 @@ public class RobotData
 			sb.append("InputData:AutonDriveTimeInSecsRequested" + "\t");
 			sb.append("InputData:AutonDriveThrottlePercentRequested" + "\t");
 			sb.append("InputData:AutonCrossDefenseTypeRequested" + "\t");
-			sb.append("InputData:AutonAutoShooterMode" + "\t");
+			sb.append("InputData:AutonCrossDefensePosition" + "\t");
 			sb.append("InputData:CameraSelected" + "\t");
 			sb.append("InputData:NavxIsConnected" + "\t");
 			sb.append("InputData:NavxIsCalibrated" + "\t");
@@ -403,6 +418,7 @@ public class RobotData
 			sb.append(IsInfeedTiltDeployBtnPressed + "\t");
 			sb.append(IsInfeedTiltFixedBtnPressed + "\t");
 			sb.append(IsPrintDataBtnPressed + "\t");
+			sb.append(IsElevatorTimerOverrideBtnPressed + "\t");
 			sb.append(TurretCCWRawVelocityCmd + "\t");
 			sb.append(TurretCWRawVelocityCmd + "\t");
 			sb.append(KickerRawVelocityCmd + "\t");
@@ -443,7 +459,7 @@ public class RobotData
 			sb.append(AutonDriveTimeInSecsRequested + "\t");
 			sb.append(AutonDriveThrottlePercentRequested + "\t");
 			sb.append(AutonCrossDefenseTypeRequested + "\t");
-			sb.append(AutonAutoShooterMode + "\t");
+			sb.append(AutonCrossDefensePosition + "\t");
 			sb.append(CameraSelected + "\t");
 			sb.append(NavxIsConnected + "\t");
 			sb.append(NavxIsCalibrating + "\t");
