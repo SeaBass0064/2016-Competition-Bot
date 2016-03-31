@@ -137,7 +137,7 @@ public class RobotMap
 	// ======================================
 	// Define constants for Turret Motor
 	// ======================================
-	public static final int TURRET_ENCODER_COUNTS_PER_REV = 1024;                        // 7 Counts per rev, 71:1 reduction  (encoder is before gearbox)
+	public static final int TURRET_ENCODER_COUNTS_PER_REV = 1024;                        // 7 Counts per rev, 71:1 reduction  (encoder is after gearbox)
 	public static final double TURRET_GEAR_RATIO = 9.5556;								// gear ratio from motor assy output shaft to big gear under the turret
 	public static final double TURRET_TRAVEL_DISTANCE_DEGREES_PER_REV = 37.674;			// 360deg / TURRET_GEAR_RATIO
 	
@@ -147,13 +147,24 @@ public class RobotMap
 	
 	public static final double TURRET_PERCENTVBUS_SCALING_FACTOR = 0.25;
 	
-	public static final double TURRET_SLOW_KP = 0.04;   // Proportional 
+	public static final double TURRET_AUTON_MAX_CLOSED_LOOP_ERROR = 200;
+	public static final double TURRET_AUTON_MAX_ADJUSTABLE_ERROR_IN_DEGREES = 0.5;
+	
+	public static final double TURRET_SLOW_KP = 0.06;   // Proportional 
 	public static final double TURRET_SLOW_KI = 0.0;   // Integral
 	public static final double TURRET_SLOW_KD = 0.0;   // Derivative
 	public static final double TURRET_SLOW_KF = 0.0;   // Feed Forward
 	public static final int TURRET_SLOW_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
 	public static final double TURRET_SLOW_RAMPRATE = 64; // Volts/Second
 	public static final int TURRET_SLOW_PROFILE = 0;
+
+	public static final double TURRET_MEDIUM_KP = 0.11;   // Proportional 
+	public static final double TURRET_MEDIUM_KI = 0.0;   // Integral
+	public static final double TURRET_MEDIUM_KD = 0.0;   // Derivative
+	public static final double TURRET_MEDIUM_KF = 0.0;   // Feed Forward
+	public static final int TURRET_MEDIUM_IZONE = 0;     // Encoder ticks/Analog Units, max value of integral term before it's reset	
+	public static final double TURRET_MEDIUM_RAMPRATE = 64; // Volts/Second
+	public static final int TURRET_MEDIUM_PROFILE = 1;
 	
 	public static final double TURRET_FAST_KP = 0.25;   // Proportional 
 	public static final double TURRET_FAST_KI = 0.0;   // Integral

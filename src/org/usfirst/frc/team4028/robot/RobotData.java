@@ -173,6 +173,16 @@ public class RobotData
 		ON_HOME_SWITCH,
 		TIMEOUT
 	}
+	
+	public enum Cross_Defense_Auton_State
+	{
+		UNDEFINED,
+		DRIVE_AND_ZERO,
+		COARSE_TURRET_TO_TARGET,
+		FINE_TURRET_TO_TARGET,
+		SHOOT,
+		TIMEOUT
+	}
 
 	
 	// class constructor

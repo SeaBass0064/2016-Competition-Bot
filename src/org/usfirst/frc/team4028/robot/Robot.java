@@ -27,6 +27,7 @@ import org.usfirst.frc.team4028.robot.Constants.RobotMap;
 import org.usfirst.frc.team4028.robot.RobotData.AutonMode;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Drive_Throttle_Percent;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Shoot_Ball_State;
+import org.usfirst.frc.team4028.robot.RobotData.Cross_Defense_Auton_State;
 import org.usfirst.frc.team4028.robot.RobotData.Infeed_Tilt_Zero_State;
 import org.usfirst.frc.team4028.robot.RobotData.InputData;
 import org.usfirst.frc.team4028.robot.RobotData.OutputData;
@@ -200,6 +201,8 @@ public class Robot extends IterativeRobot
 	long _infeedTiltZeroStartTime;
 	Turret_Zero_State _turretZeroState;
 	long _turretZeroStartTime;
+	Cross_Defense_Auton_State _crossDefenseAutonState;
+	long _crossDefenseAutonStartTime;
 
 	
     /*****************************************************************************************************
@@ -730,7 +733,7 @@ public class Robot extends IterativeRobot
     	    	switch(inputDataValues.AutonPumaBackPositionRequested)
     	    	{
     	    	    case PUMA_BACK_DOWN:
-    	    	    	PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_DOWN_POSITION;
+    	    	    	PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_UP_POSITION;
     	    	     	 break;
     	    	     
     	    	    case PUMA_BACK_UP:
@@ -839,6 +842,8 @@ public class Robot extends IterativeRobot
     			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
     			
     			workingDataValues.AutonDriveFwdStartTime = new Date().getTime();
+    			
+    			
     			break;
     		
     		case CROSS_DEFENSE:
@@ -853,17 +858,17 @@ public class Robot extends IterativeRobot
     					break;
     					
     				case RAMPARTS:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 7 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROCKWALL:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 7 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROUGH_TERRAIN:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 7 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     	    	}
@@ -909,6 +914,8 @@ public class Robot extends IterativeRobot
 	    		
 	    		_turretZeroStartTime = System.currentTimeMillis();
 	    		_turretZeroState = Turret_Zero_State.BEFORE_APPROACHING_SWITCH;
+	    		
+	    		_crossDefenseAutonState = Cross_Defense_Auton_State.DRIVE_AND_ZERO;
     	    	break;
     			
     		default:
@@ -955,7 +962,7 @@ public class Robot extends IterativeRobot
     	    	break;
     	    	
     	    case CROSS_DEFENSE:
-    	    	autonomousCrossDefense();
+    	    	autonomousCrossDefense2();
     	    	break;
     	    	
 			default:
@@ -1030,9 +1037,9 @@ public class Robot extends IterativeRobot
 		{
     		// set motor commmands
         	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
-        	//_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);        	
-        	//_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
-        	//_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
+        	_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);        	
+        	_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
+        	_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
         	
         	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
         	{
@@ -1245,6 +1252,179 @@ public class Robot extends IterativeRobot
     	InputData inputDataValues = _robotLiveData.InputDataValues;
     	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
     	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	VisionData visionData = _visionClient.GetVisionData();
+    	/*
+    	if(!_isSliderAxisZeroedYet)
+    	{
+    		ZeroSliderAxisReEntrant(_robotLiveData);
+    		//ZeroSliderAxis(_robotLiveData, _sliderAutonPosition);
+    	}
+    	else
+    	{
+    		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
+    	}
+    	
+    	if (!_isTurretAxisZeroedYet)
+    	{
+    		ZeroTurretAxisReEntrant(_robotLiveData);
+    	}
+    
+    	
+    	// how long have we been driving
+    	long driveFwdElapsedTime = (new Date().getTime() - workingDataValues.AutonDriveFwdStartTime);
+    	
+		if (driveFwdElapsedTime  <= _autonTargetDriveTimeMSecs)
+    	{
+    		outputDataValues.ArcadeDriveThrottleAdjCmd = _autonTargetDriveThrottlePercent;
+    		outputDataValues.ArcadeDriveTurnAdjCmd = 0;
+    	}
+    	else
+    	{
+        	outputDataValues.ArcadeDriveThrottleAdjCmd = 0;
+        	outputDataValues.ArcadeDriveTurnAdjCmd = 0;
+        	
+    		// drive to default position
+	    	outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(_turretAutonPosition);
+	    	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
+	    	DriverStation.reportError("Turret target position: " + Double.toString(_turretAutonPosition), false);
+	    	
+	    	long startTime = System.currentTimeMillis();
+	    	long elapsedTime = 0L;
+	    	long maxTimeInMSec = 5000; // 5 secs
+	    	
+	    	// wait until we get close to the target
+	    	while((Math.abs(_turretMtr.getClosedLoopError()) > 400) && !isTimeout)
+	    	{	
+	        	elapsedTime = (new Date().getTime() - startTime);
+	    		
+	    		if (elapsedTime  >= maxTimeInMSec)
+	    		{
+	    			isTimeout = true;
+	    		}
+	    	}
+	    	
+	    	// now move to regular gains after the big move
+	    	if (Math.abs(_turretMtr.getClosedLoopError()) < 400)
+	    	{
+	    		_turretMtr.setPID(RobotMap.TURRET_FAST_KP, RobotMap.TURRET_FAST_KI, RobotMap.TURRET_FAST_KD, RobotMap.TURRET_FAST_KF, RobotMap.TURRET_FAST_IZONE, RobotMap.TURRET_FAST_RAMPRATE, RobotMap.TURRET_FAST_PROFILE);
+	    		_turretMtr.setProfile(RobotMap.TURRET_FAST_PROFILE);
+	    		DriverStation.reportError("Fast turret profile set", false);
+	    	}
+    	}
+    	*/
+    	long driveFwdElapsedTime = (new Date().getTime() - workingDataValues.AutonDriveFwdStartTime);
+    	
+		switch (_crossDefenseAutonState)
+		{
+			case DRIVE_AND_ZERO:
+				// Zero the slider and turret axis
+				if(!_isSliderAxisZeroedYet)
+		    	{
+		    		ZeroSliderAxisReEntrant(_robotLiveData);
+		    		//ZeroSliderAxis(_robotLiveData, _sliderAutonPosition);
+		    	}
+		    	else
+		    	{
+		    		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
+		    	}
+		    	
+		    	if (!_isTurretAxisZeroedYet)
+		    	{
+		    		ZeroTurretAxisReEntrant(_robotLiveData);
+		    	}
+		    	
+		    	// drive forward for the set time and speed selected on the dashboard
+		    	if (driveFwdElapsedTime  <= _autonTargetDriveTimeMSecs)
+		    	{
+		    		outputDataValues.ArcadeDriveThrottleAdjCmd = _autonTargetDriveThrottlePercent;
+		    		outputDataValues.ArcadeDriveTurnAdjCmd = 0;
+		    	}
+		    	else
+		    	{
+		        	outputDataValues.ArcadeDriveThrottleAdjCmd = 0;
+		        	outputDataValues.ArcadeDriveTurnAdjCmd = 0;
+		    	}
+		    	
+		    	// if both axis are zeroed and we've moved for the set time, go to the next state
+		    	if (_isSliderAxisZeroedYet && _isTurretAxisZeroedYet && (driveFwdElapsedTime  >= _autonTargetDriveTimeMSecs))
+    			{
+		    		_crossDefenseAutonState = Cross_Defense_Auton_State.COARSE_TURRET_TO_TARGET;
+		    		DriverStation.reportError("Changing Auton State To: COARSE_TURRET_TO_TARGET", false);
+    			}
+    			
+				break;
+				
+			case COARSE_TURRET_TO_TARGET:
+				// Drive the turret to a preset position based on the location of the defense to get us close enough to ensure valid vision data
+				outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(_turretAutonPosition);
+		    	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
+		    	DriverStation.reportError("Turret target position: " + Double.toString(_turretAutonPosition), false);
+		    	
+		    	// Make sure ball goes up to the limit switch
+    			if (!inputDataValues.IsBallInPosition)
+        		{
+        			outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+        			DriverStation.reportError("Ball not in position", false);
+        		}
+        		else if(inputDataValues.IsBallInPosition)
+        		{
+        			outputDataValues.InfeedAcqMtrVelocityCmd = 0.0;
+        			DriverStation.reportError("Ball in position", false);
+        		}
+    			
+    			// if the ball is on the limit switch and the turret is within the deadband, move to the next state
+    			if (inputDataValues.IsBallInPosition && (Math.abs(_turretMtr.getClosedLoopError()) < RobotMap.TURRET_AUTON_MAX_CLOSED_LOOP_ERROR))
+    			{
+    				_turretMtr.setPID(RobotMap.TURRET_MEDIUM_KP, RobotMap.TURRET_MEDIUM_KI, RobotMap.TURRET_MEDIUM_KD, RobotMap.TURRET_MEDIUM_KF, RobotMap.TURRET_MEDIUM_IZONE, RobotMap.TURRET_MEDIUM_RAMPRATE, RobotMap.TURRET_MEDIUM_PROFILE);
+		    		_turretMtr.setProfile(RobotMap.TURRET_MEDIUM_PROFILE);
+		    		DriverStation.reportError("Fast turret profile set", false);
+    				
+    				_crossDefenseAutonState = Cross_Defense_Auton_State.FINE_TURRET_TO_TARGET;
+    				DriverStation.reportError("Changing Auton State To: FINE_TURRET_TO_TARGET", false);
+    			}
+				break;
+				
+			case FINE_TURRET_TO_TARGET:
+				if (visionData != null){
+					outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(inputDataValues.TurretEncoderCurrentPosition
+																+ ((RobotMap.TURRET_GEAR_RATIO * inputDataValues.DesiredTurretTurnInDegrees)/360.0));
+					DriverStation.reportError("Desired Turret Turn: " + Double.toString(inputDataValues.DesiredTurretTurnInDegrees), false);
+					DriverStation.reportError("Turret Target Position Cmd: " + Double.toString(outputDataValues.TurretTargetPositionCmd), false);
+					
+					if (Math.abs(visionData.DesiredTurretTurnInDegrees) < RobotMap.TURRET_AUTON_MAX_ADJUSTABLE_ERROR_IN_DEGREES)
+					{
+						_crossDefenseAutonState = Cross_Defense_Auton_State.SHOOT;
+						DriverStation.reportError("Changing Auton State To: SHOOT", false);
+					}
+				}
+				else 
+				{
+					DriverStation.reportError("Not recieving valid vision data", false);
+				}
+				break;
+				
+			case SHOOT:
+				outputDataValues.ShooterMtrVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
+				outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
+				
+				if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
+				{
+					outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+				}
+				break;
+				
+			case TIMEOUT:
+				DriverStation.reportError("Cross Defense Auton Timed Out", false);
+				break;	
+		}	
+    }
+    
+    public void autonomousCrossDefense2()
+    {
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+
     	
     	if(!_isSliderAxisZeroedYet)
     	{
@@ -1278,7 +1458,7 @@ public class Robot extends IterativeRobot
     		// drive to default position
 	    	outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(_turretAutonPosition);
 	    	_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
-	    	DriverStation.reportError("Turret target psotion: " + Double.toString(_turretAutonPosition), false);
+	    	DriverStation.reportError("Turret target position: " + Double.toString(_turretAutonPosition), false);
 	    	/*
 	    	long startTime = System.currentTimeMillis();
 	    	long elapsedTime = 0L;
@@ -1302,11 +1482,13 @@ public class Robot extends IterativeRobot
 	    		_turretMtr.setProfile(RobotMap.TURRET_FAST_PROFILE);
 	    		DriverStation.reportError("Fast turret profile set", false);
 	    	}
+	    	
+	    	if (_visionClient != null)
+	    	{
+	    		DriverStation.reportError("Desired Turret Turn: " + Double.toString(inputDataValues.DesiredTurretTurnInDegrees), false);
+	    	}
     	}
-		
-		
     }
-    
     /*
      *****************************************************************************************************
      * This function is called 1x each time the robot enters tele-operated mode
@@ -1398,6 +1580,13 @@ public class Robot extends IterativeRobot
     	else
     	{
     		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
+    	}
+    	
+    	// optionally shut down vision processing
+    	if(_visionClient != null)
+    	{
+    		_visionClient.stopPolling();
+    		DriverStation.reportError("Vision Polling Stopped", false);
     	}
     	
     	// ===================
@@ -1815,7 +2004,7 @@ public class Robot extends IterativeRobot
     		{
     			if (!workingDataValues.IsSliderFwdBtnPressedLastScan)	// debounce keypress
     			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 4.0;
+    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 2.0;
     				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
     				DriverStation.reportError(String.format("..Info: New Forward Target Slider Position: {0}", newSliderTargetPosition), false);
     				
@@ -1825,7 +2014,7 @@ public class Robot extends IterativeRobot
     		{
     			if (!workingDataValues.IsSliderRevBtnPressedLastScan)	// debounce keypress
     			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 4.0;
+    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 2.0;
     				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
     				DriverStation.reportError(String.format("..Info: New Reverse Target Slider Position: {0}", newSliderTargetPosition), false);
     			}
@@ -1990,7 +2179,8 @@ public class Robot extends IterativeRobot
     	// ==========================
     	// 4.0 publish image from currently selected Camera to the dashboard
     	// ==========================
-    	//_currentCamera.getImage(_cameraFrame);
+    	//VisionData visionData = _visionClient.GetVisionData();
+    	//visionData.DesiredTurretTurnInDegrees
     	//CameraServer.getInstance().setImage(_cameraFrame);
     	
     	// ==========================
@@ -2175,7 +2365,7 @@ public class Robot extends IterativeRobot
 	    	// write to the operator's console log window
 	    	DriverStation.reportError("..Infeed Tilt Axis Zeroed, Chging to Position Ctrl Mode.", false);
 	    	
-	    	outputDataValues.InfeedTiltTargetPositionInRotationsCmd = (RobotMap.INFEED_TILT_STORED_POSITION_CMD);
+	    	outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_STORED_POSITION_CMD;
 	    	
 	    	// finally mark the axis as zeroed
 	    	_isInfeedTiltAxisZeroedYet = true;
@@ -2780,24 +2970,16 @@ public class Robot extends IterativeRobot
     	// ==========================
     	// 1.6 get values from the last available scan on the Vision PC
     	// ==========================
-    	/*
-		if (inputDataValues.IsValidData)
-		{
-			inputDataValues.IsValidData = _visionLiveData.IsValidData;
-			inputDataValues.DistanceToTarget = _visionLiveData.DistanceToTarget;
-			inputDataValues.EffectiveTargetWidth = _visionLiveData.EffectiveTargetWidth;
-			inputDataValues.DesiredSliderPosition = _visionLiveData.DesiredSliderPosition;
-			inputDataValues.DesiredTurretTurnInDegrees = _visionLiveData.DesiredTurretTurnInDegrees;
-			inputDataValues.IsValidShot = _visionLiveData.IsValidShot;	
-			inputDataValues.LastVisionDataRecievedDT = _visionLiveData.LastVisionDataRecievedDT;
-		}
-		else 
-		{
-			inputDataValues.IsValidData = false;
-			DriverStation.reportError("No available vision data", false);
-		}
-		*/
-
+    	VisionData visionData = _visionClient.GetVisionData();
+    	if(visionData != null)
+    	{
+    		inputDataValues.DesiredTurretTurnInDegrees = visionData.DesiredTurretTurnInDegrees;
+    	}
+    	else
+    	{
+    		inputDataValues.DesiredTurretTurnInDegrees = 0;
+    	}
+    	
     	// =========================
     	// 2.0 Calc Working Values
     	// ==========================
@@ -2912,6 +3094,8 @@ public class Robot extends IterativeRobot
 		//SmartDashboard.putBoolean("Turret.IsTurretTargetBtnPressed", inputDataValues.IsTurretTargetBtnPressed);
 		//SmartDashboard.putBoolean("Turret.IsTurretEncoderDegreesTargetYet", workingDataValues.IsTurretEncoderDegreesTargetYet);
 		//SmartDashboard.putNumber("Turret.TurnDegreesCmd", workingDataValues.TurretTurnRotationsCmd);
+    	
+    	SmartDashboard.putNumber("Turret.ClosedLoopError", _turretMtr.getClosedLoopError());
 		// Infeed
 		//SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		//SmartDashboard.putNumber("InfeedAcqMtrVelocityCmd", outputDataValues.InfeedAcqMtrVelocityCmd);
@@ -2943,6 +3127,11 @@ public class Robot extends IterativeRobot
 			SmartDashboard.putString("Shifter: ", "LOW GEAR");
 		}
 		
+		SmartDashboard.putBoolean("Is Infeed Zeroed", _isInfeedTiltAxisZeroedYet);
+		SmartDashboard.putBoolean("Is Slider Zeroed", _isSliderAxisZeroedYet);
+		SmartDashboard.putBoolean("Is Turret Zeroed", _isTurretAxisZeroedYet);
+		
+		
 		// Vision Data
 		//SmartDashboard.putBoolean("Vision.IsValidData", inputDataValues.IsValidData);
 		//SmartDashboard.putNumber("Vision.DistanceToTarget", inputDataValues.DistanceToTarget);
@@ -2950,6 +3139,7 @@ public class Robot extends IterativeRobot
 		//SmartDashboard.putNumber("Vision.DesiredSliderPosition", inputDataValues.DesiredSliderPosition);
 		//SmartDashboard.putNumber("Vision.DesiredTurretTurnInDegrees", inputDataValues.DesiredTurretTurnInDegrees);
 		//SmartDashboard.putBoolean("Vision.IsValidShot", inputDataValues.IsValidShot);
+		SmartDashboard.putNumber("Vision.DesiredTurretTurnInDegrees", inputDataValues.DesiredTurretTurnInDegrees);
 		
 		//SmartDashboard.putString("Vision.LastVisionDataRecievedDT", (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(inputDataValues.LastVisionDataRecievedDT)));
 

@@ -10,9 +10,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.Deque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -32,6 +37,7 @@ public class VisionClient
 	  private DataInputStream _inFromServer;
 	  private DataOutputStream _outToServer;
 	  private boolean _isVisionServerPollingStarted;
+	  private boolean _isVisionServerPollingStopRequested = false;
 	  
 	  private final ReentrantReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
 	  private final Lock _readLock = _readWriteLock.readLock();
@@ -123,7 +129,124 @@ public class VisionClient
 		  }
 	  }
 	  
-	  // this method starts a thread continuously polling the vison server
+	  private void pollVisionServerAsync() throws IOException, InterruptedException 
+	  {
+		  try 
+		  {
+				AsynchronousSocketChannel asyncChannel = AsynchronousSocketChannel.open();
+				InetSocketAddress remoteIP = new InetSocketAddress(RobotMap.VISION_PC_IP_ADDRESS, RobotMap.VISION_PC_PORT);
+				
+				// async connection, wait for 5 secs
+				Future<Void> future = asyncChannel.connect(remoteIP);
+				future.wait(5000);
+				DriverStation.reportError("Socket Opened Successfully", false);
+				
+				// remote server is waiting for a <cr>
+				char carriageReturn = 0x013;
+				ByteBuffer writeBuffer = ByteBuffer.allocateDirect(2);
+				Future<Integer> writeFuture;
+				long bytesWritten;
+				ByteBuffer readBuffer = ByteBuffer.allocateDirect(1000);
+				Future<Integer> readFuture;
+				long bytesRead;
+				String delims = "[|]+";
+				String[] splitRawVisionData;
+				String rawVisionData;
+				VisionData visionLiveData;
+				long loopCounter = 0;
+				    
+				while(true)
+				{
+					loopCounter++;
+					  	
+					// async write, wait for 5 secs
+					writeBuffer.putChar(carriageReturn);
+					
+					writeFuture = asyncChannel.write(writeBuffer);
+					bytesWritten = writeFuture.get(5, TimeUnit.SECONDS);
+					
+					// async read, wait for 5 secs
+					readFuture = asyncChannel.read(readBuffer);
+					bytesRead = readFuture.get(5, TimeUnit.SECONDS);
+					rawVisionData = new String(readBuffer.array());
+					
+					// split the delimited data
+					splitRawVisionData = rawVisionData.split(delims);
+					
+					// make a new empty object
+					visionLiveData = new VisionData();
+					
+					// see if got valid data, if so parse the delimited string into its individual data elements
+					if (splitRawVisionData.length == 6)
+					{		    				
+						visionLiveData.IsValidData = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_DATA_ARRAY_POSITION]);
+						visionLiveData.DistanceToTarget = Double.parseDouble(splitRawVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
+						visionLiveData.EffectiveTargetWidth = Double.parseDouble(splitRawVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
+						visionLiveData.DesiredSliderPosition = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_SLIDER_POSITION_ARRAY_POSITION]);
+						visionLiveData.DesiredTurretTurnInDegrees = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION]);
+						visionLiveData.IsValidShot = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
+		    				
+						visionLiveData.LastVisionDataRecievedDT = new Date();
+		    				
+						SetVisionData(visionLiveData);
+						  
+						if (loopCounter % 100 == 0)
+						{
+							DriverStation.reportError("Vision Data= " + rawVisionData, false);
+						}
+					}
+					else 
+					{
+						visionLiveData.StatusMsg = "Did not recieve correct vision data: " + rawVisionData;
+						
+						if (loopCounter % 100 == 0)
+						{
+							DriverStation.reportError("Did not not get correct Vision Data= " + rawVisionData, false);
+						}
+					}
+				}
+
+		  } 
+		  catch (IOException e) 
+		  {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DriverStation.reportError("IOException", true);
+		  } 
+		  catch (InterruptedException e) 
+		  {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DriverStation.reportError("InterruptedException", true);
+		  } 
+		  catch (ExecutionException e) 
+		  {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DriverStation.reportError("ExecutionException", true);
+		  } 
+		  catch (TimeoutException e) 
+		  {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DriverStation.reportError("TimeoutException", true);
+		  }
+	  }
+	  
+	  // this method stops the vision polling thread
+	  public synchronized void stopPolling()
+	  {
+		  if (!_isVisionServerPollingStarted)
+			  return;
+		  
+		  _isVisionServerPollingStopRequested = true;
+		  
+		  _isVisionServerPollingStarted = false;
+		  
+		  DriverStation.reportError("Vision Server Polling Thread stopped", false);
+	  }
+	  
+	  // this method starts a thread continuously polling the vision server
 	  public synchronized void startPolling() 
 	  {
 		  if (_isVisionServerPollingStarted)
@@ -134,6 +257,8 @@ public class VisionClient
 			  DriverStation.reportError("Vision server is NOT available", false);
 			  return;
 		  }
+		  
+		  _isVisionServerPollingStopRequested = false;
 		  
 		  // open the connection to the remote vision server
 		  try
@@ -146,6 +271,7 @@ public class VisionClient
 											  try 
 											  {
 												  pollVisionServer();
+												  //pollVisionServerAsync();
 											  } 
 											  catch (IOException e) 
 											  {
@@ -163,7 +289,7 @@ public class VisionClient
 			  
 			  _isVisionServerPollingStarted = true;
 			  
-			  DriverStation.reportError("Vision Server Pollng Thread started", false);
+			  DriverStation.reportError("Vision Server Polling Thread started", false);
 		  } 
 		  catch (Exception e)
 		  {
@@ -180,7 +306,7 @@ public class VisionClient
 		  VisionData _visionLiveData;
 		  long loopCounter = 0;
 		  
-		  while (IsVisionServerAvailable) 
+		  while (IsVisionServerAvailable  && !_isVisionServerPollingStopRequested) 
 		  {
 			  try 
 			  {
@@ -210,15 +336,18 @@ public class VisionClient
 					  if (splitRawVisionData.length == 6)
 					  {		    				
 						  _visionLiveData.IsValidData = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_DATA_ARRAY_POSITION]);
-						  _visionLiveData.DistanceToTarget = Double.parseDouble(splitRawVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
-						  _visionLiveData.EffectiveTargetWidth = Double.parseDouble(splitRawVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
-						  _visionLiveData.DesiredSliderPosition = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_SLIDER_POSITION_ARRAY_POSITION]);
-						  _visionLiveData.DesiredTurretTurnInDegrees = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION]);
-						  _visionLiveData.IsValidShot = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
-		    				
-						  _visionLiveData.LastVisionDataRecievedDT = new Date();
-		    				
-						  SetVisionData(_visionLiveData);
+						  if (_visionLiveData.IsValidData)
+						  {
+							  _visionLiveData.DistanceToTarget = Double.parseDouble(splitRawVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
+							  _visionLiveData.EffectiveTargetWidth = Double.parseDouble(splitRawVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
+							  _visionLiveData.DesiredSliderPosition = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_SLIDER_POSITION_ARRAY_POSITION]);
+							  _visionLiveData.DesiredTurretTurnInDegrees = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION]);
+							  _visionLiveData.IsValidShot = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
+			    				
+							  _visionLiveData.LastVisionDataRecievedDT = new Date();
+			    				
+							  SetVisionData(_visionLiveData);
+						  }
 						  
 						  if (loopCounter % 100 == 0)
 						  {
@@ -227,7 +356,7 @@ public class VisionClient
 					  }
 					  else 
 					  {
-						  _visionLiveData.StatusMsg = "Did not recieve correct vision data: " + rawVisionData;
+						  _visionLiveData.StatusMsg = "Did not receive correct vision data: " + rawVisionData;
 						  if (loopCounter % 100 == 0)
 						  {
 							  DriverStation.reportError("Did not not get correct Vision Data= " + rawVisionData, false);
