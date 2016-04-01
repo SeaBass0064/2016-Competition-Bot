@@ -1717,9 +1717,10 @@ public class Robot extends IterativeRobot
     				outputDataValues.InfeedTiltTargetPositionInRotationsCmd = outputDataValues.InfeedTiltTargetPositionInRotationsCmd - 0.01;
     				
     				// If the position is less than 0 degrees = -0.13 rotations, prevent infeed from continuing to drive down
-    				if (outputDataValues.InfeedTiltTargetPositionInRotationsCmd < RobotMap.INFEED_TILT_LOWER_LIMIT)
+    				if (outputDataValues.InfeedTiltTargetPositionInRotationsCmd < RobotMap.INFEED_TILT_LOWER_LIMIT_PUMA_UP)
     				{
-    					outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_LOWER_LIMIT;
+    					DriverStation.reportError("Lower Soft Limit Reached", false);
+    					outputDataValues.InfeedTiltTargetPositionInRotationsCmd = RobotMap.INFEED_TILT_LOWER_LIMIT_PUMA_UP;
     				}
     			}
     			else

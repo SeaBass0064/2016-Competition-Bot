@@ -114,7 +114,7 @@ public class RobotMap
 	public static final double INFEED_TILT_GEAR_RATIO = 34.0 / 22.0;						// 1.5455
 	public static final double INFEED_TILT_TRAVEL_DISTANCE_DEGREES_PER_REV = 360.0  / INFEED_TILT_GEAR_RATIO;
 	
-	public static final double INFEED_TILT_KP = 0.5; //0.4;
+	public static final double INFEED_TILT_KP = 0.37; //0.4;
 	public static final double INFEED_TILT_KI = 0.0;
 	public static final double INFEED_TILT_KD = 30.0;
 	public static final double INFEED_TILT_KF = 0.0;
@@ -131,8 +131,9 @@ public class RobotMap
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
 	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.18; //0.05;
-	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.18;		// this is approx 0 deg
-	public static final double INFEED_TILT_LOWER_LIMIT = -0.36; //-0.25;
+	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.21;		// this is approx 0 deg
+	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_DOWN = -0.36; //-0.25;
+	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_UP = -0.59;
 	
 	// ======================================
 	// Define constants for Turret Motor
@@ -212,7 +213,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 38.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
