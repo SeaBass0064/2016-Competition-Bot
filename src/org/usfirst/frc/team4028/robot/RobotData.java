@@ -237,6 +237,7 @@ public class RobotData
 		public boolean IsInfeedAcquireBtnPressed;
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsCameraSwitchBtnPressed;
+		public boolean IsKickerReverseBtnPressed;
 		
 		public boolean IsTurretCWButtonPressed;
 		public boolean IsTurretCCWButtonPressed;
@@ -335,6 +336,7 @@ public class RobotData
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsCameraSwitchBtnPressed" + "\t");
+			sb.append("InputData:IsKickerReverseBtnPressed" + "\t");
 			sb.append("InputData:IsTurretCWButtonPressed" + "\t");
 			sb.append("InputData:IsTurretCCWButtonPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
@@ -419,7 +421,8 @@ public class RobotData
 			sb.append(IsShifterToggleLowBtnPressed + "\t");
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
-			sb.append(IsCameraSwitchBtnPressed + "\t");
+			sb.append(IsCameraSwitchBtnPressed + "\t"); 
+			sb.append(IsKickerReverseBtnPressed + "\t");
 			sb.append(IsTurretCWButtonPressed + "\t");
 			sb.append(IsTurretCCWButtonPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
@@ -739,6 +742,7 @@ public class RobotData
 		public Value PumaFrontSolenoidPosition;
 		public Value PumaBackSolenoidPosition;
 		public Value ShifterSolenoidPosition;
+		public Value PerimeterSolenoidPosition;
 
 		public String DriversStationMsg;
 		
@@ -761,6 +765,7 @@ public class RobotData
 			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
 			sb.append("OutputData:PumaBackSolenoidPosition" + "\t");
 			sb.append("OutputData:ShifterSolenoidPosition" + "\t");
+			sb.append("OutputData:PerimeterSolenoidPosition" + "\t");
 			sb.append("OutputData:DriversStationMsg");
 			
 					
@@ -826,9 +831,24 @@ public class RobotData
 				shifterSolenoidPositionDesc = "UNKNOWN";
 			}
 			
+			String perimeterExpansionSolenoidPositionDesc = "";
+			if (PerimeterSolenoidPosition == RobotMap.PERIMETER_EXPANSION_IN)
+			{
+				perimeterExpansionSolenoidPositionDesc = "PERIMITER_EXPANSION_IN";
+			}
+			else if (PerimeterSolenoidPosition == RobotMap.PERIMETER_EXPANSION_OUT)
+			{
+				perimeterExpansionSolenoidPositionDesc = "PERIMITER_EXPANSION_OUT";
+			}
+			else
+			{
+				perimeterExpansionSolenoidPositionDesc = "UNKNOWN";
+			}
+			
 			sb.append(PumaFrontSolenoidPositionDesc + "\t");
 			sb.append(PumaBackSolenoidPositionDesc + "\t");
 			sb.append(shifterSolenoidPositionDesc + "\t");
+			sb.append(perimeterExpansionSolenoidPositionDesc + "\t");
 			sb.append(DriversStationMsg);
 					
 			return sb.toString();

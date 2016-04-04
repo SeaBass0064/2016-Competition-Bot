@@ -74,6 +74,8 @@ public class RobotMap
 	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 1;		// 2
 	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 7;
 	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 6;
+	public static final int PCM_PORT_PERIMETER_EXPANSION_EXTEND = 4;
+	public static final int PCM_PORT_PERIMETER_EXPANSION_RETRACT = 5;
 	
 	// ======================================
 	// define constants for air cylinder states / positions
@@ -85,6 +87,8 @@ public class RobotMap
 	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value SHIFTER_HIGH_GEAR_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value SHIFTER_LOW_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
+	public static final Value PERIMETER_EXPANSION_IN = DoubleSolenoid.Value.kForward;
+	public static final Value PERIMETER_EXPANSION_OUT = DoubleSolenoid.Value.kReverse;
 	
 	// ======================================
 	// define constants for Left Drive Motor
@@ -238,9 +242,10 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	//public static final int DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS = LogitechF310.LEFT_TRIGGER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS = LogitechF310.RIGHT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_KICKER_REVERSE_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	public static final int OPERATOR_GAMEPAD_TURRET_CW_BTN = LogitechF310.YELLOW_BUTTON_Y;
