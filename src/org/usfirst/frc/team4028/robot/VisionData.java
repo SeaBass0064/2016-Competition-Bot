@@ -11,6 +11,7 @@ public class VisionData
 	public double EffectiveTargetWidth;
 	public double DesiredSliderPosition;
 	public double DesiredTurretTurnInDegrees;
+	public int BatteryChargeLevel;
 	public boolean IsValidShot;
 	public Date LastVisionDataRecievedDT;
 	public String StatusMsg;

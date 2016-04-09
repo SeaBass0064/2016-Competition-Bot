@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.usfirst.frc.team4028.robot.Constants.RobotMap;
+import org.usfirst.frc.team4028.robot.RobotData.Auto_Aim_And_Shoot_State;
 import org.usfirst.frc.team4028.robot.RobotData.AutonMode;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Drive_Throttle_Percent;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Shoot_Ball_State;
@@ -116,6 +117,7 @@ public class Robot extends IterativeRobot
 	// CIM DC Motors on Victor SP Speed Controllers (via PWM Ports)
 	private VictorSP _infeedAcqMtr;
 	private VictorSP _kickerMtr;
+	private VictorSP _winchMtr;
 	
 	// Limit switches for turret
 	private DigitalInput _turretHomeLimitSwitch;
@@ -124,9 +126,6 @@ public class Robot extends IterativeRobot
 	
 	// Arcade Drive with four drive motors
 	private RobotDrive _robotDrive;
-	
-	// Power Distribution Panel
-	private PowerDistributionPanel _pdp;
 	
 	// Pneumatic Solenoids for Air Cylinders
 	private DoubleSolenoid _pumaFrontSolenoid;
@@ -204,6 +203,8 @@ public class Robot extends IterativeRobot
 	long _turretZeroStartTime;
 	Cross_Defense_Auton_State _crossDefenseAutonState;
 	long _crossDefenseAutonStartTime;
+	Auto_Aim_And_Shoot_State _autoAimAndShootState;
+	long _autoAimAndShootStateStartTime;
 
 	
     /*****************************************************************************************************
@@ -281,6 +282,11 @@ public class Robot extends IterativeRobot
     	_infeedAcqMtr = new VictorSP(RobotMap.INFEED_ACQ_MTR_PWM_PORT);
     	
     	// ===================
+    	// Winch Motor
+    	// ===================
+    	_winchMtr = new VictorSP(RobotMap.SCALING_MTR_PWM_PORT);
+    	
+    	// ===================
     	// Turret
     	// ===================
     	_turretMtr = new CANTalon(RobotMap.CAN_ADDR_TURRET_TALON);
@@ -356,11 +362,6 @@ public class Robot extends IterativeRobot
     	// Arcade Drive configured to drive in three motor setup, other two motors follow as slaves 
     	_robotDrive = new RobotDrive(_leftDriveMasterMtr,_rightDriveMasterMtr);
     	   	
-    	// ==================
-    	// Power Distribution Panel
-    	// ==================
-    	_pdp = new PowerDistributionPanel();
-    	
     	//===================
     	// Solenoids
     	//===================
@@ -388,10 +389,10 @@ public class Robot extends IterativeRobot
     	
     	//===================
     	// Cameras
+    	//	the camera name (ex "cam0") can be found through the roborio web interface
     	//===================
         server = DynamicCameraServer.getInstance();
         server.setQuality(25);
-        //the camera name (ex "cam0") can be found through the roborio web interface
         _currentCameraName = RobotMap.SHOOTER_CAMERA_NAME;
         server.startAutomaticCapture(_currentCameraName);
     	
@@ -405,6 +406,7 @@ public class Robot extends IterativeRobot
         autonModeChooser.addDefault("Shoot Ball", RobotData.AutonMode.SHOOT_BALL);
         autonModeChooser.addObject("Drive Fwd", RobotData.AutonMode.DRIVE_FWD);
         autonModeChooser.addObject("Cross Defense", RobotData.AutonMode.CROSS_DEFENSE);
+        autonModeChooser.addObject("Aim & Shoot", RobotData.AutonMode.AIM_AND_SHOOT);
         SmartDashboard.putData("Auton mode chooser", autonModeChooser);
         
     	autonPumaBackPositionChooser = new SendableChooser();
@@ -487,7 +489,7 @@ public class Robot extends IterativeRobot
 			String newDateString = outputFormatter.format(utcFileDate);
 			
 			// write the build date & time to the operator's console log window
-			DriverStation.reportError("Build Date and Time: " + newDateString, false);
+			DriverStation.reportError("Build Date and Time: " + newDateString + "|", false);
 			
 		} 
     	catch (URISyntaxException e) 
@@ -512,13 +514,14 @@ public class Robot extends IterativeRobot
             /* 					SerialPort.Port.kUSB										   	*/
             /* 					SPI.Port.kMXP   			plugged into mxp port on RoboRio	*/			
             /* See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/ for details.  */
-            _navXSensor = new AHRS(SPI.Port.kMXP);
+            //_navXSensor = new AHRS(SPI.Port.kMXP);
+            _navXSensor = new AHRS(SerialPort.Port.kMXP);
             
-            DriverStation.reportError("..navX sensor connected" , false);
+            DriverStation.reportError("..navX sensor connected" + " |" , false);
         } 
     	catch (RuntimeException ex ) 
     	{
-            DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
+            DriverStation.reportError("Error connecting to navX Sensor: " + ex.getMessage() + " |", true);
         }
     	    	
     	//===================
@@ -526,88 +529,10 @@ public class Robot extends IterativeRobot
     	//===================
     	// Start the imaging thread
      	_visionLiveData = new VisionData();
-    	//SetupImageServerThread();
      	_visionClient = VisionClient.getInstance();
      	_visionClient.startPolling();
     }
-    
-   /*
-
-    public void SetupImageServerThread()
-    {	
-    	// set up socket to connect to the vision pc
-    	try {
-			_visionServer = new Socket(RobotMap.VISION_PC_IP_ADDRESS, RobotMap.VISION_PC_PORT);
-			
-			_outToServer = new DataOutputStream(_visionServer.getOutputStream());
-			_inFromServer = new DataInputStream( _visionServer.getInputStream());
-			
-			DriverStation.reportError("Connection to Vision PC successful", false);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			DriverStation.reportError("Connection to Vision PC has failed", false);
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			DriverStation.reportError("Connection to Vision PC has failed", false);
-			e.printStackTrace();
-		}
-    	
-    	_pollingThread = new Thread()
-    			{
-		    	    public void GetRawVisionData(){
-		    	    	
-		    	    	String rawVisionData = "";
-		    	    	
-		    	    	if ((_visionServer != null) && (_outToServer != null) && (_inFromServer != null))
-		    			{
-	    					try 
-	    					{
-	    						// ask the server for data
-	    						char cr = 0x013;
-	    						_outToServer.writeChar(cr);
-	    						
-	    		    			// ==========================
-	    		    	    	// get values from Vision PC
-	    		    	    	// ==========================
-	    						BufferedReader in = new BufferedReader(new InputStreamReader(_visionServer.getInputStream()));
-	    						rawVisionData = in.readLine();
-	    				
-	    		    	    	String delims = "[|]+";
-	    		    			String[] splitRawVisionData = rawVisionData.split(delims);
-	    		    			
-	    		    			if (splitRawVisionData.length == 6){
-	    		    				_visionLiveData.IsValidData = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_DATA_ARRAY_POSITION]);
-	    		    				_visionLiveData.DistanceToTarget = Double.parseDouble(splitRawVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
-	    		    				_visionLiveData.EffectiveTargetWidth = Double.parseDouble(splitRawVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
-	    		    				_visionLiveData.DesiredSliderPosition = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_SLIDER_POSITION_ARRAY_POSITION]);
-	    		    				_visionLiveData.DesiredTurretTurnInDegrees = Double.parseDouble(splitRawVisionData[RobotMap.DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION]);
-	    		    				_visionLiveData.IsValidShot = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
-	    		    				
-	    		    				_visionLiveData.LastVisionDataRecievedDT = new Date();
-	    		    			}
-	    		    			else 
-	    		    			{
-	    		    				_visionLiveData.StatusMsg = "Did not recieve correct vision data: " + visionData;
-	    		    			}
-	    					} 
-	    					catch (IOException e) 
-	    					{
-	    						// TODO Auto-generated catch block
-	    						e.printStackTrace();
-	    					}
-		    	    	}
-		    	    			    			
-		    	    }   		
-    			};
-    		
-    		if ((_visionServer != null) && (_outToServer != null) && (_inFromServer != null))
-    		{
-    			_pollingThread.start();
-    		}
-    }
-    */
-    
+        
     // ========================================================================
     //
     // This method is called once at the start of Antonomous Mode
@@ -752,6 +677,7 @@ public class Robot extends IterativeRobot
     	    	
     	    	workingDataValues.AutonShootBallState = Auton_Shoot_Ball_State.INFEED_1;
     	    	DriverStation.reportError("ChangingAutonModeTo: INFEED_1", false);
+    	    	
     			break;
     			
     		case DRIVE_FWD:
@@ -873,7 +799,7 @@ public class Robot extends IterativeRobot
     				case ROUGH_TERRAIN:
     					_autonTargetDriveTimeMSecs = 7 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
-    					break;
+    					break;    				
     	    	}
     			
     	    	// determine the requested auto shooter mode
@@ -924,6 +850,30 @@ public class Robot extends IterativeRobot
 	    		_crossDefenseAutonState = Cross_Defense_Auton_State.DRIVE_AND_ZERO;
     	    	break;
     			
+    		case AIM_AND_SHOOT:
+    			// puma up to cross defenses
+    			outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
+    			outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_UP_POSITION;
+    			
+    			// low gear to cross defenses
+    			outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
+    			
+    			// perimeter expansion should be out the entire match
+    			//outputDataValues.PerimeterSolenoidPosition = RobotMap.PERIMETER_EXPANSION_IN;
+    			
+    			workingDataValues.AutonDriveFwdStartTime = new Date().getTime();
+    			
+    			_sliderZeroStartTime = System.currentTimeMillis();
+	    		_sliderZeroState = Slider_Zero_State.DRIVE_TO_HOME;
+	    		
+	    		_turretZeroStartTime = System.currentTimeMillis();
+	    		_turretZeroState = Turret_Zero_State.BEFORE_APPROACHING_SWITCH;
+    			
+    	    	_autoAimAndShootState = RobotData.Auto_Aim_And_Shoot_State.ZERO_AXES;
+    	    	DriverStation.reportError("Changing Auton State To: ZERO_AXES | ", false);
+    	    	
+    			break;
+    	    	
     		default:
     			break;
     	}
@@ -969,6 +919,10 @@ public class Robot extends IterativeRobot
     	    	
     	    case CROSS_DEFENSE:
     	    	autonomousCrossDefense2();
+    	    	break;
+    	    
+    	    case AIM_AND_SHOOT:
+    	    	AimAndShoot();
     	    	break;
     	    	
 			default:
@@ -1039,7 +993,7 @@ public class Robot extends IterativeRobot
         	_pumaBackSolenoid.set(outputDataValues.PumaBackSolenoidPosition);
         	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);
 		}
-    	if (inputDataValues.AutonModeRequested == RobotData.AutonMode.CROSS_DEFENSE)
+    	else if (inputDataValues.AutonModeRequested == RobotData.AutonMode.CROSS_DEFENSE)
 		{
     		// set motor commmands
         	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
@@ -1072,6 +1026,36 @@ public class Robot extends IterativeRobot
         	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);
         	_perimeterExpansionSolenoid.set(outputDataValues.PerimeterSolenoidPosition);
 		}
+    	else if (inputDataValues.AutonModeRequested == RobotData.AutonMode.AIM_AND_SHOOT)
+    	{
+        	_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);        	
+        	_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
+        	_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
+        	
+        	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
+        	{
+        		_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
+        	}
+        	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+        	{
+        		_turretMtr.set(outputDataValues.TurretVelocityCmd);
+        	}
+        	
+        	// set slider
+        	if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.Position)
+        	{
+        		_sliderMtr.set(outputDataValues.SliderTargetPositionCmd);
+        	}
+        	else if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+        	{
+        		_sliderMtr.set(outputDataValues.SliderVelocityCmd);
+        	}
+        	
+        	// set solenoids
+        	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
+        	_pumaBackSolenoid.set(outputDataValues.PumaBackSolenoidPosition);
+        	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);
+    	}
     	
     	// ==============================
     	// Step 4: Update the Dashboard
@@ -1664,10 +1648,67 @@ public class Robot extends IterativeRobot
     		// if neither button is pressed do nothing
     	}
     	
+    	// =====================================
+    	// This code block implements a Robot Chassis "tilt safety" feature
+    	//		if the chassis tilt angle as measured by the NavX sensor exceeds a threshhold, override the operator input to prevent tipping 
+    	// =====================================
+    	double tiltSafetyScalingFactor = 1.0;
+    	if(inputDataValues.NavxIsConnected)
+    	{
+    		// based on direction
+    		if (inputDataValues.ArcadeDriveThrottleRawCmd < 0.0)
+    		{
+    			// "fwd" direction is towards the flyer 
+    			if (inputDataValues.NavxRoll >= RobotMap.ROBOT_FWD_DRIVE_MAX_TILT_CUTOFF)
+    			{
+    				tiltSafetyScalingFactor = -0.4;
+    				DriverStation.reportError("Fwd Tilt Angle " + String.format("%.1f", inputDataValues.NavxRoll) 
+    											+ " Exceeds Cutoff: " + String.format("%.1f", RobotMap.ROBOT_FWD_DRIVE_MAX_TILT_CUTOFF) 
+    											+ " Safety Engaged|", false);
+    				workingDataValues.IsFwdDriveTiltSafetyEngagedLastScan = true;
+    			}
+    			else if (inputDataValues.NavxRoll >= RobotMap.ROBOT_FWD_DRIVE_MAX_TILT_REENABLE && workingDataValues.IsFwdDriveTiltSafetyEngagedLastScan)
+    			{
+    				tiltSafetyScalingFactor = 0.0;
+    				DriverStation.reportError("Fwd Tilt Angle " + String.format("%.1f", inputDataValues.NavxRoll) 
+												+ " Exceeds Reenable: " + String.format("%.1f", RobotMap.ROBOT_FWD_DRIVE_MAX_TILT_REENABLE) 
+												+ " Safety Still Engaged|", false);
+    			}
+    			else
+    			{
+    				workingDataValues.IsFwdDriveTiltSafetyEngagedLastScan = false;
+    			}
+    		}
+    		else if (inputDataValues.ArcadeDriveThrottleRawCmd > 0.0)
+    		{
+    			// "rev" direction is opposite the flyer 
+    			if (inputDataValues.NavxRoll <= RobotMap.ROBOT_REV_DRIVE_MAX_TILT_CUTOFF)
+    			{
+    				tiltSafetyScalingFactor = -0.4;
+    				DriverStation.reportError("Rev Tilt Angle " + String.format("%.1f", inputDataValues.NavxRoll) 
+    											+ " Exceeds Cutoff: " + String.format("%.1f", RobotMap.ROBOT_REV_DRIVE_MAX_TILT_CUTOFF) 
+    											+ " Safety Engaged|", false);
+    				
+    				workingDataValues.IsRevDriveTiltSafetyEngagedLastScan = true;
+    			}
+    			else if (inputDataValues.NavxRoll <= RobotMap.ROBOT_REV_DRIVE_MAX_TILT_REENABLE && workingDataValues.IsRevDriveTiltSafetyEngagedLastScan)
+    			{
+    				tiltSafetyScalingFactor = 0.0;
+    				DriverStation.reportError("Rev Tilt Angle " + String.format("%.1f", inputDataValues.NavxRoll) 
+												+ " Exceeds Reenable: " + String.format("%.1f", RobotMap.ROBOT_REV_DRIVE_MAX_TILT_REENABLE) 
+												+ " Safety Still Engaged|", false);
+    			}
+    			else
+    			{
+    				workingDataValues.IsRevDriveTiltSafetyEngagedLastScan = false;
+    			}
+    		}
+    	}
+    	
     	outputDataValues.ArcadeDriveThrottleAdjCmd 
-    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor;  	
+    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor;  	
     	outputDataValues.ArcadeDriveTurnAdjCmd 
-    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor * 0.6;
+    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor * 0.6;
 
     	// =====================================
     	// Step 2.2:  Infeed Tilt (Tilt the infeed up and down)
@@ -2091,7 +2132,23 @@ public class Robot extends IterativeRobot
     		
     		server.switchAutomaticCapture(_currentCameraName);
     	}
-    	    	
+    	    
+    	// ===========================
+    	// Step 2.9. Winch
+    	// ===========================
+    	if (inputDataValues.WinchRawCmd > 0.05)
+    	{
+    		outputDataValues.WinchVelocityCmd = -.1;
+    	}
+    	else if (inputDataValues.WinchRawCmd < -0.05)
+    	{
+    		outputDataValues.WinchVelocityCmd = .1;
+    	}
+    	else
+    	{
+    		outputDataValues.WinchVelocityCmd = 0.0;
+    	}
+    	
     	// =====================================
     	// Step 3: Push the target Outputs out to the physical devices
     	// =====================================
@@ -2192,6 +2249,8 @@ public class Robot extends IterativeRobot
     		_sliderMtr.set(outputDataValues.SliderVelocityCmd);
     	}
     	
+    	_winchMtr.set(outputDataValues.WinchVelocityCmd);
+    	
     	// ==========================
     	// 4.0 publish image from currently selected Camera to the dashboard
     	// ==========================
@@ -2239,6 +2298,7 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsCameraSwitchBtnPressedLastScan =  inputDataValues.IsCameraSwitchBtnPressed;
     	workingDataValues.IsBallInPositionLastScan = inputDataValues.IsBallInPosition;
     }
+    
     public void disabledPeriodic()
     {
     	if(_dataLogger != null)
@@ -2933,35 +2993,26 @@ public class Robot extends IterativeRobot
     	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
     	inputDataValues.TurretCCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS);
     	inputDataValues.TurretCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS);
+    	inputDataValues.WinchRawCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_WINCH_AXIS);
     	
     	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
     	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS);
     	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS);
- 	
+ 		
     	// ==========================
     	// 1.3 get values from motor controlllers
     	// ==========================
     	//inputDataValues.LeftDriveEncoderCurrentCount = _leftDriveMasterMtr.getPosition();
     	//inputDataValues.RightDriveEncoderCurrentCount = _rightDriveMasterMtr.getPosition();	
     	inputDataValues.InfeedTiltEncoderCurrentCount = _infeedTiltMtr.getPosition();
+    	inputDataValues.IsInfeedTiltAxisOnUpLimitSwitch = !_infeedTiltMtr.isFwdLimitSwitchClosed();
     	inputDataValues.TurretEncoderCurrentPosition = _turretMtr.getPosition();
     	inputDataValues.SliderEncoderCurrentCount = _sliderMtr.getPosition();
-    	
-    	
-    	// velocity control axis
-    	
-    	//inputDataValues.ShooterClosedLoopError = _shooterMasterMtr.getClosedLoopError();
-    	inputDataValues.ShooterActualSpeed = _shooterMasterMtr.getSpeed();
-    	//inputDataValues.ShooterActualVToBusVRatio = _shooterMasterMtr.getOutputVoltage() / _shooterMasterMtr.getBusVoltage();
-    	//inputDataValues.ShooterCurrentBusVoltage = _shooterMasterMtr.getBusVoltage();
-    	
-    	
-    	inputDataValues.IsInfeedTiltAxisOnUpLimitSwitch = !_infeedTiltMtr.isFwdLimitSwitchClosed();
-    	
     	inputDataValues.SliderCurrentPosition = _sliderMtr.getPosition();
-    	
+    	inputDataValues.ShooterActualSpeed = _shooterMasterMtr.getSpeed();
+
     	// ==========================
-    	// 1.4 get values from Limit Switches
+    	// 1.4 get values from Limit Switches on DIO Ports
     	// ==========================
     	inputDataValues.IsTurretHomeLimitSwitchClosed = _turretHomeLimitSwitch.get();
     	inputDataValues.IsTurretApproachingHomeLimitSwitchClosed = _turretApproachingHomeLimitSwitch.get();
@@ -3070,14 +3121,7 @@ public class Robot extends IterativeRobot
     	InputData inputDataValues = robotDataValues.InputDataValues;
     	WorkingData workingDataValues = robotDataValues.WorkingDataValues;
     	OutputData outputDataValues = robotDataValues.OutputDataValues;
-    	
-    	// Smart Dashboard Input
-    	/*
-    	SmartDashboard.putString("SD:AutonMode", inputDataValues.AutonModeRequested.toString());
-    	SmartDashboard.putString("SD:AutonPumaBackPosition", inputDataValues.AutonPumaBackPositionRequested.toString());
-    	SmartDashboard.putString("SD:AutonSliderPosition", inputDataValues.AutonSliderPositionRequested.toString());
-    	*/
-    	
+    	    	
 		// Drive Motors
 		//SmartDashboard.putNumber("Drive.Btn:SpeedScaleFactor", workingDataValues.DriveSpeedScalingFactor);
 		
@@ -3105,6 +3149,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("Drive.Right:EncCurSpeedCPS", workingDataValues.RightDriveEncoderCurrentCPS);
 		SmartDashboard.putNumber("Drive.Right:WheelCurSpeedIPS", workingDataValues.RightDriveWheelsCurrentSpeedIPS);
 		*/
+    	
 		// Turret
 		//SmartDashboard.putNumber("Turret.EncDeltaCount", workingDataValues.TurretEncoderTotalDeltaCount);
 		//SmartDashboard.putNumber("Turret.EncDegreesCount", workingDataValues.TurretEncoderDegreesCount);
@@ -3144,6 +3189,7 @@ public class Robot extends IterativeRobot
 			SmartDashboard.putString("Shifter: ", "LOW GEAR");
 		}
 		
+		// Axis Home Routines
 		SmartDashboard.putBoolean("Is Infeed Zeroed", _isInfeedTiltAxisZeroedYet);
 		SmartDashboard.putBoolean("Is Slider Zeroed", _isSliderAxisZeroedYet);
 		SmartDashboard.putBoolean("Is Turret Zeroed", _isTurretAxisZeroedYet);
@@ -3157,30 +3203,27 @@ public class Robot extends IterativeRobot
 		//SmartDashboard.putNumber("Vision.DesiredTurretTurnInDegrees", inputDataValues.DesiredTurretTurnInDegrees);
 		//SmartDashboard.putBoolean("Vision.IsValidShot", inputDataValues.IsValidShot);
 		SmartDashboard.putNumber("Vision.DesiredTurretTurnInDegrees", inputDataValues.DesiredTurretTurnInDegrees);
-		
 		//SmartDashboard.putString("Vision.LastVisionDataRecievedDT", (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(inputDataValues.LastVisionDataRecievedDT)));
 
-		// Power Distribution Panel
-		
-		//SmartDashboard.putNumber("PDP.CurrentVoltage", inputDataValues.ShooterCurrentBusVoltage);
 		// Logging
 		//SmartDashboard.putBoolean("Log:IsLoggingEnabled", workingDataValues.IsLoggingEnabled);
 		//SmartDashboard.putString("Log:LogFilePathName", workingDataValues.LogFilePathName); 
-		/*
-		SmartDashboard.putBoolean("NavX_IsConnected", inputDataValues.NavxIsConnected);
-        SmartDashboard.putBoolean("NavX_IsCalibrating", inputDataValues.NavxIsCalibrating);
-        SmartDashboard.putNumber("NavX_Yaw", inputDataValues.NavxYaw);
-        SmartDashboard.putNumber("NavX_Pitch", inputDataValues.NavxPitch);
-        SmartDashboard.putNumber("NavX_Roll", inputDataValues.NavxRoll);
-        SmartDashboard.putNumber("NavX_CompassHeading", inputDataValues.NavxCompassHeading);
-        SmartDashboard.putNumber("NavX_FusedHeading", inputDataValues.NavxFusedHeading); 
-        SmartDashboard.putNumber("NavX_TotalYaw", inputDataValues.NavxTotalYaw); 
-        SmartDashboard.putNumber("NavX_YawRateDPS", inputDataValues.NavxYawRateDPS); 
-        SmartDashboard.putNumber("NavX_Accel_X", inputDataValues.NavxAccelX); 
-        SmartDashboard.putNumber("NavX_Accel_Y", inputDataValues.NavxAccelY); 
-        SmartDashboard.putBoolean("NavX_IsMoving", inputDataValues.NavxIsMoving); 
-        SmartDashboard.putBoolean("NavX_IsRotating", inputDataValues.NavxIsRotating); 
-		*/
+		
+		// NavX
+		SmartDashboard.putBoolean("NavX:IsConnected", inputDataValues.NavxIsConnected);
+        //SmartDashboard.putBoolean("NavX_IsCalibrating", inputDataValues.NavxIsCalibrating);
+        //SmartDashboard.putNumber("NavX_Yaw", inputDataValues.NavxYaw);
+        //SmartDashboard.putNumber("NavX_Pitch", inputDataValues.NavxPitch);
+        SmartDashboard.putNumber("NavX:PitchAngle", inputDataValues.NavxRoll);
+        //SmartDashboard.putNumber("NavX_CompassHeading", inputDataValues.NavxCompassHeading);
+        //SmartDashboard.putNumber("NavX_FusedHeading", inputDataValues.NavxFusedHeading); 
+        //SmartDashboard.putNumber("NavX_TotalYaw", inputDataValues.NavxTotalYaw); 
+        //SmartDashboard.putNumber("NavX_YawRateDPS", inputDataValues.NavxYawRateDPS); 
+        //SmartDashboard.putNumber("NavX_Accel_X", inputDataValues.NavxAccelX); 
+        //SmartDashboard.putNumber("NavX_Accel_Y", inputDataValues.NavxAccelY); 
+        //SmartDashboard.putBoolean("NavX_IsMoving", inputDataValues.NavxIsMoving); 
+        //SmartDashboard.putBoolean("NavX_IsRotating", inputDataValues.NavxIsRotating); 
+		
         ///SmartDashboard.putString("Misc:LastUpdateDT", ZonedDateTime.now().toString());
     }
     
@@ -3220,20 +3263,51 @@ public class Robot extends IterativeRobot
     	}
 	}
 	
-	public void testInit() {
-		
-		try {
-			_visionServer = new Socket(RobotMap.VISION_PC_IP_ADDRESS, RobotMap.VISION_PC_PORT);
-			DriverStation.reportError("Connection to Vision PC successful", false);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			DriverStation.reportError("Connection to Vision PC has failed", false);
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			DriverStation.reportError("Connection to Vision PC has failed", false);
-			e.printStackTrace();
-		}
+	
+	/*****************************************************************************************************
+     * This function is called 1 time at the start of Test Mode
+     *****************************************************************************************************/
+	public void testInit() 
+	{
+		// create a new instance of the RobotData object
+    	_robotLiveData = new RobotData();
+    	
+    	//get local references to make variable references shorter
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	
+    	// set defaults for initial motor speeds
+    	outputDataValues.KickerMtrVelocityCmd = 0.0;
+    	outputDataValues.ShooterMtrVelocityCmd = 0.0;
+    	outputDataValues.SliderVelocityCmd = 0.0;
+    	
+    	// Set desired initial (default) solenoid positions
+    	// puma up to cross defenses
+		outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
+		outputDataValues.PumaBackSolenoidPosition = RobotMap.PUMA_BACK_SOLENOID_UP_POSITION;
+		// low gear to cross defenses
+		outputDataValues.ShifterSolenoidPosition = RobotMap.SHIFTER_LOW_GEAR_POSITION;
+    	
+    	// zero turret
+    	if (!_isTurretAxisZeroedYet)
+    	{
+    		ZeroTurretAxis(_robotLiveData);
+    	}
+    	
+    	// zero slider
+    	if (!_isSliderAxisZeroedYet)
+    	{
+    		_sliderZeroStartTime = System.currentTimeMillis();
+    		_sliderZeroState = Slider_Zero_State.DRIVE_TO_HOME;
+    		//ZeroSliderAxisReEntrant(_robotLiveData, RobotMap.SLIDER_DEFAULT_TARGET_POSITION);
+    		ZeroSliderAxis(_robotLiveData, RobotMap.SLIDER_DEFAULT_TARGET_POSITION);
+    	}
+    	
+    	_autoAimAndShootState = RobotData.Auto_Aim_And_Shoot_State.COARSE_TURRET_TO_TARGET;
+    	DriverStation.reportError("Changing Auton State To: COARSE_TURRET_TO_TARGET | ", false);
+    	
+    	_visionClient.startPolling();
 	}
 	
     /*****************************************************************************************************
@@ -3242,84 +3316,221 @@ public class Robot extends IterativeRobot
      *****************************************************************************************************/
     @SuppressWarnings("deprecation")
 	public void testPeriodic()
-    {
+    {    	
+    	//get local references to make variable references shorter
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
     	
-    	DataInputStream inFromServer = null;
-    	DataOutputStream outToServer = null;
-    	long currentCycleTime = 0;
-
-    	long deltaCycleTime = 0;
+    	// ===============================
+    	// Step 1: Get Inputs
+    	// ===============================
+    	UpdateInputAndCalcWorkingDataValues(inputDataValues, workingDataValues);
     	
-    	String visionData = "";
-    	boolean isPrintDataBtnPressed = _driverGamepad.getRawButton(4);
+    	// ===============================
+    	// Step 2: Do all the real work
+    	// ===============================
+    	AimAndShoot();
     	
-    	if (isPrintDataBtnPressed)
+    	// ===================================
+    	// Step 3: Below we drive the outputs
+    	// ===================================
+    	
+    	// set solenoids
+    	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
+    	_pumaBackSolenoid.set(outputDataValues.PumaBackSolenoidPosition);
+    	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);	
+    	
+		// set motor commmands
+    	_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);        	
+    	_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
+    	_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
+    	
+    	// set turret
+    	if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
     	{
-			try
-			{
-				outToServer = new DataOutputStream(_visionServer.getOutputStream());
-				inFromServer = new DataInputStream( _visionServer.getInputStream());
-				DriverStation.reportError("Successfully opened streams", false);
-			} 
-			catch (IOException e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			if ((visionData != null) && (outToServer != null) && (inFromServer != null))
-			{
-				try 
-				{
-					// ask the server for data
-					char cr = 0x013;
-					outToServer.writeChar(cr);
-					
-					// read data from server
-					BufferedReader in = new BufferedReader(new InputStreamReader(_visionServer.getInputStream()));
-					visionData = in.readLine();
-					
-					// parse the data
-					String delims = "[|]+";
-					String[] splitVisionData = visionData.split(delims);
-					
-					if (splitVisionData.length == 6){
-						boolean IsValidData = Boolean.parseBoolean(splitVisionData[RobotMap.IS_VALID_DATA_ARRAY_POSITION]);
-						double DistanceToTarget = Double.parseDouble(splitVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
-						double EffectiveTargetWidth = Double.parseDouble(splitVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
-						double DesiredSliderPosition = Double.parseDouble(splitVisionData[RobotMap.DESIRED_SLIDER_POSITION_ARRAY_POSITION]);
-						double DesiredTurretTurnInDegrees = Double.parseDouble(splitVisionData[RobotMap.DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION]);
-						boolean IsValidShot = Boolean.parseBoolean(splitVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
-						DriverStation.reportError("IsValidData: " + Boolean.toString(IsValidData) + "	", false);
-						DriverStation.reportError("DistanceToTarget: " + Double.toString(DistanceToTarget) + "	", false);
-						DriverStation.reportError("EffectiveTargetWidth: " + Double.toString(EffectiveTargetWidth) + "	", false);
-						DriverStation.reportError("DesiredSliderPosition: " + Double.toString(DesiredSliderPosition) + "   ", false);
-						DriverStation.reportError("DesiredTurretTurnInDegrees: " + Double.toString(DesiredTurretTurnInDegrees) + "	 ", false);
-						DriverStation.reportError("IsValidShot: " + Boolean.toString(IsValidShot) + "   ", false);
-					}
-					else 
-					{
-						DriverStation.reportError("Did not recieve correct vision data", false);
-						DriverStation.reportError(visionData, false);
-					}
-				} 
-				catch (IOException e) 
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+    		_turretMtr.set(outputDataValues.TurretTargetPositionCmd);
     	}
-    	else 
+    	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
     	{
+    		_turretMtr.set(outputDataValues.TurretVelocityCmd);
     	}
     	
-    	currentCycleTime = System.currentTimeMillis();
-    	deltaCycleTime = currentCycleTime - lastCycleTime;
-    	lastCycleTime = System.currentTimeMillis();
-    	String deltaCycleTimeString = Long.toString(deltaCycleTime);
-    	DriverStation.reportError(deltaCycleTimeString, false);
+    	// set slider
+    	if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.Position)
+    	{
+    		_sliderMtr.set(outputDataValues.SliderTargetPositionCmd);
+    	}
+    	else if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
+    	{
+    		_sliderMtr.set(outputDataValues.SliderVelocityCmd);
+    	}
     	
-    	//LiveWindow.run(); 	 	
+    	// ==========================
+    	// Step 4 Update Dashboard
+    	// ==========================
+    	UpdateDashboard(_robotLiveData);
+    	
+    	workingDataValues.LastScanDT = new Date();  	
+    	
+    	// optionally send message to drivers station
+    	if(outputDataValues.DriversStationMsg != null 
+    			&& outputDataValues.DriversStationMsg.length() > 0)
+    	{
+    		DriverStation.reportError(outputDataValues.DriversStationMsg, false);
+    	}
+    	
+    	// ==========================
+    	// Step 5. Optional Data logging
+    	// ==========================
+    	if(workingDataValues.IsLoggingEnabled == true)
+    	{
+    		_dataLogger.WriteData(_robotLiveData);
+    	}
     } 
+    
+    // this is the heart of this function
+    //	this method implements a state machine
+    private void AimAndShoot()
+    {
+    	//get local references to make variable references shorter
+    	InputData inputDataValues = _robotLiveData.InputDataValues;
+    	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
+    	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	VisionData visionData = _visionClient.GetVisionData();
+    	    
+    	if (visionData == null || !visionData.IsValidData)
+    	{
+    		DriverStation.reportError("Error... No valid vision data to use. | ", false); 
+    		return;
+    	}
+    	
+    	//	coarse	5 => soft limit		%VBus	.1%
+    	//	fine	0 => 5				%VBus	.05%
+    	//	shoot						PID Position
+    	
+    	switch (_autoAimAndShootState)
+    	{
+    		case ZERO_AXES:
+    	    	if(!_isSliderAxisZeroedYet)
+    	    	{
+    	    		ZeroSliderAxisReEntrant(_robotLiveData);
+    	    		//ZeroSliderAxis(_robotLiveData, _sliderAutonPosition);
+    	    	}
+    	    	else
+    	    	{
+    	    		outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
+    	    	}
+    	    	
+    	    	if (!_isTurretAxisZeroedYet)
+    	    	{
+    	    		ZeroTurretAxisReEntrant(_robotLiveData);
+    	    	}
+    	    	
+    	    	double sliderPositionError = Math.abs(outputDataValues.SliderTargetPositionCmd - _sliderMtr.getPosition());
+    	    	if(_isSliderAxisZeroedYet && _isTurretAxisZeroedYet && sliderPositionError < 1.0 )
+    	    	{
+    	    		DriverStation.reportError("Changing Auton State To: COARSE_TURRET_TO_TARGET | ", false);
+    	    		_autoAimAndShootState = Auto_Aim_And_Shoot_State.COARSE_TURRET_TO_TARGET;
+    	    	}
+    			break;
+    			
+    		case COARSE_TURRET_TO_TARGET:
+
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 10.0)
+    			{
+    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.1;
+	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.1;
+	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}    					
+    			}
+    			else
+    			{
+    				_autoAimAndShootState = Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
+					DriverStation.reportError("Changing Auton State To: FINE_TURRET_TO_TARGET | ", false);
+    			}
+
+    			break;
+    			
+    		case FINE_TURRET_TO_TARGET:
+
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 1.25)
+    			{
+    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.05;
+	    				DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.05;
+	    				DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}    					
+    			}
+    			else
+    			{
+    	    		// switch to PID Position Mode
+    	    		
+    	    		// stop driving the axis
+    	    		outputDataValues.TurretVelocityCmd = 0;
+    		    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
+    	    		
+    		    	// now switch to position loop mode
+    		    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.Position);
+    		    	outputDataValues.TurretTargetPositionCmd = _turretMtr.getPosition();
+    		    	DriverStation.reportError("Turret changing to Position mode | ", false);
+    		    	
+    		    	try {
+    		    		// sleep a little to let the zero occur
+    					Thread.sleep(1);
+    				} catch (InterruptedException e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+    				
+    				_autoAimAndShootState = Auto_Aim_And_Shoot_State.SHOOT;
+					DriverStation.reportError("Changing Auton State To: SHOOT | ", false);
+    			}
+    			
+				break;
+    			
+    		case SHOOT:
+				// wait until we reach 95% of target wheel speed
+				if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
+				{
+					// start the infeed to drive the ball up into the shooter
+					outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+					DriverStation.reportError("Ready to Shoot | ", false);
+				}
+				
+				// drive both sets of wheels
+    			outputDataValues.ShooterMtrVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
+				outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
+    			break;
+    			
+    		case TIMEOUT:
+    			DriverStation.reportError("Error... Auto Aim and Shoot sequence timed out | ", false);
+    			break;
+    	}
+    }
 }

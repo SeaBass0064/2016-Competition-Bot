@@ -26,8 +26,9 @@ public class RobotMap
 	public static final int DISTANCE_TO_TARGET_ARRAY_POSITION = 1;
 	public static final int EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION = 2;
 	public static final int DESIRED_SLIDER_POSITION_ARRAY_POSITION = 3;
-	public static final int DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION = 4;
-	public static final int IS_VALID_SHOT_ARRAY_POSITION = 5;
+	public static final int BATTERY_CHARGE_LEVEL = 4;
+	public static final int DESIRED_TURRET_TURN_IN_DEGREES_ARRAY_POSITION = 5;
+	public static final int IS_VALID_SHOT_ARRAY_POSITION = 6;
 	
 	// ======================================
 	// Constants for CAN Bus Addresses
@@ -55,6 +56,7 @@ public class RobotMap
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
+	public static final int SCALING_MTR_PWM_PORT = 7;
 	public static final int INFEED_ACQ_MTR_PWM_PORT = 8;
 	public static final int SHOOTER_KICKER_PWM_PORT = 9;
 	
@@ -89,6 +91,11 @@ public class RobotMap
 	public static final Value SHIFTER_LOW_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value PERIMETER_EXPANSION_IN = DoubleSolenoid.Value.kForward;
 	public static final Value PERIMETER_EXPANSION_OUT = DoubleSolenoid.Value.kReverse;
+	
+	// ======================================
+	// define constants for the navx
+	// ======================================
+	public static final double NAVX_MAX_ALLOWABLE_ANGLE = 0.0;
 	
 	// ======================================
 	// define constants for Left Drive Motor
@@ -206,7 +213,7 @@ public class RobotMap
 	public static final int SHOOTER_IZONE = 0;
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 1;
-	public static final int SHOOTER_TARGET_MOTOR_RPM = 3500;
+	public static final int SHOOTER_TARGET_MOTOR_RPM = 3550;
 	public static final int SHOOTER_MAX_MOTOR_RPM = 4600;
 	
 	// ======================================
@@ -217,7 +224,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 38.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;  //38.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
@@ -252,7 +259,7 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_TURRET_CCW_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
-	//public static final int OPERATOR_GAMEPAD_INFEED_TILT_AXIS = LogitechF310.RIGHT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.START_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BACK_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
@@ -272,4 +279,13 @@ public class RobotMap
 	// ======================================
 	public static final String SHOOTER_CAMERA_NAME = "cam0";
 	public static final String INFEED_CAMERA_NAME = "cam1";
+	
+	// ======================================
+	// Define constants for Robot Tilt Angle Protection
+	// ======================================
+	public static final float ROBOT_FWD_DRIVE_MAX_TILT_CUTOFF = 30.0f;
+	public static final float ROBOT_FWD_DRIVE_MAX_TILT_REENABLE = 28.0f;
+		
+	public static final float ROBOT_REV_DRIVE_MAX_TILT_CUTOFF = -32.0f;
+	public static final float ROBOT_REV_DRIVE_MAX_TILT_REENABLE = -30.0f;
 }
