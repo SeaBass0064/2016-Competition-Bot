@@ -189,12 +189,26 @@ public class RobotData
 	{
 		UNDEFINED,
 		ZERO_AXES,
+		GROSS_TURRET_TO_TARGET,
 		COARSE_TURRET_TO_TARGET,
 		FINE_TURRET_TO_TARGET,
 		SHOOT,
 		TIMEOUT
 	}
-
+	
+	public enum Cross_Defense_Auto_Aim_And_Shoot_State
+	{
+		UNDEFINED,
+		ZERO_AXES_AND_DRIVE,
+		GROSS_TURRET_TO_TARGET,
+		COARSE_TURRET_TO_TARGET,
+		FINE_TURRET_TO_TARGET,
+		SHOOT,
+		TIMEOUT
+	}
+	
+	
+	
 	
 	// class constructor
 	public RobotData()

@@ -142,7 +142,7 @@ public class RobotMap
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
 	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.18; //0.05;
-	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.21;		// this is approx 0 deg
+	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.17;		// this is approx 0 deg
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_DOWN = -0.36; //-0.25;
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_UP = -0.59;
 	
