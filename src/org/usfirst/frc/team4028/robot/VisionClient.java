@@ -264,7 +264,7 @@ public class VisionClient
 							  SetVisionData(_visionLiveData);
 						  }
 						  
-						  if (loopCounter % 50 == 0)
+						  if (loopCounter % 100 == 0)
 						  {
 							  DriverStation.reportError("Vision Data= " + rawVisionData + " | ", false);
 						  }
