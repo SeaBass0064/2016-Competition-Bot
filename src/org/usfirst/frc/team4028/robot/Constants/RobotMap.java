@@ -255,8 +255,8 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_KICKER_REVERSE_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
-	public static final int OPERATOR_GAMEPAD_TURRET_CW_BTN = LogitechF310.YELLOW_BUTTON_Y;
-	public static final int OPERATOR_GAMEPAD_TURRET_CCW_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;

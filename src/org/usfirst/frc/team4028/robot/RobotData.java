@@ -264,8 +264,8 @@ public class RobotData
 		public boolean IsCameraSwitchBtnPressed;
 		public boolean IsKickerReverseBtnPressed;
 		
-		public boolean IsTurretCWButtonPressed;
-		public boolean IsTurretCCWButtonPressed;
+		public boolean IsShooterSpeedUpBtnPressed;
+		public boolean IsShooterSpeedDownBtnPressed;
 		
 		public boolean IsSliderFwdBtnPressed;
 		public boolean IsSliderRevBtnPressed;
@@ -364,8 +364,8 @@ public class RobotData
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsCameraSwitchBtnPressed" + "\t");
 			sb.append("InputData:IsKickerReverseBtnPressed" + "\t");
-			sb.append("InputData:IsTurretCWButtonPressed" + "\t");
-			sb.append("InputData:IsTurretCCWButtonPressed" + "\t");
+			sb.append("InputData:IsShooterSpeedUpBtnPressed" + "\t");
+			sb.append("InputData:IsShooterSpeedDownBtnPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
 			sb.append("InputData:IsShooterBtnPressed" + "\t");
 			sb.append("InputData:IsSliderFwdBtnPressed" +"\t");
@@ -451,8 +451,8 @@ public class RobotData
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsCameraSwitchBtnPressed + "\t"); 
 			sb.append(IsKickerReverseBtnPressed + "\t");
-			sb.append(IsTurretCWButtonPressed + "\t");
-			sb.append(IsTurretCCWButtonPressed + "\t");
+			sb.append(IsShooterSpeedUpBtnPressed + "\t");
+			sb.append(IsShooterSpeedDownBtnPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
 			sb.append(IsSliderRevBtnPressed + "\t");
 			sb.append(IsInfeedTiltStoreBtnPressed + "\t");

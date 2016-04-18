@@ -69,8 +69,6 @@ import com.kauailabs.navx.frc.AHRS;
 import com.ni.vision.NIVision;
 import com.ni.vision.NIVision.Image;
 
-
-
 /**
  * Date			Rev		Author						Comments
  * -----------	------	-------------------------	----------------------------------
@@ -89,8 +87,6 @@ import com.ni.vision.NIVision.Image;
  * 													-Added Arcade Drive functionality
  *
  */
-
-
 
 public class Robot extends IterativeRobot
 {
@@ -231,18 +227,21 @@ public class Robot extends IterativeRobot
     	//_leftDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_leftDriveMasterMtr.reverseSensor(false);  							// do not invert encoder feedback
     	_leftDriveMasterMtr.enableLimitSwitch(false, false);
-    
+    	//_leftDriveMasterMtr.reverseOutput(true);
+    	
     	_leftDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_TALON);	
     	_leftDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_leftDriveSlaveMtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_TALON);
     	_leftDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	_leftDriveSlaveMtr.enableLimitSwitch(false, false);
+    	//_leftDriveSlaveMtr.reverseOutput(true);
     	
     	_leftDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_2_TALON);
     	_leftDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);   // set this mtr ctrlr as a slave
     	_leftDriveSlave2Mtr.set(RobotMap.CAN_ADDR_LEFT_DRIVE_MASTER_TALON);
     	_leftDriveSlave2Mtr.enableBrakeMode(false);
     	_leftDriveSlave2Mtr.enableLimitSwitch(false, false);
+    	//_leftDriveSlave2Mtr.reverseOutput(true);
     	
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CCW = Drive FWD
@@ -253,18 +252,22 @@ public class Robot extends IterativeRobot
     	//_rightDriveMasterMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_rightDriveMasterMtr.reverseSensor(true);  							// invert encoder feedback
     	_rightDriveMasterMtr.enableLimitSwitch(false, false);
+    	//_rightDriveMasterMtr.reverseOutput(true);
     	
     	_rightDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_TALON);	
     	_rightDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlaveMtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_TALON);
     	_rightDriveSlaveMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	_rightDriveSlaveMtr.enableLimitSwitch(false, false);
+    	//_rightDriveSlaveMtr.reverseOutput(true);
     	
     	_rightDriveSlave2Mtr = new CANTalon(RobotMap.CAN_ADDR_RIGHT_DRIVE_SLAVE_2_TALON);
     	_rightDriveSlave2Mtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
     	_rightDriveSlave2Mtr.set(RobotMap.CAN_ADDR_RIGHT_DRIVE_MASTER_TALON);
     	_rightDriveSlave2Mtr.enableBrakeMode(false);
     	_rightDriveSlave2Mtr.enableLimitSwitch(false, false);
+    	//_rightDriveSlave2Mtr.reverseOutput(true);
+
     	
     	// ===================
     	// Infeed Tilt
@@ -395,7 +398,7 @@ public class Robot extends IterativeRobot
         server = DynamicCameraServer.getInstance();
         server.setQuality(25);
         _currentCameraName = RobotMap.SHOOTER_CAMERA_NAME;
-        //server.startAutomaticCapture(_currentCameraName);
+        server.startAutomaticCapture(_currentCameraName);
     	
         //===================
         // Smart DashBoard User Input
@@ -788,7 +791,7 @@ public class Robot extends IterativeRobot
     					break;
     					
     				case RAMPARTS:
-    					_autonTargetDriveTimeMSecs = 7 * 1000;
+    					_autonTargetDriveTimeMSecs = 6 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
@@ -798,7 +801,7 @@ public class Robot extends IterativeRobot
     					break;
     					
     				case ROUGH_TERRAIN:
-    					_autonTargetDriveTimeMSecs = 7 * 1000;
+    					_autonTargetDriveTimeMSecs = 6 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;    				
     	    	}
@@ -999,7 +1002,7 @@ public class Robot extends IterativeRobot
     	else if (inputDataValues.AutonModeRequested == RobotData.AutonMode.CROSS_DEFENSE)
 		{
     		// set motor commmands
-        	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
+        	_robotDrive.arcadeDrive((-1.0 * outputDataValues.ArcadeDriveThrottleAdjCmd), outputDataValues.ArcadeDriveTurnAdjCmd, false);
         	_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);        	
         	_kickerMtr.set(outputDataValues.KickerMtrVelocityCmd);
         	_shooterMasterMtr.set(outputDataValues.ShooterMtrVelocityCmd);
@@ -1090,7 +1093,7 @@ public class Robot extends IterativeRobot
     {
     }
     
-    // this auton mode sits still ad zeros all axes
+    // this auton mode sits still and zeros all axes
     public void autonomousZeroAllAxis()
     {
     	InputData inputDataValues = _robotLiveData.InputDataValues;
@@ -1830,7 +1833,7 @@ public class Robot extends IterativeRobot
     	}
     	
     	// start the camera
-    	server.startAutomaticCapture(_currentCameraName);
+    	//server.startAutomaticCapture(_currentCameraName);
     	
     	// ===================
     	// optionally setup logging to USB Stick (if it is plugged into one of the RoboRio Host USB ports)
@@ -2256,23 +2259,24 @@ public class Robot extends IterativeRobot
     	}
     	else if (_turretMtr.getControlMode() == CANTalon.TalonControlMode.Position)
     	{
-			if (inputDataValues.IsTurretCWButtonPressed 
+    		/*
+			if (inputDataValues.IsShooterSpeedUpBtnPressed 
 					&& !workingDataValues.IsTurretCWButtonPressedLastScan
-					&& !inputDataValues.IsTurretCCWButtonPressed)		
+					&& !inputDataValues.IsShooterSpeedDownBtnPressed)		
 			{
 				double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd + 0.06;
 				outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
 			}
-			else if (!inputDataValues.IsTurretCWButtonPressed 
+			else if (!inputDataValues.IsShooterSpeedUpBtnPressed 
 					&& !workingDataValues.IsTurretCCWButtonPressedLastScan
-					&& inputDataValues.IsTurretCCWButtonPressed)	
+					&& inputDataValues.IsShooterSpeedDownBtnPressed)	
 			{
 				double NewTurretTargetPositionCmd = outputDataValues.TurretTargetPositionCmd - 0.06;
 				outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
 			}
+			/*
     	}
     	
-    	//outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(workingDataValues.TurretTurnDegreesCmd);
     	
     	// ============================
     	// 2.4.1 Turret Aiming
@@ -2388,11 +2392,11 @@ public class Robot extends IterativeRobot
     	// ===========================
     	if (inputDataValues.WinchRawCmd > 0.05)
     	{
-    		outputDataValues.WinchVelocityCmd = -.1;
+    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
     	}
     	else if (inputDataValues.WinchRawCmd < -0.05)
     	{
-    		outputDataValues.WinchVelocityCmd = .1;
+    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
     	}
     	else
     	{
@@ -2464,7 +2468,7 @@ public class Robot extends IterativeRobot
     	_shifterSolenoid.set(outputDataValues.ShifterSolenoidPosition);
     	
     	// set motor commmands
-    	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
+    	_robotDrive.arcadeDrive((-1.0 * outputDataValues.ArcadeDriveThrottleAdjCmd), (-1.0 * outputDataValues.ArcadeDriveTurnAdjCmd), false);
     	
     	_infeedAcqMtr.set(outputDataValues.InfeedAcqMtrVelocityCmd);
     	
@@ -2540,8 +2544,8 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsShifterToggleBtnPressedLastScan = inputDataValues.IsShifterToggleHighBtnPressed;
     	workingDataValues.IsSliderFwdBtnPressedLastScan = inputDataValues.IsSliderFwdBtnPressed;
     	workingDataValues.IsSliderRevBtnPressedLastScan = inputDataValues.IsSliderRevBtnPressed;
-    	workingDataValues.IsTurretCWButtonPressedLastScan = inputDataValues.IsTurretCWButtonPressed;
-    	workingDataValues.IsTurretCCWButtonPressedLastScan = inputDataValues.IsTurretCCWButtonPressed;
+    	workingDataValues.IsTurretCWButtonPressedLastScan = inputDataValues.IsShooterSpeedUpBtnPressed;
+    	workingDataValues.IsTurretCCWButtonPressedLastScan = inputDataValues.IsShooterSpeedDownBtnPressed;
     	workingDataValues.IsInfeedTiltStoreBtnPressedLastScan = inputDataValues.IsInfeedTiltStoreBtnPressed;
     	workingDataValues.IsInfeedTiltFixedBtnPressedLastScan = inputDataValues.IsInfeedTiltFixedBtnPressed;
     	workingDataValues.IsInfeedAcquireBtnPressedLastScan = inputDataValues.IsInfeedAcquireBtnPressed;
@@ -3230,8 +3234,8 @@ public class Robot extends IterativeRobot
     	//inputDataValues.IsInfeedTiltFixedBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN);
     	inputDataValues.IsKickerReverseBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_KICKER_REVERSE_BTN);
     	
-    	inputDataValues.IsTurretCWButtonPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_CW_BTN);
-    	inputDataValues.IsTurretCCWButtonPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_TURRET_CCW_BTN);
+    	inputDataValues.IsShooterSpeedUpBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN);
+    	inputDataValues.IsShooterSpeedDownBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN);
     	inputDataValues.IsSliderFwdBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SLIDER_FWD_BTN);
     	inputDataValues.IsSliderRevBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SLIDER_REV_BTN);
     	inputDataValues.IsInfeedAcquireBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN);
@@ -3449,7 +3453,7 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putBoolean("Is Turret Zeroed", _isTurretAxisZeroedYet);
 		
 		// Kangaroo Charge Level
-		SmartDashboard.putNumber("Kangaroo charge level", visionData.BatteryChargeLevel);
+		//SmartDashboard.putNumber("Kangaroo charge level", visionData.BatteryChargeLevel);
 		
 		// Vision Data
 		//SmartDashboard.putBoolean("Vision.IsValidData", inputDataValues.IsValidData);
