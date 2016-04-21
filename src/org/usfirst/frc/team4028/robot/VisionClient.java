@@ -288,6 +288,8 @@ public class VisionClient
 				  DriverStation.reportError(ex.getMessage(), true);
 				  continue;
 			  }
+			  
+			  //Thread.sleep(100);
 		  	}
 		
 		  _isVisionServerPollingStarted = false;

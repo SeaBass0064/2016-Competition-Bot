@@ -19,6 +19,7 @@ public class RobotMap
 	
 	// define constants for the socket connecting to the vision PC
 	public static final int VISION_PC_PORT = 5806;  // Allowed to use 5800-5810
+	public static final int CAMERA_SWAP_PORT = 5807;
 	public static final String VISION_PC_IP_ADDRESS = "10.40.28.78";
 	
 	// define constants for array values of vision data
@@ -56,6 +57,7 @@ public class RobotMap
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
+	public static final int CUPID_SERVO_PWM_PORT = 6;
 	public static final int SCALING_MTR_PWM_PORT = 7;
 	public static final int INFEED_ACQ_MTR_PWM_PORT = 8;
 	public static final int SHOOTER_KICKER_PWM_PORT = 9;
@@ -142,7 +144,7 @@ public class RobotMap
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
 	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.18; //0.05;
-	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.17;		// this is approx 0 deg
+	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.1;		// this is approx 0 deg
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_DOWN = -0.36; //-0.25;
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_UP = -0.59;
 	
@@ -213,7 +215,7 @@ public class RobotMap
 	public static final int SHOOTER_IZONE = 0;
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 1;
-	public static final int SHOOTER_TARGET_MOTOR_RPM = 3550;
+	public static final int SHOOTER_TARGET_MOTOR_RPM = 3500;
 	public static final int SHOOTER_MAX_MOTOR_RPM = 4600;
 	
 	// ======================================
@@ -245,18 +247,19 @@ public class RobotMap
 	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.BACK_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.START_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
-	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_HIGH_BTN = LogitechF310.RIGHT_BUMPER;
-	public static final int DRIVER_GAMEPAD_SHIFTER_TOGGLE_LOW_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN = LogitechF310.RED_BUTTON_B;
 	//public static final int DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS = LogitechF310.LEFT_TRIGGER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS = LogitechF310.RIGHT_TRIGGER;
 	public static final int DRIVER_GAMEPAD_KICKER_REVERSE_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int DRIVER_GAMEPAD_CUPID_LOAD_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int DRIVER_GAMEPAD_CUPID_SHOOT_BTN = LogitechF310.RIGHT_BUMPER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
-	public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN = LogitechF310.YELLOW_BUTTON_Y;
-	public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN = LogitechF310.BLUE_BUTTON_X;
+	//public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	//public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_CUPID_CAMERA_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;
@@ -279,6 +282,7 @@ public class RobotMap
 	// ======================================
 	public static final String SHOOTER_CAMERA_NAME = "cam0";
 	public static final String INFEED_CAMERA_NAME = "cam1";
+	public static final String CUPID_CAMERA_NAME = "cam2";
 	
 	// ======================================
 	// Define constants for Robot Tilt Angle Protection

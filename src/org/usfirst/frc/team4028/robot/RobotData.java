@@ -257,15 +257,16 @@ public class RobotData
 		public boolean IsPumaFrontToggleBtnPressed;
 		public boolean IsPumaBackToggleBtnPressed;
 		public boolean IsPumaBothToggleBtnPressed;
-		public boolean IsShifterToggleHighBtnPressed;
-		public boolean IsShifterToggleLowBtnPressed;
 		public boolean IsInfeedAcquireBtnPressed;
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsCameraSwitchBtnPressed;
 		public boolean IsKickerReverseBtnPressed;
+		public boolean IsCupidLoadBtnPressed;
+		public boolean IsCupidShootBtnPressed;
+		public boolean IsCupidCameraBtnPressed;
 		
-		public boolean IsShooterSpeedUpBtnPressed;
-		public boolean IsShooterSpeedDownBtnPressed;
+		//public boolean IsShooterSpeedUpBtnPressed;
+		//public boolean IsShooterSpeedDownBtnPressed;
 		
 		public boolean IsSliderFwdBtnPressed;
 		public boolean IsSliderRevBtnPressed;
@@ -358,14 +359,15 @@ public class RobotData
 			sb.append("InputData:IsPumaFrontToggleBtnPressed" + "\t");
 			sb.append("InputData:IsPumaBackToggleBtnPressed" + "\t");
 			sb.append("InputData:IsPumaBothToggleBtnPressed" + "\t");
-			sb.append("InputData:IsShifterToggleHighBtnPressed" + "\t");
-			sb.append("InputData:IsShifterToggleLowBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsCameraSwitchBtnPressed" + "\t");
 			sb.append("InputData:IsKickerReverseBtnPressed" + "\t");
-			sb.append("InputData:IsShooterSpeedUpBtnPressed" + "\t");
-			sb.append("InputData:IsShooterSpeedDownBtnPressed" + "\t");
+			sb.append("InputData:IsCupidLoadBtnPressed" + "\t");
+			sb.append("InputData:IsCupidShootBtnPressed" + "\t");
+			sb.append("InputData:IsCupidCameraBtnPressed" + "\t");
+			//sb.append("InputData:IsShooterSpeedUpBtnPressed" + "\t");
+			//sb.append("InputData:IsShooterSpeedDownBtnPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
 			sb.append("InputData:IsShooterBtnPressed" + "\t");
 			sb.append("InputData:IsSliderFwdBtnPressed" +"\t");
@@ -445,14 +447,15 @@ public class RobotData
 			sb.append(IsPumaFrontToggleBtnPressed + "\t");
 			sb.append(IsPumaBackToggleBtnPressed + "\t");
 			sb.append(IsPumaBothToggleBtnPressed + "\t");
-			sb.append(IsShifterToggleHighBtnPressed + "\t");
-			sb.append(IsShifterToggleLowBtnPressed + "\t");
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsCameraSwitchBtnPressed + "\t"); 
 			sb.append(IsKickerReverseBtnPressed + "\t");
-			sb.append(IsShooterSpeedUpBtnPressed + "\t");
-			sb.append(IsShooterSpeedDownBtnPressed + "\t");
+			sb.append(IsCupidLoadBtnPressed + "\t");
+			sb.append(IsCupidShootBtnPressed + "\t");
+			sb.append(IsCupidCameraBtnPressed + "\t");
+			//sb.append(IsShooterSpeedUpBtnPressed + "\t");
+			//sb.append(IsShooterSpeedDownBtnPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
 			sb.append(IsSliderRevBtnPressed + "\t");
 			sb.append(IsInfeedTiltStoreBtnPressed + "\t");
@@ -546,9 +549,12 @@ public class RobotData
 		public boolean IsInfeedTiltFixedBtnPressedLastScan;
 		public boolean IsInfeedAcquireBtnPressedLastScan;
 		public boolean IsCameraSwitchBtnPressedLastScan;
+		public boolean IsCupidSwitchBtnPressedLastScan;
 		public boolean IsBallInPositionLastScan;
 		public boolean IsFwdDriveTiltSafetyEngagedLastScan;
 		public boolean IsRevDriveTiltSafetyEngagedLastScan;
+		public boolean IsShooterSpeedUpBtnPressedLastScan;
+		public boolean IsShooterSpeedDownBtnPressedLastScan;
 		
 		public boolean IsTurretEncoderDegreesZeroYet;
 		public boolean IsTurretEncoderDegreesTargetYet;
@@ -621,9 +627,12 @@ public class RobotData
 			sb.append("WorkingData:IsInfeedTiltFixedBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsInfeedAcquireBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsCameraSwitchBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsCupidSwitchBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsBallInPositionLastScan" + "\t");
 			sb.append("WorkingData:IsFwdDriveTiltSafetyEngagedLastScan" + "\t");
 			sb.append("WorkingData:IsRevDriveTiltSafetyEngagedLastScan" + "\t");
+			sb.append("WorkingData:IsShooterSpeedUpBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsShooterSpeedDownBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
 			sb.append("WorkingData:IsTurretEncoderDegreesTargetYet" + "\t");
@@ -698,9 +707,13 @@ public class RobotData
 			sb.append(IsInfeedTiltFixedBtnPressedLastScan + "\t");
 			sb.append(IsInfeedAcquireBtnPressedLastScan + "\t");
 			sb.append(IsCameraSwitchBtnPressedLastScan + "\t");
+			sb.append(IsCupidSwitchBtnPressedLastScan + "\t");
 			sb.append(IsBallInPositionLastScan + "\t");
 			sb.append(IsFwdDriveTiltSafetyEngagedLastScan + "\t");
 			sb.append(IsRevDriveTiltSafetyEngagedLastScan + "\t");
+			sb.append(IsShooterSpeedUpBtnPressedLastScan + "\t");
+			sb.append(IsShooterSpeedDownBtnPressedLastScan + "\t");
+			
 			
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
 			sb.append(IsTurretEncoderDegreesTargetYet + "\t");
@@ -771,14 +784,16 @@ public class RobotData
 		
 		public double SliderTargetPositionCmd;
 		public double KickerMtrVelocityCmd;
-		public double ShooterMtrVelocityCmd;
+		public double ShooterMtrCurrentVelocityCmd;
+		public double ShooterMtrTargetVelocityCmd;
 		public double SliderVelocityCmd;
 
 		public double WinchVelocityCmd;
 		
+		public double CupidServoPositionCmd;
+		
 		public Value PumaFrontSolenoidPosition;
 		public Value PumaBackSolenoidPosition;
-		public Value ShifterSolenoidPosition;
 		public Value PerimeterSolenoidPosition;
 
 		public String DriversStationMsg;
@@ -797,12 +812,13 @@ public class RobotData
 			sb.append("OutputData:InfeedTiltTargetPositionCmd" + "\t");
 			sb.append("OutputData:SliderTargetPositionCmd" + "\t");
 			sb.append("OutputData:KickerMtrVelocityCmd"+ "\t");
-			sb.append("OutputData:ShooterMtrVelocityCmd" + "\t");
+			sb.append("OutputData:ShooterCurrentMtrVelocityCmd" + "\t");
+			sb.append("OutputData:ShooterTargetMtrVelocityCmd" + "\t");
 			sb.append("OutputData:SliderVelocityCmd" + "\t");
 			sb.append("OutputData:WinchVelocityCmd" + "\t");
+			sb.append("OutputData:CupidServoPositionCmd" + "\t");
 			sb.append("OutputData:PumaFrontSolenloidPosition" + "\t");
 			sb.append("OutputData:PumaBackSolenoidPosition" + "\t");
-			sb.append("OutputData:ShifterSolenoidPosition" + "\t");
 			sb.append("OutputData:PerimeterSolenoidPosition" + "\t");
 			sb.append("OutputData:DriversStationMsg");
 			
@@ -824,9 +840,11 @@ public class RobotData
 			sb.append(InfeedTiltTargetPositionInRotationsCmd + "\t");
 			sb.append(SliderTargetPositionCmd + "\t");
 			sb.append(KickerMtrVelocityCmd + "\t");
-			sb.append(ShooterMtrVelocityCmd + "\t");
+			sb.append(ShooterMtrCurrentVelocityCmd + "\t");
+			sb.append(ShooterMtrTargetVelocityCmd + "\t");
 			sb.append(SliderVelocityCmd + "\t");
 			sb.append(WinchVelocityCmd + "\t");
+			sb.append(CupidServoPositionCmd + "\t");
 			
 			String PumaFrontSolenoidPositionDesc = "";
 			if (PumaFrontSolenoidPosition == RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION)
@@ -856,19 +874,6 @@ public class RobotData
 				PumaBackSolenoidPositionDesc = "UNKNOWN";
 			}
 			
-			String shifterSolenoidPositionDesc = "";
-			if (ShifterSolenoidPosition == RobotMap.SHIFTER_HIGH_GEAR_POSITION)
-			{
-				shifterSolenoidPositionDesc = "HIGH_GEAR";
-			}
-			else if (ShifterSolenoidPosition == RobotMap.SHIFTER_LOW_GEAR_POSITION)
-			{
-				shifterSolenoidPositionDesc = "LOW_GEAR";
-			}
-			else
-			{
-				shifterSolenoidPositionDesc = "UNKNOWN";
-			}
 			
 			String perimeterExpansionSolenoidPositionDesc = "";
 			if (PerimeterSolenoidPosition == RobotMap.PERIMETER_EXPANSION_IN)
@@ -886,7 +891,6 @@ public class RobotData
 			
 			sb.append(PumaFrontSolenoidPositionDesc + "\t");
 			sb.append(PumaBackSolenoidPositionDesc + "\t");
-			sb.append(shifterSolenoidPositionDesc + "\t");
 			sb.append(perimeterExpansionSolenoidPositionDesc + "\t");
 			sb.append(DriversStationMsg);
 					

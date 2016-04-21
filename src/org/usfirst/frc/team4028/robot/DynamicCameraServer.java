@@ -248,37 +248,62 @@ public class DynamicCameraServer {
     Image frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
     
     // FRC5881 Mod Start
-    while (m_autoCaptureStarted) {
+    while (m_autoCaptureStarted) 
+    {
     // FRC5881 Mod End
       boolean hwClient;
       ByteBuffer dataBuffer = null;
-      synchronized (this) {
+      
+      synchronized (this) 
+      {
         hwClient = m_hwClient;
-        if (hwClient) {
+        if (hwClient) 
+        {
           dataBuffer = m_imageDataPool.removeLast();
         }
       }
 
-      try {
-        if (hwClient && dataBuffer != null) {
+      try 
+      {
+        if (hwClient && dataBuffer != null) 
+        {
           // Reset the image buffer limit
           dataBuffer.limit(dataBuffer.capacity() - 1);
           m_camera.getImageData(dataBuffer);
           setImageData(new RawData(dataBuffer), 0);
-        } else {
+        } 
+        else 
+        {
           m_camera.getImage(frame);
           setImage(frame);
         }
-      } catch (VisionException ex) {
-        DriverStation.reportError("Error when getting image from the camera: " + ex.getMessage(),
-            true);
-        if (dataBuffer != null) {
-          synchronized (this) {
+      } 
+      catch (VisionException ex) 
+      {
+        DriverStation.reportError("Error when getting image from the camera: " + ex.getMessage(), true);
+        if (dataBuffer != null) 
+        {
+          synchronized (this) 
+          {
             m_imageDataPool.addLast(dataBuffer);
             Timer.delay(.1);
           }
+          
         }
       }
+      
+      
+      try 
+      {
+    	// pause the camera
+		Thread.sleep(15);
+      } 
+      catch (InterruptedException e) 
+      {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+      }
+      
     }
     
     // FRC5881 Mod Start
