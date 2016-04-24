@@ -207,8 +207,25 @@ public class RobotData
 		TIMEOUT
 	}
 	
+	public enum And1_Servo_Dir_State
+	{
+		UNDEFINED,
+		DOWN,
+		UP
+	}
 	
-	
+	public enum Shooter_Target_Speed
+	{
+		UNDEFINED,
+		_2500,
+		_2750,
+		_3000,
+		_3250,
+		_3500,
+		_3750,
+		_4000,
+		_4250,
+	}
 	
 	// class constructor
 	public RobotData()
@@ -260,10 +277,11 @@ public class RobotData
 		public boolean IsInfeedAcquireBtnPressed;
 		public boolean IsInfeedReleaseBtnPressed;
 		public boolean IsCameraSwitchBtnPressed;
-		public boolean IsKickerReverseBtnPressed;
-		public boolean IsCupidLoadBtnPressed;
-		public boolean IsCupidShootBtnPressed;
+		public boolean IsCupidToggleBtnPressed;
+		public boolean IsClimbEnabledBtnPressed;
 		public boolean IsCupidCameraBtnPressed;
+		public boolean IsShooterTargetSpeedToggleBtnPressed;
+		public boolean IsShooterAltModeEnableBtnPressed;
 		
 		//public boolean IsShooterSpeedUpBtnPressed;
 		//public boolean IsShooterSpeedDownBtnPressed;
@@ -307,6 +325,8 @@ public class RobotData
 		public double SliderCurrentPosition;
 		public double SliderEncoderCurrentCount;
 		public double SliderRawVelocityCmd;
+		
+		public double And1RawCmd;
 		
 		public boolean IsTurretHomeLimitSwitchClosed;
 		public boolean IsTurretApproachingHomeLimitSwitchClosed;
@@ -362,10 +382,11 @@ public class RobotData
 			sb.append("InputData:IsInfeedAcquireBtnPressed" + "\t");
 			sb.append("InputData:IsInfeedReleaseBtnPressed" + "\t");
 			sb.append("InputData:IsCameraSwitchBtnPressed" + "\t");
-			sb.append("InputData:IsKickerReverseBtnPressed" + "\t");
-			sb.append("InputData:IsCupidLoadBtnPressed" + "\t");
-			sb.append("InputData:IsCupidShootBtnPressed" + "\t");
+			sb.append("InputData:IsCupidToggleBtnPressed" + "\t");
+			sb.append("InputData:IsClimbEnabledBtnPressed" + "\t");
 			sb.append("InputData:IsCupidCameraBtnPressed" + "\t");
+			sb.append("InputData:IsShooterTargetSpeedToggleBtnPressed" + "\t");
+			sb.append("InputData:IsShooterAltModeEnableBtnPressed" + "\t");
 			//sb.append("InputData:IsShooterSpeedUpBtnPressed" + "\t");
 			//sb.append("InputData:IsShooterSpeedDownBtnPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
@@ -387,6 +408,7 @@ public class RobotData
 			sb.append("InputData:WinchRawCmd" + "\t");
 			sb.append("InputData:SliderRawVelocityCmd" +"\t");
 			sb.append("InputData:SliderCurrentPosition" +"\t");
+			sb.append("InputData:And1RawCmd" + "\t");
 			sb.append("InputData:LeftDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:RightDriveEncoderCurrentCount" + "\t");
 			sb.append("InputData:InfeedTiltEncoderCurrentCount" + "\t");
@@ -450,10 +472,11 @@ public class RobotData
 			sb.append(IsInfeedAcquireBtnPressed + "\t");
 			sb.append(IsInfeedReleaseBtnPressed + "\t");
 			sb.append(IsCameraSwitchBtnPressed + "\t"); 
-			sb.append(IsKickerReverseBtnPressed + "\t");
-			sb.append(IsCupidLoadBtnPressed + "\t");
-			sb.append(IsCupidShootBtnPressed + "\t");
+			sb.append(IsCupidToggleBtnPressed + "\t");
+			sb.append(IsClimbEnabledBtnPressed + "\t");
 			sb.append(IsCupidCameraBtnPressed + "\t");
+			sb.append(IsShooterTargetSpeedToggleBtnPressed + "\t");
+			sb.append(IsShooterAltModeEnableBtnPressed + "\t");
 			//sb.append(IsShooterSpeedUpBtnPressed + "\t");
 			//sb.append(IsShooterSpeedDownBtnPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
@@ -480,6 +503,7 @@ public class RobotData
 			sb.append(InfeedTiltEncoderCurrentCount + "\t");
 			sb.append(TurretEncoderCurrentPosition + "\t");
 			sb.append(SliderEncoderCurrentCount + "\t");
+			sb.append(And1RawCmd + "\t");
 			sb.append(IsInfeedTiltAxisOnUpLimitSwitch + "\t");
 			sb.append(InfeedTiltCurrentOutputVoltage + "\t");
 			sb.append(ShooterEncoderCurrentCP100MS + "\t");
@@ -555,6 +579,10 @@ public class RobotData
 		public boolean IsRevDriveTiltSafetyEngagedLastScan;
 		public boolean IsShooterSpeedUpBtnPressedLastScan;
 		public boolean IsShooterSpeedDownBtnPressedLastScan;
+		public boolean IsShooterTargetSpeedToggleBtnPressedLastScan;
+		public boolean IsClimbEnabledBtnPressedLastScan;
+		public boolean IsShooterAltModeEnableBtnPressedLastScan;
+		public boolean IsShooterAltModeEnabledLastScan;
 		
 		public boolean IsTurretEncoderDegreesZeroYet;
 		public boolean IsTurretEncoderDegreesTargetYet;
@@ -601,6 +629,7 @@ public class RobotData
     	
     	public Auton_Shoot_Ball_State AutonShootBallState;
     	public Teleop_Elevator_State TeleopElevatorState;
+    	public Shooter_Target_Speed ShooterTargetSpeed;
     	
     	public long AutonShooterStartTime;
     	public long AutonDriveFwdStartTime;
@@ -633,6 +662,9 @@ public class RobotData
 			sb.append("WorkingData:IsRevDriveTiltSafetyEngagedLastScan" + "\t");
 			sb.append("WorkingData:IsShooterSpeedUpBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsShooterSpeedDownBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsShooterTargetSpeedToggleBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsClimbEnabledBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsShooterAltModeEnableBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
 			sb.append("WorkingData:IsTurretEncoderDegreesTargetYet" + "\t");
@@ -679,6 +711,7 @@ public class RobotData
 			
 			sb.append("WorkingData:AutonShootBallState" + "\t");
 			sb.append("WorkingData:TeleopElevatorState" + "\t");
+			sb.append("WorkingData:ShooterTargetSpeed" + "\t");
 			sb.append("WorkingData:AutonShooterStartTime" + "\t");
 			sb.append("WorkingData:AutonDriveFwdStartTime" + "\t");
 			sb.append("WorkingData:InfeedPauseOnBallInPositionSwitchStartTime");
@@ -713,8 +746,10 @@ public class RobotData
 			sb.append(IsRevDriveTiltSafetyEngagedLastScan + "\t");
 			sb.append(IsShooterSpeedUpBtnPressedLastScan + "\t");
 			sb.append(IsShooterSpeedDownBtnPressedLastScan + "\t");
-			
-			
+			sb.append(IsShooterTargetSpeedToggleBtnPressedLastScan + "\t");
+			sb.append(IsClimbEnabledBtnPressedLastScan + "\t");
+			sb.append(IsShooterAltModeEnableBtnPressedLastScan + "\t");
+		
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
 			sb.append(IsTurretEncoderDegreesTargetYet + "\t");
 			
@@ -760,6 +795,7 @@ public class RobotData
 			
 			sb.append(AutonShootBallState + "\t");
 			sb.append(TeleopElevatorState + "\t");
+			sb.append(ShooterTargetSpeed + "\t");
 			
 			sb.append(AutonShooterStartTime + "\t");
 			sb.append(AutonDriveFwdStartTime + "\t");
@@ -791,6 +827,9 @@ public class RobotData
 		public double WinchVelocityCmd;
 		
 		public double CupidServoPositionCmd;
+		
+		public double And1ServoPositionCmd;
+		public int And1ServoPWMCmd;
 		
 		public Value PumaFrontSolenoidPosition;
 		public Value PumaBackSolenoidPosition;

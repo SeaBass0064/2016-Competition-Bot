@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.usfirst.frc.team4028.robot.Constants.RobotMap;
+import org.usfirst.frc.team4028.robot.RobotData.And1_Servo_Dir_State;
 import org.usfirst.frc.team4028.robot.RobotData.Auto_Aim_And_Shoot_State;
 import org.usfirst.frc.team4028.robot.RobotData.AutonMode;
 import org.usfirst.frc.team4028.robot.RobotData.Auton_Drive_Throttle_Percent;
@@ -33,6 +34,7 @@ import org.usfirst.frc.team4028.robot.RobotData.Cross_Defense_Auton_State;
 import org.usfirst.frc.team4028.robot.RobotData.Infeed_Tilt_Zero_State;
 import org.usfirst.frc.team4028.robot.RobotData.InputData;
 import org.usfirst.frc.team4028.robot.RobotData.OutputData;
+import org.usfirst.frc.team4028.robot.RobotData.Shooter_Target_Speed;
 import org.usfirst.frc.team4028.robot.RobotData.Slider_Zero_State;
 import org.usfirst.frc.team4028.robot.RobotData.Teleop_Elevator_State;
 import org.usfirst.frc.team4028.robot.RobotData.Turret_Zero_State;
@@ -143,6 +145,8 @@ public class Robot extends IterativeRobot
 	
 	// Servo
 	private Servo _cupidServo;
+	private Servo _and1Servo;
+	//private Victor _and1Servo;
 	
 	// Vision 
 	private Socket _visionServer;	
@@ -206,6 +210,10 @@ public class Robot extends IterativeRobot
 	long _crossDefenseAutonStartTime;
 	Auto_Aim_And_Shoot_State _autoAimAndShootState;
 	Cross_Defense_Auto_Aim_And_Shoot_State _crossDefenseAutoAimAndShootState;
+	And1_Servo_Dir_State _and1ServoDirState;
+	
+	boolean _isClimbEnabled = false;
+	boolean _isShooterinAltMode = false;
 
 	
     /*****************************************************************************************************
@@ -221,7 +229,6 @@ public class Robot extends IterativeRobot
      *****************************************************************************************************/
     public void robotInit() 
     {    	
-    	
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
@@ -389,11 +396,12 @@ public class Robot extends IterativeRobot
     	// Servo
     	// ==================
     	_cupidServo = new Servo(RobotMap.CUPID_SERVO_PWM_PORT);
+    	_and1Servo = new Servo(RobotMap.AND1_SERVO_PWM_PORT);
     	
     	//===================
     	// PIDController
     	//===================
-    	// Test code for PID loop that runs on the Roborio, haven't figured out how to get PIDSourceType to provide an input values, not sure if it will be necessary though since we can run PID loops on the talons
+    	// Test code for PID loop that runs on the RoboRio, haven't figured out how to get PIDSourceType to provide an input values, not sure if it will be necessary though since we can run PID loops on the talons
     	/*
     	_turretEncoder = new Encoder(0,0,1);
     	_turretEncoder.setPIDSourceType(PIDSourceType.kDisplacement);
@@ -1617,36 +1625,42 @@ public class Robot extends IterativeRobot
     			break;
     			
     		case COARSE_TURRET_TO_TARGET:
-    			
-    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 10.0)
-    			{
-    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
-    				{
-    					// switch to % VBUS Mode
-        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
-    				}
-    				
-    				if (visionData.DesiredTurretTurnInDegrees > 0)
-    				{
-	    				outputDataValues.TurretVelocityCmd = 0.15;
-	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
-    				}
-    				else
-    				{
-	    				outputDataValues.TurretVelocityCmd = -0.15;
-	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
-    				}    					
-    			}
-    			else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 0.0)
-    			{
-    				_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
-    				//outputDataValues.TurretVelocityCmd = 0.0;
-					DriverStation.reportError("Changing Auton State To: FINE_TURRET_TO_TARGET | ", false);
+    			if (visionData.IsValidData == true){
+    				outputDataValues.TurretVelocityCmd = 0.0;
+	    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 10.0)
+	    			{
+	    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+	    				{
+	    					// switch to % VBUS Mode
+	        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+	        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+	    				}
+	    				
+	    				if (visionData.DesiredTurretTurnInDegrees > 0)
+	    				{
+		    				outputDataValues.TurretVelocityCmd = 0.15;
+		    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+	    				}
+	    				else
+	    				{
+		    				outputDataValues.TurretVelocityCmd = -0.15;
+		    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+	    				}    					
+	    			}
+	    			else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 0.0)
+	    			{
+	    				_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
+	    				//outputDataValues.TurretVelocityCmd = 0.0;
+						DriverStation.reportError("Changing Auton State To: FINE_TURRET_TO_TARGET | ", false);
+	    			}
+	    			else
+	    			{
+	    				DriverStation.reportError("Coarse Vision Data looks invalid" , false);
+	    			}
     			}
     			else
     			{
-    				DriverStation.reportError("Coarse Vision Data looks invalid" , false);
+    				DriverStation.reportError("Vision Data looks invalid", false);
     			}
     			//_turretMtr.set(outputDataValues.TurretVelocityCmd);
     			//DriverStation.reportError("Turret Velocity Cmd: " + Double.toString(outputDataValues.TurretVelocityCmd) + "| ", false);
@@ -1810,6 +1824,12 @@ public class Robot extends IterativeRobot
     	
     	_isInfeedPeriodZeroMode = false;
     	
+    	_and1ServoDirState = And1_Servo_Dir_State.UNDEFINED;
+    	
+    	workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
+    	
+    	workingDataValues.IsShooterAltModeEnabledLastScan = false;
+    	
     	if (!_isTurretAxisZeroedYet)
     	{
     		ZeroTurretAxis(_robotLiveData);
@@ -1971,9 +1991,11 @@ public class Robot extends IterativeRobot
     	}
     	
     	outputDataValues.ArcadeDriveThrottleAdjCmd 
-    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor;  	
-    	outputDataValues.ArcadeDriveTurnAdjCmd 
-    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor * 0.6;
+    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor; 
+    	if (!_isClimbEnabled){
+	    	outputDataValues.ArcadeDriveTurnAdjCmd 
+	    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor * 0.6;
+    	}
 
     	// =====================================
     	// Step 2.2:  Infeed Tilt (Tilt the infeed up and down)
@@ -2300,6 +2322,20 @@ public class Robot extends IterativeRobot
     	// ============================
     	// Step 2.5: Slider
     	// ============================
+    	if (inputDataValues.IsShooterAltModeEnableBtnPressed && !workingDataValues.IsShooterAltModeEnableBtnPressedLastScan)
+    	{
+    		if (_isShooterinAltMode)
+    		{
+    			_isShooterinAltMode = false;
+    			DriverStation.reportError("Shooter in stock mode", false);
+    		}
+    		else if (!_isShooterinAltMode)
+    		{
+    			_isShooterinAltMode = true;
+    			DriverStation.reportError("Shooter in alt mode", false);
+    		}
+    	}
+    	
     	if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
     	{
     		if ((inputDataValues.IsSliderFwdBtnPressed == true) && (!inputDataValues.IsSliderRevBtnPressed == false))
@@ -2317,40 +2353,107 @@ public class Robot extends IterativeRobot
     	}
     	else if (_sliderMtr.getControlMode() == CANTalon.TalonControlMode.Position)
     	{
-    		if ((inputDataValues.IsSliderFwdBtnPressed == true) && (inputDataValues.IsSliderRevBtnPressed == false))
+    		if (!_isShooterinAltMode)
     		{
-    			if (!workingDataValues.IsSliderFwdBtnPressedLastScan)	// debounce keypress
-    			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 2.0;
-    				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
-    				DriverStation.reportError(String.format("..Info: New Forward Target Slider Position: {0}", newSliderTargetPosition), false);
-    				
-    			}
-    		}
-    		else if ((inputDataValues.IsSliderFwdBtnPressed == false) && (inputDataValues.IsSliderRevBtnPressed == true))
-    		{
-    			if (!workingDataValues.IsSliderRevBtnPressedLastScan)	// debounce keypress
-    			{
-    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 2.0;
-    				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
-    				DriverStation.reportError(String.format("..Info: New Reverse Target Slider Position: {0}", newSliderTargetPosition), false);
-    			}
+	    		if ((inputDataValues.IsSliderFwdBtnPressed == true) && (inputDataValues.IsSliderRevBtnPressed == false))
+	    		{
+	    			if (!workingDataValues.IsSliderFwdBtnPressedLastScan)	// debounce keypress
+	    			{
+	    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition + 2.0;
+	    				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
+	    				DriverStation.reportError(String.format("..Info: New Forward Target Slider Position: {0}", newSliderTargetPosition), false);
+	    			}
+	    		}
+	    		else if ((inputDataValues.IsSliderFwdBtnPressed == false) && (inputDataValues.IsSliderRevBtnPressed == true))
+	    		{
+	    			if (!workingDataValues.IsSliderRevBtnPressedLastScan)	// debounce keypress
+	    			{
+	    				double newSliderTargetPosition = inputDataValues.SliderCurrentPosition - 2.0;
+	    				outputDataValues.SliderTargetPositionCmd = CalcSliderTargetPositionCmd(newSliderTargetPosition);
+	    				DriverStation.reportError(String.format("..Info: New Reverse Target Slider Position: {0}", newSliderTargetPosition), false);
+	    			}
+	    		}
+	    		else if (workingDataValues.IsShooterAltModeEnabledLastScan)
+	    		{
+	    			workingDataValues.IsShooterAltModeEnabledLastScan = false;
+	    			outputDataValues.SliderTargetPositionCmd = RobotMap.SLIDER_DEFAULT_TARGET_POSITION;
+	    		}
     		}
     		else
     		{
-    			// else no change
+    			outputDataValues.SliderTargetPositionCmd = 0.0;
+    			workingDataValues.IsShooterAltModeEnabledLastScan = true;
     		}
+    			
     	}
     	    	
     	// ============================
     	//  Step 2.6: Shooter 
     	// ============================
+    	if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && !workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
+    	{
+    		switch (workingDataValues.ShooterTargetSpeed)
+    		{
+    			case UNDEFINED:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 3500;
+    				break;
+    				
+    			case _2500:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2750;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 2750;
+    				break;
+    				
+    			case _2750:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3000;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 3000;
+    				break;
+    				
+    			case _3000:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3250;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 3250;
+    				break;
+    				
+    			case _3250:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 3500;
+    				break;
+    				
+    			case _3500:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3750;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 3750;
+    				break;
+    				
+    			case _3750:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._4000;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 4000;
+    				break;
+    				
+    			case _4000:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._4250;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 4250;
+    				break;
+    				
+    			case _4250:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2500;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = 2500;
+    				break;
+    				
+    		}
+    	}
     	
     	if (inputDataValues.ShooterRawVelocityCmd < -0.1)
     	{    	
     		if (_shooterMasterMtr.getControlMode() == CANTalon.TalonControlMode.Speed)
     		{
-    			outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
+    			if (!_isShooterinAltMode)
+    			{
+    				outputDataValues.ShooterMtrCurrentVelocityCmd = outputDataValues.ShooterMtrTargetVelocityCmd;
+    			}
+    			else
+    			{
+    				outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_ALT_MODE_TARGET_MOTOR_RPM;
+    			}
     		}
     		else if (_shooterMasterMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
     		{
@@ -2369,16 +2472,14 @@ public class Robot extends IterativeRobot
     	{
     		outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
     	}
-    	else if (inputDataValues.IsKickerReverseBtnPressed)
+    	else if (inputDataValues.ShooterRawVelocityCmd > 0.1)
     	{
     		outputDataValues.KickerMtrVelocityCmd = -1.0;
-    		DriverStation.reportError("Kicker in reverse mode", false);
     	}
     	else 
     	{
     		outputDataValues.KickerMtrVelocityCmd = 0.0;
     	}
-    	
     	
     	// ===========================
     	// Step 2.8: Camera
@@ -2416,33 +2517,100 @@ public class Robot extends IterativeRobot
     	
     	
     	// ===========================
-    	// Step 2.9. Winch
+    	// Step 2.9. Climbing
     	// ===========================
-    	if (inputDataValues.WinchRawCmd > 0.05)
+    	if (inputDataValues.IsClimbEnabledBtnPressed && !workingDataValues.IsClimbEnabledBtnPressedLastScan)
     	{
-    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
+    		if (_isClimbEnabled)
+    		{
+    			_isClimbEnabled = false;
+    			DriverStation.reportError("Climbing disabled", false);
+    		}
+    		else
+    		{
+    			_isClimbEnabled = true;
+    			DriverStation.reportError("Climbing enabled", false);
+    		}
     	}
-    	else if (inputDataValues.WinchRawCmd < -0.05)
+    	
+    	if (_isClimbEnabled)
     	{
-    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
-    	}
-    	else
-    	{
-    		outputDataValues.WinchVelocityCmd = 0.0;
+	    	if (inputDataValues.WinchRawCmd > 0.05)
+	    	{
+	    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
+	    	}
+	    	else if (inputDataValues.WinchRawCmd < -0.05)
+	    	{
+	    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
+	    	}
+	    	else
+	    	{
+	    		outputDataValues.WinchVelocityCmd = 0.0;
+	    	}
     	}
     	
     	// ===========================
-    	// Step 2.10. Servo
+    	// Step 2.10. Cupid
     	// ===========================
-    	if (inputDataValues.IsCupidLoadBtnPressed)
+    	if (inputDataValues.IsCupidToggleBtnPressed)
     	{
     		_cupidServo.set(1);
-    		DriverStation.reportError("Cupid Servo set to 1.0", false);
+    		//DriverStation.reportError("Cupid Servo set to 1.0", false);
     	}
-    	else if (inputDataValues.IsCupidShootBtnPressed)
+    	else 
     	{
     		_cupidServo.set(0);
-    		DriverStation.reportError("Cupid Servo set to 0", false);
+    		//DriverStation.reportError("Cupid Servo set to 0", false);
+    	}
+    	
+    	// ===========================
+    	// Step 2.11 And1 (Defensive Shield)
+    	// ===========================
+    	/*
+    	if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
+    	{
+//    		DriverStation.reportError("And1 Servo set to 1.0", false);
+    	}
+    	else if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && !workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
+    	{
+    		switch(_and1ServoDirState){
+    			case UNDEFINED:
+    			case UP:
+    				_and1ServoDirState = And1_Servo_Dir_State.DOWN;
+    	    		outputDataValues.And1ServoPositionCmd = 0.0;
+//    	    		outputDataValues.And1ServoPWMCmd = 200;
+    	    		//DriverStation.reportError("And1 Servo toggled down", false);
+				break;
+				
+    			case DOWN:
+    				_and1ServoDirState = And1_Servo_Dir_State.UP;
+    	    		outputDataValues.And1ServoPositionCmd = 1.0;
+//    	    		outputDataValues.And1ServoPWMCmd = 0;
+    	    		//DriverStation.reportError("And1 Servo toggled up", false);
+				break;
+    		}
+     		
+    	}
+    	else
+    	{
+    		// stop motor
+//    		outputDataValues.And1ServoPositionCmd = 0;
+//    		outputDataValues.And1ServoPWMCmd = 127;
+     		//DriverStation.reportError("And1 Servo stopped", false);
+    	}
+    	*/
+    	//DriverStation.reportError("And1 position: " + outputDataValues.And1ServoPositionCmd, false);
+    	if (inputDataValues.And1RawCmd > 0.1)
+    	{
+    		outputDataValues.And1ServoPositionCmd = 1.0;
+    		
+    	}
+    	else if (inputDataValues.And1RawCmd < -0.1)
+    	{
+    		outputDataValues.And1ServoPositionCmd = 0.0;
+    	}
+    	else
+    	{
     	}
     	
     	// =====================================
@@ -2534,6 +2702,10 @@ public class Robot extends IterativeRobot
     	
     	_winchMtr.set(outputDataValues.WinchVelocityCmd);
     	
+    	_and1Servo.setPosition(outputDataValues.And1ServoPositionCmd);
+//    	_and1Servo.setRaw(outputDataValues.And1ServoPWMCmd);
+    	    
+    	
     	// ==========================
     	// 4.0 publish image from currently selected Camera to the dashboard
     	// ==========================
@@ -2578,6 +2750,9 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsCameraSwitchBtnPressedLastScan =  inputDataValues.IsCameraSwitchBtnPressed;
     	workingDataValues.IsCupidSwitchBtnPressedLastScan = inputDataValues.IsCupidCameraBtnPressed;
     	workingDataValues.IsBallInPositionLastScan = inputDataValues.IsBallInPosition;
+    	workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan = inputDataValues.IsShooterTargetSpeedToggleBtnPressed;
+    	workingDataValues.IsClimbEnabledBtnPressedLastScan = inputDataValues.IsClimbEnabledBtnPressed;
+    	workingDataValues.IsShooterAltModeEnableBtnPressedLastScan = inputDataValues.IsShooterAltModeEnableBtnPressed;
     }
     
     public void disabledPeriodic()
@@ -3257,9 +3432,9 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedTiltStoreBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN);
     	inputDataValues.IsInfeedTiltDeployBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN);
     	//inputDataValues.IsInfeedTiltFixedBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN);
-    	inputDataValues.IsKickerReverseBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_KICKER_REVERSE_BTN);
-    	inputDataValues.IsCupidLoadBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_CUPID_LOAD_BTN);
-    	inputDataValues.IsCupidShootBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_CUPID_SHOOT_BTN);
+    	inputDataValues.IsCupidCameraBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_CUPID_CAMERA_BTN);
+    	inputDataValues.IsCupidToggleBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_CUPID_OPEN_BTN);
+    	inputDataValues.IsClimbEnabledBtnPressed = _driverGamepad.getRawButton(RobotMap.DRIVER_GAMEPAD_CLIMB_ENABLE_BTN);
     	
     	//inputDataValues.IsShooterSpeedUpBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN);
     	//inputDataValues.IsShooterSpeedDownBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN);
@@ -3269,7 +3444,8 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
     	inputDataValues.IsCameraSwitchBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN);
     	inputDataValues.IsElevatorTimerOverrideBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN);
-    	inputDataValues.IsCupidCameraBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_CUPID_CAMERA_BTN);
+    	inputDataValues.IsShooterTargetSpeedToggleBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN);
+    	inputDataValues.IsShooterAltModeEnableBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -3278,11 +3454,11 @@ public class Robot extends IterativeRobot
     	inputDataValues.ShooterRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_SHOOTER_AXIS);
     	inputDataValues.TurretCCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS);
     	inputDataValues.TurretCWRawVelocityCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS);
-    	inputDataValues.WinchRawCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_WINCH_AXIS);
+    	inputDataValues.And1RawCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_AND1_AXIS);
     	
-    	//inputDataValues.InfeedRawTiltCmd = _operatorGamepad.getRawAxis(RobotMap.OPERATOR_GAMEPAD_INFEED_TILT_AXIS);
     	inputDataValues.InfeedTiltUpCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS);
     	inputDataValues.InfeedTiltDownCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS);
+    	inputDataValues.WinchRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_WINCH_AXIS);
  		
     	// ==========================
     	// 1.3 get values from motor controlllers
@@ -3443,7 +3619,7 @@ public class Robot extends IterativeRobot
 		//SmartDashboard.putBoolean("Turret.IsTurretEncoderDegreesTargetYet", workingDataValues.IsTurretEncoderDegreesTargetYet);
 		//SmartDashboard.putNumber("Turret.TurnDegreesCmd", workingDataValues.TurretTurnRotationsCmd);
     	
-    	SmartDashboard.putNumber("Turret.ClosedLoopError", _turretMtr.getClosedLoopError());
+    	//SmartDashboard.putNumber("Turret.ClosedLoopError", _turretMtr.getClosedLoopError());
 		// Infeed
 		//SmartDashboard.putNumber("Infeed.RawTiltCmd", inputDataValues.InfeedRawTiltCmd);
 		//SmartDashboard.putNumber("InfeedAcqMtrVelocityCmd", outputDataValues.InfeedAcqMtrVelocityCmd);
@@ -3469,6 +3645,16 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putBoolean("Is Infeed Zeroed", _isInfeedTiltAxisZeroedYet);
 		SmartDashboard.putBoolean("Is Slider Zeroed", _isSliderAxisZeroedYet);
 		SmartDashboard.putBoolean("Is Turret Zeroed", _isTurretAxisZeroedYet);
+		
+		// Shooter Alt Mode
+		if (_isShooterinAltMode)
+		{
+			SmartDashboard.putString("Shooter in: ", "ALT");
+		}
+		else if (!_isShooterinAltMode)
+		{
+			SmartDashboard.putString("Shooter in: ", "STOCK");
+		}
 		
 		// Kangaroo Charge Level
 		//SmartDashboard.putNumber("Kangaroo charge level", visionData.BatteryChargeLevel);

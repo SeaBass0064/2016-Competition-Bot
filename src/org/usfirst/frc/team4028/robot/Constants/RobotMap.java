@@ -57,6 +57,7 @@ public class RobotMap
 	// ======================================
 	// define constants for PWM Ports on RobioRio
 	// ======================================
+	public static final int AND1_SERVO_PWM_PORT = 1;
 	public static final int CUPID_SERVO_PWM_PORT = 6;
 	public static final int SCALING_MTR_PWM_PORT = 7;
 	public static final int INFEED_ACQ_MTR_PWM_PORT = 8;
@@ -216,6 +217,7 @@ public class RobotMap
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 1;
 	public static final int SHOOTER_TARGET_MOTOR_RPM = 3500;
+	public static final int SHOOTER_ALT_MODE_TARGET_MOTOR_RPM = 3000;
 	public static final int SHOOTER_MAX_MOTOR_RPM = 4600;
 	
 	// ======================================
@@ -239,11 +241,14 @@ public class RobotMap
 	// ======================================
 	// define constants for Driver Station Gamepad
 	// ======================================
+	
+	/*    Before big remap on 24.Apr.2016
 	public static final int DRIVER_GAMEPAD_USB_PORT = 0;
 	//public static final int DRIVER_GAMEPAD_SCALE_SPEED_UP_BTN = LogitechF310.START_BUTTON;
 	//public static final int DRIVER_GAMEPAD_SCALE_SPEED_DOWN_BTN = LogitechF310.BACK_BUTTON;	
 	public static final int DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK = LogitechF310.LEFT_Y_AXIS;		
 	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
+	public static final int DRIVER_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.BACK_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.START_BUTTON;
 	public static final int DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
@@ -252,24 +257,59 @@ public class RobotMap
 	//public static final int DRIVER_GAMEPAD_INFEED_TILT_FIXED_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS = LogitechF310.LEFT_TRIGGER;
 	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS = LogitechF310.RIGHT_TRIGGER;
-	public static final int DRIVER_GAMEPAD_KICKER_REVERSE_BTN = LogitechF310.YELLOW_BUTTON_Y;
-	public static final int DRIVER_GAMEPAD_CUPID_LOAD_BTN = LogitechF310.LEFT_BUMPER;
-	public static final int DRIVER_GAMEPAD_CUPID_SHOOT_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int DRIVER_GAMEPAD_CUPID_CAMERA_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int DRIVER_GAMEPAD_CUPID_TOGGLE_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int DRIVER_GAMEPAD_CLIMB_ENABLE_BTN = LogitechF310.RIGHT_BUMPER;
 	
 	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
 	//public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_UP_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	//public static final int OPERATOR_GAMEPAD_SHOOTER_SPEED_DOWN_BTN = LogitechF310.BLUE_BUTTON_X;
-	public static final int OPERATOR_GAMEPAD_CUPID_CAMERA_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_ENABLE_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
 	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
-	public static final int OPERATOR_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.START_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BACK_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_AND1_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS = LogitechF310.LEFT_TRIGGER;
 	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS = LogitechF310.RIGHT_TRIGGER;
 	public static final int OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN = LogitechF310.RED_BUTTON_B;
+	 */
+	
+	public static final int DRIVER_GAMEPAD_USB_PORT = 0;
+	public static final int DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK = LogitechF310.LEFT_Y_AXIS;		
+	public static final int DRIVER_GAMEPAD_TURN_AXIS_JOYSTICK = LogitechF310.RIGHT_X_AXIS;
+	public static final int DRIVER_GAMEPAD_WINCH_AXIS = LogitechF310.RIGHT_Y_AXIS;
+	public static final int DRIVER_GAMEPAD_PUMA_BOTH_TOGGLE_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_DEPLOY_BTN = LogitechF310.RED_BUTTON_B;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_STORE_BTN = LogitechF310.BLUE_BUTTON_X;	
+	public static final int DRIVER_GAMEPAD_CUPID_CAMERA_BTN = LogitechF310.YELLOW_BUTTON_Y;	
+	public static final int DRIVER_GAMEPAD_PUMA_FRONT_TOGGLE_BTN = LogitechF310.START_BUTTON;
+	public static final int DRIVER_GAMEPAD_PUMA_BACK_TOGGLE_BTN = LogitechF310.BACK_BUTTON;
+	public static final int DRIVER_GAMEPAD_CLIMB_ENABLE_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int DRIVER_GAMEPAD_CUPID_OPEN_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_DOWN_AXIS = LogitechF310.RIGHT_TRIGGER;
+	public static final int DRIVER_GAMEPAD_INFEED_TILT_UP_AXIS = LogitechF310.LEFT_TRIGGER;
+	
+	
+	public static final int OPERATOR_GAMEPAD_USB_PORT = 1;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_AXIS = LogitechF310.LEFT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_AND1_AXIS = LogitechF310.RIGHT_Y_AXIS;
+	public static final int OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN = LogitechF310.GREEN_BUTTON_A;
+	public static final int OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN = LogitechF310.RED_BUTTON_B;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.START_BUTTON;
+	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BACK_BUTTON;	
+	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_INFEED_RELEASE_BTN = LogitechF310.LEFT_BUMPER;
+	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CW_AXIS = LogitechF310.RIGHT_TRIGGER;	
+	public static final int OPERATOR_GAMEPAD_TURRET_ANALOG_CCW_AXIS = LogitechF310.LEFT_TRIGGER;
+
+
+	
 	
 	// ======================================
 	// define constants for logging
@@ -281,8 +321,8 @@ public class RobotMap
 	// define constants for usb cameras
 	// ======================================
 	public static final String SHOOTER_CAMERA_NAME = "cam0";
-	public static final String INFEED_CAMERA_NAME = "cam1";
-	public static final String CUPID_CAMERA_NAME = "cam2";
+	public static final String INFEED_CAMERA_NAME = "cam3";
+	public static final String CUPID_CAMERA_NAME = "cam1";
 	
 	// ======================================
 	// Define constants for Robot Tilt Angle Protection
