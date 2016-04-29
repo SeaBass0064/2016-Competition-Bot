@@ -94,13 +94,20 @@ public class DynamicCameraServer {
     serverThread.start();
   }
 
-  private synchronized void setImageData(RawData data, int start) {
-    if (m_imageData != null && m_imageData.data != null) {
+  private synchronized void setImageData(RawData data, int start) 
+  {
+    if (m_imageData != null && m_imageData.data != null) 
+    {
       m_imageData.data.free();
+      
       if (m_imageData.data.getBuffer() != null)
+      {
         m_imageDataPool.addLast(m_imageData.data.getBuffer());
+      }
+      
       m_imageData = null;
     }
+    
     m_imageData = new CameraData(data, start);
     notifyAll();
   }
@@ -115,32 +122,37 @@ public class DynamicCameraServer {
    *
    * @param image The IMAQ image to show on the dashboard
    */
-  public void setImage(Image image) {
+  public void setImage(Image image) 
+  {
     // handle multi-threadedness
 
     /* Flatten the IMAQ image to a JPEG */
 
-    RawData data =
-        NIVision.imaqFlatten(image, NIVision.FlattenType.FLATTEN_IMAGE,
-            NIVision.CompressionType.COMPRESSION_JPEG, 10 * m_quality);
+    RawData data = NIVision.imaqFlatten(image, NIVision.FlattenType.FLATTEN_IMAGE, NIVision.CompressionType.COMPRESSION_JPEG, 10 * m_quality);
+    
     ByteBuffer buffer = data.getBuffer();
     boolean hwClient;
 
-    synchronized (this) {
+    synchronized (this) 
+    {
       hwClient = m_hwClient;
     }
 
     /* Find the start of the JPEG data */
     int index = 0;
-    if (hwClient) {
-      while (index < buffer.limit() - 1) {
+    if (hwClient) 
+    {
+      while (index < buffer.limit() - 1) 
+      {
         if ((buffer.get(index) & 0xff) == 0xFF && (buffer.get(index + 1) & 0xff) == 0xD8)
           break;
+        
         index++;
       }
     }
 
-    if (buffer.limit() - index - 1 <= 2) {
+    if (buffer.limit() - index - 1 <= 2) 
+    {
       throw new VisionException("data size of flattened image is less than 2. Try another camera! ");
     }
 
@@ -151,10 +163,11 @@ public class DynamicCameraServer {
    * Start automatically capturing images to send to the dashboard. You should
    * call this method to just see a camera feed on the dashboard without doing
    * any vision processing on the roboRIO. {@link #setImage} shouldn't be called
-   * after this is called. This overload calles
+   * after this is called. This overload calls
    * {@link #startAutomaticCapture(String)} with the default camera name
    */
-  public void startAutomaticCapture() {
+  public void startAutomaticCapture() 
+  {
     startAutomaticCapture(USBCamera.kDefaultCameraName);
   }
 
@@ -167,20 +180,25 @@ public class DynamicCameraServer {
    *
    * @param cameraName The name of the camera interface (e.g. "cam1")
    */
-  public void startAutomaticCapture(String cameraName) {
-    try {
+  public void startAutomaticCapture(String cameraName) 
+  {
+    try 
+    {
       USBCamera camera = new USBCamera(cameraName);
       camera.openCamera();
       startAutomaticCapture(camera);
-    } catch (VisionException ex) {
-      DriverStation.reportError(
-          "Error when starting the camera: " + cameraName + " " + ex.getMessage(), true);
+    } 
+    catch (VisionException ex) 
+    {
+      DriverStation.reportError("Error when starting the camera: " + cameraName + " " + ex.getMessage(), true);
     }
   }
 
-  public synchronized void startAutomaticCapture(USBCamera camera) {
+  public synchronized void startAutomaticCapture(USBCamera camera) 
+  {
     if (m_autoCaptureStarted)
       return;
+    
     m_autoCaptureStarted = true;
     m_camera = camera;
 
@@ -206,8 +224,10 @@ public class DynamicCameraServer {
    * @param cameraName USBCamera name on RoboRIO
    * @author FRC 5881
    */
-  public void switchAutomaticCapture(final String cameraName) {
-	  if (!m_autoCaptureStarted) {
+  public void switchAutomaticCapture(final String cameraName) 
+  {
+	  if (!m_autoCaptureStarted) 
+	  {
 		  startAutomaticCapture(cameraName);
 		  return;
 	  }

@@ -282,6 +282,7 @@ public class RobotData
 		public boolean IsCupidCameraBtnPressed;
 		public boolean IsShooterTargetSpeedToggleBtnPressed;
 		public boolean IsShooterAltModeEnableBtnPressed;
+		public boolean IsAutoAimBtnPressed;
 		
 		//public boolean IsShooterSpeedUpBtnPressed;
 		//public boolean IsShooterSpeedDownBtnPressed;
@@ -387,6 +388,7 @@ public class RobotData
 			sb.append("InputData:IsCupidCameraBtnPressed" + "\t");
 			sb.append("InputData:IsShooterTargetSpeedToggleBtnPressed" + "\t");
 			sb.append("InputData:IsShooterAltModeEnableBtnPressed" + "\t");
+			sb.append("InputData:IsAutoAimBtnPressed" + "\t");
 			//sb.append("InputData:IsShooterSpeedUpBtnPressed" + "\t");
 			//sb.append("InputData:IsShooterSpeedDownBtnPressed" + "\t");
 			sb.append("InputData:IsKickerBtnPressed" + "\t");
@@ -477,6 +479,7 @@ public class RobotData
 			sb.append(IsCupidCameraBtnPressed + "\t");
 			sb.append(IsShooterTargetSpeedToggleBtnPressed + "\t");
 			sb.append(IsShooterAltModeEnableBtnPressed + "\t");
+			sb.append(IsAutoAimBtnPressed + "\t");
 			//sb.append(IsShooterSpeedUpBtnPressed + "\t");
 			//sb.append(IsShooterSpeedDownBtnPressed + "\t");
 			sb.append(IsSliderFwdBtnPressed + "\t");
@@ -580,7 +583,7 @@ public class RobotData
 		public boolean IsShooterSpeedUpBtnPressedLastScan;
 		public boolean IsShooterSpeedDownBtnPressedLastScan;
 		public boolean IsShooterTargetSpeedToggleBtnPressedLastScan;
-		public boolean IsClimbEnabledBtnPressedLastScan;
+		public boolean IsCupidToggleBtnPressedLastScan;
 		public boolean IsShooterAltModeEnableBtnPressedLastScan;
 		public boolean IsShooterAltModeEnabledLastScan;
 		
@@ -663,7 +666,7 @@ public class RobotData
 			sb.append("WorkingData:IsShooterSpeedUpBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsShooterSpeedDownBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsShooterTargetSpeedToggleBtnPressedLastScan" + "\t");
-			sb.append("WorkingData:IsClimbEnabledBtnPressedLastScan" + "\t");
+			sb.append("WorkingData:IsCupidToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsShooterAltModeEnableBtnPressedLastScan" + "\t");
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
@@ -747,7 +750,7 @@ public class RobotData
 			sb.append(IsShooterSpeedUpBtnPressedLastScan + "\t");
 			sb.append(IsShooterSpeedDownBtnPressedLastScan + "\t");
 			sb.append(IsShooterTargetSpeedToggleBtnPressedLastScan + "\t");
-			sb.append(IsClimbEnabledBtnPressedLastScan + "\t");
+			sb.append(IsCupidToggleBtnPressedLastScan + "\t");
 			sb.append(IsShooterAltModeEnableBtnPressedLastScan + "\t");
 		
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");

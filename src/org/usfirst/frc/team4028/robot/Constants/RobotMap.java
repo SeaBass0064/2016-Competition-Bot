@@ -50,8 +50,8 @@ public class RobotMap
 	public static final int CAN_ADDR_RIGHT_DRIVE_SLAVE_2_TALON = 10;
 	public static final int CAN_ADDR_TURRET_TALON = 16;
 	public static final int CAN_ADDR_MASTER_SHOOTER_TALON = 17;
-	public static final int CAN_ADDR_SLAVE_SHOOTER_TALON = 18;
-	public static final int CAN_ADDR_SHOOTER_SLIDER_TALON = 19;
+	public static final int CAN_ADDR_SHOOTER_SLIDER_TALON = 18;
+	public static final int CAN_ADDR_SLAVE_SHOOTER_TALON = 19;
 	public static final int CAN_ADDR_INFEED_TILT_MTR_TALON = 20;
 	
 	// ======================================
@@ -145,7 +145,7 @@ public class RobotMap
 	public static final double INFEED_TILT_HOME_POSITION_IN_ROTATIONS = 0.29444;
 	public static final double INFEED_TILT_STORED_POSITION_CMD = 0.18;			// this is approx 90 deg
 	public static final double INFEED_TILT_FIXED_POSITION_CMD = 0.18; //0.05;
-	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.1;		// this is approx 0 deg
+	public static final double INFEED_TILT_DEPLOYED_POSITION_CMD = -0.22;		// this is approx 0 deg
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_DOWN = -0.36; //-0.25;
 	public static final double INFEED_TILT_LOWER_LIMIT_PUMA_UP = -0.59;
 	
@@ -228,7 +228,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 34.0;  //38.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 38.0;  //38.0;
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
@@ -237,6 +237,15 @@ public class RobotMap
 	public static final int SLIDER_IZONE = 0;
 	public static final double SLIDER_RAMPRATE = 0;
 	public static final int SLIDER_PROFILE = 0;
+	
+	// ======================================
+	// Vision
+	// ======================================
+	public static final double AUTO_AIM_COARSE_ADJUST_DEADBAND = 15.0;
+	public static final double AUTO_AIM_FINE_ADJUST_DEADBAND = 1.0;
+	public static final double AUTO_AIM_COARSE_ADJUST_TURN_SPEED = 0.15;
+	public static final double AUTO_AIM_FINE_ADJUST_TURN_SPEED = 0.06;
+	
 		
 	// ======================================
 	// define constants for Driver Station Gamepad
@@ -299,8 +308,9 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_AND1_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN = LogitechF310.RED_BUTTON_B;
-	public static final int OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
-	public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
+	//public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_AUTO_AIM_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.START_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BACK_BUTTON;	
 	public static final int OPERATOR_GAMEPAD_INFEED_ACQUIRE_BTN = LogitechF310.RIGHT_BUMPER;
@@ -321,8 +331,8 @@ public class RobotMap
 	// define constants for usb cameras
 	// ======================================
 	public static final String SHOOTER_CAMERA_NAME = "cam0";
-	public static final String INFEED_CAMERA_NAME = "cam3";
-	public static final String CUPID_CAMERA_NAME = "cam1";
+	public static final String INFEED_CAMERA_NAME = "cam1";
+	public static final String CUPID_CAMERA_NAME = "cam2";
 	
 	// ======================================
 	// Define constants for Robot Tilt Angle Protection

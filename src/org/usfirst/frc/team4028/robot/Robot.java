@@ -239,6 +239,7 @@ public class Robot extends IterativeRobot
     	_leftDriveMasterMtr.reverseSensor(false);  							// do not invert encoder feedback
     	_leftDriveMasterMtr.enableLimitSwitch(false, false);
     	//_leftDriveMasterMtr.reverseOutput(true);
+
     	
     	_leftDriveSlaveMtr = new CANTalon(RobotMap.CAN_ADDR_LEFT_DRIVE_SLAVE_TALON);	
     	_leftDriveSlaveMtr.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
@@ -811,21 +812,21 @@ public class Robot extends IterativeRobot
     	    	{
     				case MOAT:
     					_autonTargetDriveTimeMSecs = 3 * 1000;
-    					_autonTargetDriveThrottlePercent = 0.70;
+    					_autonTargetDriveThrottlePercent = 0.65;
     					break;
     					
     				case RAMPARTS:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 5.75 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROCKWALL:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 5.25 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;
     					
     				case ROUGH_TERRAIN:
-    					_autonTargetDriveTimeMSecs = 6 * 1000;
+    					_autonTargetDriveTimeMSecs = 5 * 1000;
     					_autonTargetDriveThrottlePercent = 0.40;
     					break;    				
     	    	}
@@ -1011,7 +1012,7 @@ public class Robot extends IterativeRobot
     	else if (inputDataValues.AutonModeRequested == RobotData.AutonMode.DRIVE_FWD)
 		{
     		// set motor commmands
-        	_robotDrive.arcadeDrive(outputDataValues.ArcadeDriveThrottleAdjCmd, outputDataValues.ArcadeDriveTurnAdjCmd, false);
+        	_robotDrive.arcadeDrive((-1.0 * outputDataValues.ArcadeDriveThrottleAdjCmd), outputDataValues.ArcadeDriveTurnAdjCmd, false);
         	
         	// set solenoids
         	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
@@ -1597,25 +1598,34 @@ public class Robot extends IterativeRobot
     			// how far is the turrent from the desired location?
     			double turretPositionErrorInRotations = CalcTurretTargetPosition(_turretAutonPosition) - _turretMtr.getPosition(); 
     			
-    			if (Math.abs(turretPositionErrorInRotations) > 0.5)
+    			if (Math.abs(turretPositionErrorInRotations) > 0.25)
     			{
-    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				if ((inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS)
+    						&& (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS))
     				{
-    					// switch to % VBUS Mode
-        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
-    				}
-    				
-    				if (turretPositionErrorInRotations > 0)
-    				{
-        				outputDataValues.TurretVelocityCmd = 0.15;
-        				//DriverStation.reportError("Turret Speed at 10% | ", false);
+	    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+	    				{
+	    					// switch to % VBUS Mode
+	        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+	        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+	    				}
+	    				
+	    				if (turretPositionErrorInRotations > 0)
+	    				{
+	        				outputDataValues.TurretVelocityCmd = 0.15;
+	        				//DriverStation.reportError("Turret Speed at 10% | ", false);
+	    				}
+	    				else
+	    				{
+	        				outputDataValues.TurretVelocityCmd = -0.15;
+	        				//DriverStation.reportError("Turret Speed at -10% | ", false);
+	    				}  
     				}
     				else
     				{
-        				outputDataValues.TurretVelocityCmd = -0.15;
-        				//DriverStation.reportError("Turret Speed at -10% | ", false);
-    				}    					
+    					outputDataValues.TurretVelocityCmd = 0.0;
+    					DriverStation.reportError("Turret soft limit reached in auton", false);
+    				}
     			}
     			else
     			{
@@ -1627,25 +1637,35 @@ public class Robot extends IterativeRobot
     		case COARSE_TURRET_TO_TARGET:
     			if (visionData.IsValidData == true){
     				outputDataValues.TurretVelocityCmd = 0.0;
-	    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 10.0)
+    				
+	    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > RobotMap.AUTO_AIM_COARSE_ADJUST_DEADBAND) // Originally was 10
 	    			{
-	    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+	    				if ((inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS)
+	    						&& (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS))
 	    				{
-	    					// switch to % VBUS Mode
-	        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-	        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
-	    				}
-	    				
-	    				if (visionData.DesiredTurretTurnInDegrees > 0)
-	    				{
-		    				outputDataValues.TurretVelocityCmd = 0.15;
-		    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+		    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+		    				{
+		    					// switch to % VBUS Mode
+		        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+		        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+		    				}
+		    				
+		    				if (visionData.DesiredTurretTurnInDegrees > 0)
+		    				{
+			    				outputDataValues.TurretVelocityCmd = RobotMap.AUTO_AIM_COARSE_ADJUST_TURN_SPEED;
+			    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+		    				}
+		    				else
+		    				{
+			    				outputDataValues.TurretVelocityCmd = -1.0 * RobotMap.AUTO_AIM_COARSE_ADJUST_TURN_SPEED;
+			    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+		    				} 
 	    				}
 	    				else
 	    				{
-		    				outputDataValues.TurretVelocityCmd = -0.15;
-		    				//DriverStation.reportError("Turret Speed at -10% | ", false);
-	    				}    					
+	    					outputDataValues.TurretVelocityCmd = 0.0;
+	    					DriverStation.reportError("Turret soft limit reached in auton", false);
+	    				}
 	    			}
 	    			else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 0.0)
 	    			{
@@ -1669,27 +1689,36 @@ public class Robot extends IterativeRobot
     		case FINE_TURRET_TO_TARGET:
     			
     			DriverStation.reportError("TopVisionCmd= " + visionData.DesiredTurretTurnInDegrees + " | ", false);
-    			
-    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 1.25)
+    			outputDataValues.InfeedAcqMtrVelocityCmd = 0.0; // in case we looped back from shoot mode
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > RobotMap.AUTO_AIM_FINE_ADJUST_DEADBAND) // Originally was 1.5
     			{
-    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				if ((inputDataValues.TurretEncoderCurrentPosition > RobotMap.TURRET_MIN_TRAVEL_IN_ROTATIONS)
+    						&& (inputDataValues.TurretEncoderCurrentPosition < RobotMap.TURRET_MAX_TRAVEL_IN_ROTATIONS))
     				{
-    					// switch to % VBUS Mode
-        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
-    				}
-    				
-    				// decide what direction turn
-    				if (visionData.DesiredTurretTurnInDegrees > 0)
-    				{
-	    				outputDataValues.TurretVelocityCmd = 0.05;
-	    				//DriverStation.reportError("Turret Speed at 5% | ", false);
+	    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+	    				{
+	    					// switch to % VBUS Mode
+	        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+	        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+	    				}
+	    				
+	    				// decide what direction turn
+	    				if (visionData.DesiredTurretTurnInDegrees > 0)
+	    				{
+		    				outputDataValues.TurretVelocityCmd = RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
+		    				//DriverStation.reportError("Turret Speed at 5% | ", false);
+	    				}
+	    				else
+	    				{
+		    				outputDataValues.TurretVelocityCmd = -1.0 * RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
+		    				//DriverStation.reportError("Turret Speed at -5% | ", false);
+	    				}
     				}
     				else
     				{
-	    				outputDataValues.TurretVelocityCmd = -0.05;
-	    				//DriverStation.reportError("Turret Speed at -5% | ", false);
-    				}    					
+    					outputDataValues.TurretVelocityCmd = 0.0;
+    					DriverStation.reportError("Turret soft limit reached in auton", false);
+    				}
     			}
     			else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 0.0)
     			{
@@ -1700,17 +1729,17 @@ public class Robot extends IterativeRobot
     		    	//_turretMtr.set(outputDataValues.TurretVelocityCmd);
     	    		
     		    	// now switch to position loop mode
-    		    	//_turretMtr.changeControlMode(CANTalon.TalonControlMode.Position);
-    		    	//outputDataValues.TurretTargetPositionCmd = _turretMtr.getPosition();
-    		    	//DriverStation.reportError("Turret changing to Position mode | ", false);
+    		    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.Position);
+    		    	outputDataValues.TurretTargetPositionCmd = _turretMtr.getPosition();
+    		    	DriverStation.reportError("Turret changing to Position mode | ", false);
     		    	
-    		    	//try {
-    		    		// sleep a little to let the zero occur
-    				//	Thread.sleep(1);
-    				//} catch (InterruptedException e) {
-    					// TODO Auto-generated catch block
-    				//	e.printStackTrace();
-    				//}
+    		    	try {
+    		    		 //sleep a little to let the zero occur
+    					Thread.sleep(1);
+    				} catch (InterruptedException e) {
+    					 //TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
     				
     		    	_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.SHOOT;
 					DriverStation.reportError("Changing Auton State To: SHOOT | ", false);
@@ -1726,25 +1755,33 @@ public class Robot extends IterativeRobot
 				break;
     			
     		case SHOOT:
-				// wait until we reach 95% of target wheel speed
-    			if (Math.abs(_navXSensor.getRawAccelX()) > 0.0)
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) <= 1.0)
     			{
-    				DriverStation.reportError("AccelX= " + _navXSensor.getRawAccelX() + " | ", false);
+					// wait until we reach 95% of target wheel speed
+	    			if (Math.abs(_navXSensor.getRawAccelX()) > 0.0)
+	    			{
+	    				DriverStation.reportError("AccelX= " + _navXSensor.getRawAccelX() + " | ", false);
+	    			}
+	    			if (Math.abs(_navXSensor.getRawAccelY()) > 0.0)
+	    			{
+	    				DriverStation.reportError("AccelY= " + _navXSensor.getRawAccelY() + " | ", false);
+	    			}
+	    			
+					if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
+					{
+						// start the infeed to drive the ball up into the shooter
+						outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+					}
+					// drive both sets of wheels
+	    			outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
+					outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
     			}
-    			if (Math.abs(_navXSensor.getRawAccelY()) > 0.0)
+    			else
     			{
-    				DriverStation.reportError("AccelY= " + _navXSensor.getRawAccelY() + " | ", false);
+    				_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
     			}
-    			
-				if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
-				{
-					// start the infeed to drive the ball up into the shooter
-					outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
-				}
+    				
 				
-				// drive both sets of wheels
-    			outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
-				outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
     			break;
     			
     		case TIMEOUT:
@@ -1768,6 +1805,7 @@ public class Robot extends IterativeRobot
     	InputData inputDataValues = _robotLiveData.InputDataValues;
     	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
     	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	VisionData visionData = _visionClient.GetVisionData();
     	
     	// set motors to 0 position/velocity command 
     	outputDataValues.ArcadeDriveThrottleAdjCmd = 0.0;
@@ -1858,11 +1896,13 @@ public class Robot extends IterativeRobot
     	}
     	
     	// optionally shut down vision processing
+    	/*
     	if(_visionClient != null)
     	{
     		_visionClient.stopPolling();
     		DriverStation.reportError("Vision Polling Stopped", false);
     	}
+    	*/
     	
     	// start the camera
     	//server.startAutomaticCapture(_currentCameraName);
@@ -1897,6 +1937,7 @@ public class Robot extends IterativeRobot
     	InputData inputDataValues = _robotLiveData.InputDataValues;
     	WorkingData workingDataValues = _robotLiveData.WorkingDataValues;
     	OutputData outputDataValues = _robotLiveData.OutputDataValues;
+    	VisionData visionData = _visionClient.GetVisionData();
         	
     	// =====================================
     	// Step 1: Get Inputs  and Update Working Values
@@ -1938,6 +1979,17 @@ public class Robot extends IterativeRobot
     	//		if the chassis tilt angle as measured by the NavX sensor exceeds a threshhold, override the operator input to prevent tipping 
     	// =====================================
     	double tiltSafetyScalingFactor = 1.0;
+    	double kissCamSpeedReductionFactor = 1.0;
+    	
+    	if (_currentCameraName == RobotMap.CUPID_CAMERA_NAME)
+    	{
+    		kissCamSpeedReductionFactor = 0.5;
+    	}
+    	else
+    	{
+    		kissCamSpeedReductionFactor = 1.0;
+    	}
+    	
     	if(inputDataValues.NavxIsConnected)
     	{
     		// based on direction
@@ -1991,7 +2043,8 @@ public class Robot extends IterativeRobot
     	}
     	
     	outputDataValues.ArcadeDriveThrottleAdjCmd 
-    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor; 
+    			= inputDataValues.ArcadeDriveThrottleRawCmd * workingDataValues.DriveSpeedScalingFactor
+    				* tiltSafetyScalingFactor * kissCamSpeedReductionFactor; 
     	if (!_isClimbEnabled){
 	    	outputDataValues.ArcadeDriveTurnAdjCmd 
 	    			= inputDataValues.ArcadeDriveTurnRawCmd * workingDataValues.DriveSpeedScalingFactor * tiltSafetyScalingFactor * 0.6;
@@ -2309,15 +2362,121 @@ public class Robot extends IterativeRobot
 				outputDataValues.TurretTargetPositionCmd = CalcTurretTargetPosition(NewTurretTargetPositionCmd);
 			}
 			*/
-    	}
-    	
+    	}	
     	
     	// ============================
     	// 2.4.1 Turret Aiming
     	// ============================
-    	
-    	//if (inputDataValues.IsTurretAutoAimBtnPressed)
-    		
+    	/*
+    	if (inputDataValues.IsAutoAimBtnPressed)
+    	{
+    		if (visionData.IsValidData){
+				outputDataValues.TurretVelocityCmd = 0.0;
+				
+				if  (Math.abs(visionData.DesiredTurretTurnInDegrees) > 12.5)
+				{
+					if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.33;
+	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.33;
+	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}  
+				}
+				else if  (Math.abs(visionData.DesiredTurretTurnInDegrees) > 4.0)
+				{
+					if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.15;
+	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.15;
+	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}  
+				}
+				else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 1.75)
+    			{
+    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.095;
+	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.095;
+	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}    					
+    			}
+				else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 1)
+    			{
+    				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
+    				{
+    					// switch to % VBUS Mode
+        				_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
+    				}
+    				
+    				if (visionData.DesiredTurretTurnInDegrees > 0)
+    				{
+	    				outputDataValues.TurretVelocityCmd = 0.08;
+	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
+    				}
+    				else
+    				{
+	    				outputDataValues.TurretVelocityCmd = -0.08;
+	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
+    				}    					
+    			}
+    			else
+    			{
+    				DriverStation.reportError("Turret has auto aimed" , false);
+    			}
+			}
+			else
+			{
+				DriverStation.reportError("Vision Data looks invalid", false);
+			}
+    	}
+    	/*
+    	if (visionData.DesiredTurretTurnInDegrees > 0.5)
+    	{
+    		outputDataValues.TurretVelocityCmd = 0.07 + (visionData.DesiredTurretTurnInDegrees/120.0);
+    	}
+    	else if (visionData.DesiredTurretTurnInDegrees < -0.5)
+    	{
+    		outputDataValues.TurretVelocityCmd = -0.07 + (visionData.DesiredTurretTurnInDegrees/120.0);	
+    	}
+    	else
+    	{
+    		DriverStation.reportError("Turret has auto aimed", false);
+    	}
+    	*/
     	    	
     	// ============================
     	// Step 2.5: Slider
@@ -2390,6 +2549,7 @@ public class Robot extends IterativeRobot
     	// ============================
     	//  Step 2.6: Shooter 
     	// ============================
+    	/*
     	if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && !workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
     	{
     		switch (workingDataValues.ShooterTargetSpeed)
@@ -2441,6 +2601,7 @@ public class Robot extends IterativeRobot
     				
     		}
     	}
+    	*/
     	
     	if (inputDataValues.ShooterRawVelocityCmd < -0.1)
     	{    	
@@ -2448,11 +2609,14 @@ public class Robot extends IterativeRobot
     		{
     			if (!_isShooterinAltMode)
     			{
+    				
+    				outputDataValues.ShooterMtrTargetVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
     				outputDataValues.ShooterMtrCurrentVelocityCmd = outputDataValues.ShooterMtrTargetVelocityCmd;
     			}
     			else
     			{
-    				outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_ALT_MODE_TARGET_MOTOR_RPM;
+    				outputDataValues.ShooterMtrTargetVelocityCmd = RobotMap.SHOOTER_ALT_MODE_TARGET_MOTOR_RPM;
+    				outputDataValues.ShooterMtrCurrentVelocityCmd = outputDataValues.ShooterMtrTargetVelocityCmd;
     			}
     		}
     		else if (_shooterMasterMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
@@ -2504,6 +2668,13 @@ public class Robot extends IterativeRobot
     		}
     		
     		server.switchAutomaticCapture(_currentCameraName);
+    		
+    		_leftDriveMasterMtr.enableBrakeMode(false);
+    		_leftDriveSlaveMtr.enableBrakeMode(false);
+    		_leftDriveSlave2Mtr.enableBrakeMode(false);
+    		_rightDriveMasterMtr.enableBrakeMode(false);
+    		_rightDriveSlaveMtr.enableBrakeMode(false);
+    		_rightDriveSlave2Mtr.enableBrakeMode(false);
     	}
     	else if (inputDataValues.IsCupidCameraBtnPressed
     			&& !workingDataValues.IsCupidSwitchBtnPressedLastScan)
@@ -2512,6 +2683,14 @@ public class Robot extends IterativeRobot
     		DriverStation.reportError("..Switching to Cupid Camera", false);
     		
     		server.switchAutomaticCapture(_currentCameraName);
+    		
+    		DriverStation.reportError("..Switching to Break Mode", false);
+    		_leftDriveMasterMtr.enableBrakeMode(true);
+    		_leftDriveSlaveMtr.enableBrakeMode(true);
+    		_leftDriveSlave2Mtr.enableBrakeMode(true);
+    		_rightDriveMasterMtr.enableBrakeMode(true);
+    		_rightDriveSlaveMtr.enableBrakeMode(true);
+    		_rightDriveSlave2Mtr.enableBrakeMode(true);
     	}
     	  
     	
@@ -2519,48 +2698,48 @@ public class Robot extends IterativeRobot
     	// ===========================
     	// Step 2.9. Climbing
     	// ===========================
-    	if (inputDataValues.IsClimbEnabledBtnPressed && !workingDataValues.IsClimbEnabledBtnPressedLastScan)
+    	if (inputDataValues.IsClimbEnabledBtnPressed)
     	{
-    		if (_isClimbEnabled)
-    		{
-    			_isClimbEnabled = false;
-    			DriverStation.reportError("Climbing disabled", false);
-    		}
-    		else
-    		{
-    			_isClimbEnabled = true;
-    			DriverStation.reportError("Climbing enabled", false);
-    		}
+    		_isClimbEnabled = true;
+    	}
+    	else
+    	{
+    		_isClimbEnabled = false;
     	}
     	
     	if (_isClimbEnabled)
     	{
-	    	if (inputDataValues.WinchRawCmd > 0.05)
+	    	if (inputDataValues.WinchRawCmd > 0.1)
 	    	{
-	    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
+	    		outputDataValues.WinchVelocityCmd = -1.0 * inputDataValues.WinchRawCmd;
 	    	}
-	    	else if (inputDataValues.WinchRawCmd < -0.05)
+	    	else if (inputDataValues.WinchRawCmd < -0.1)
 	    	{
-	    		outputDataValues.WinchVelocityCmd = inputDataValues.WinchRawCmd;
+	    		outputDataValues.WinchVelocityCmd = -1.0 * inputDataValues.WinchRawCmd;
 	    	}
 	    	else
 	    	{
 	    		outputDataValues.WinchVelocityCmd = 0.0;
 	    	}
     	}
+    	else
+    	{
+    		outputDataValues.WinchVelocityCmd = 0.0;
+    	}
     	
     	// ===========================
     	// Step 2.10. Cupid
     	// ===========================
-    	if (inputDataValues.IsCupidToggleBtnPressed)
+    	if (inputDataValues.IsCupidToggleBtnPressed && !workingDataValues.IsCupidToggleBtnPressedLastScan)
     	{
-    		_cupidServo.set(1);
-    		//DriverStation.reportError("Cupid Servo set to 1.0", false);
-    	}
-    	else 
-    	{
-    		_cupidServo.set(0);
-    		//DriverStation.reportError("Cupid Servo set to 0", false);
+    		if (outputDataValues.CupidServoPositionCmd == 1.0)
+    		{
+    			outputDataValues.CupidServoPositionCmd = 0.0;
+    		}
+    		else if (outputDataValues.CupidServoPositionCmd == 0.0)
+    		{
+    			outputDataValues.CupidServoPositionCmd = 1.0;
+    		}
     	}
     	
     	// ===========================
@@ -2603,7 +2782,6 @@ public class Robot extends IterativeRobot
     	if (inputDataValues.And1RawCmd > 0.1)
     	{
     		outputDataValues.And1ServoPositionCmd = 1.0;
-    		
     	}
     	else if (inputDataValues.And1RawCmd < -0.1)
     	{
@@ -2703,6 +2881,7 @@ public class Robot extends IterativeRobot
     	_winchMtr.set(outputDataValues.WinchVelocityCmd);
     	
     	_and1Servo.setPosition(outputDataValues.And1ServoPositionCmd);
+    	_cupidServo.set(outputDataValues.CupidServoPositionCmd);
 //    	_and1Servo.setRaw(outputDataValues.And1ServoPWMCmd);
     	    
     	
@@ -2751,7 +2930,7 @@ public class Robot extends IterativeRobot
     	workingDataValues.IsCupidSwitchBtnPressedLastScan = inputDataValues.IsCupidCameraBtnPressed;
     	workingDataValues.IsBallInPositionLastScan = inputDataValues.IsBallInPosition;
     	workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan = inputDataValues.IsShooterTargetSpeedToggleBtnPressed;
-    	workingDataValues.IsClimbEnabledBtnPressedLastScan = inputDataValues.IsClimbEnabledBtnPressed;
+    	workingDataValues.IsCupidToggleBtnPressedLastScan = inputDataValues.IsCupidToggleBtnPressed;
     	workingDataValues.IsShooterAltModeEnableBtnPressedLastScan = inputDataValues.IsShooterAltModeEnableBtnPressed;
     }
     
@@ -3444,8 +3623,9 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
     	inputDataValues.IsCameraSwitchBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN);
     	inputDataValues.IsElevatorTimerOverrideBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN);
-    	inputDataValues.IsShooterTargetSpeedToggleBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN);
+    	//inputDataValues.IsShooterTargetSpeedToggleBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN);
     	inputDataValues.IsShooterAltModeEnableBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN);
+    	inputDataValues.IsAutoAimBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_AUTO_AIM_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -3898,7 +4078,7 @@ public class Robot extends IterativeRobot
     			
     		case COARSE_TURRET_TO_TARGET:
 
-    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 10.0)
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > RobotMap.AUTO_AIM_COARSE_ADJUST_DEADBAND)
     			{
     				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
     				{
@@ -3909,12 +4089,12 @@ public class Robot extends IterativeRobot
     				
     				if (visionData.DesiredTurretTurnInDegrees > 0)
     				{
-	    				outputDataValues.TurretVelocityCmd = 0.15;
+	    				outputDataValues.TurretVelocityCmd = RobotMap.AUTO_AIM_COARSE_ADJUST_TURN_SPEED;
 	    				//DriverStation.reportError("Turret Speed at 10% | ", false);
     				}
     				else
     				{
-	    				outputDataValues.TurretVelocityCmd = -0.15;
+	    				outputDataValues.TurretVelocityCmd = -1.0 * RobotMap.AUTO_AIM_COARSE_ADJUST_TURN_SPEED;
 	    				//DriverStation.reportError("Turret Speed at -10% | ", false);
     				}    					
     			}
@@ -3932,7 +4112,7 @@ public class Robot extends IterativeRobot
     		case FINE_TURRET_TO_TARGET:
 
     			DriverStation.reportError("Vision: " + visionData.DesiredTurretTurnInDegrees + " | ", false);
-    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 1.25)
+    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > RobotMap.AUTO_AIM_FINE_ADJUST_DEADBAND)
     			{
     				if(_turretMtr.getControlMode() != CANTalon.TalonControlMode.PercentVbus )
     				{
@@ -3943,12 +4123,12 @@ public class Robot extends IterativeRobot
     				
     				if (visionData.DesiredTurretTurnInDegrees > 0)
     				{
-	    				outputDataValues.TurretVelocityCmd = 0.05;
+	    				outputDataValues.TurretVelocityCmd = RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
 	    				DriverStation.reportError("Turret Speed at 10% | ", false);
     				}
     				else
     				{
-	    				outputDataValues.TurretVelocityCmd = -0.05;
+	    				outputDataValues.TurretVelocityCmd = -1.0 * RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
 	    				DriverStation.reportError("Turret Speed at -10% | ", false);
     				}    					
     			}

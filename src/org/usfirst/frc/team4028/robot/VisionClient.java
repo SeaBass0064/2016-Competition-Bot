@@ -350,7 +350,7 @@ public class VisionClient
 					
 				  // see if got valid data, if so parse the delimited string into its individual data elements
 				  if (splitRawVisionData.length == 6)
-				  {		    				
+				  {		    	
 					  visionLiveData.IsValidData = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_DATA_ARRAY_POSITION]);
 					  visionLiveData.DistanceToTarget = Double.parseDouble(splitRawVisionData[RobotMap.DISTANCE_TO_TARGET_ARRAY_POSITION]);
 					  visionLiveData.EffectiveTargetWidth = Double.parseDouble(splitRawVisionData[RobotMap.EFFECTIVE_TARGET_WIDTH_ARRAY_POSITION]);
@@ -359,7 +359,17 @@ public class VisionClient
 					  visionLiveData.IsValidShot = Boolean.parseBoolean(splitRawVisionData[RobotMap.IS_VALID_SHOT_ARRAY_POSITION]);
 		    				
 					  visionLiveData.LastVisionDataRecievedDT = new Date();
-		    				
+		    				  
+					  //try
+					  //{
+						//  double CheckValue = Math.abs(visionLiveData.DesiredTurretTurnInDegrees);
+						  //visionLiveData.IsValidData = true;
+					  //}
+					  //catch(Exception ex)
+					  //{
+					//	  visionLiveData.IsValidData = false;
+					  //}
+					  
 					  SetVisionData(visionLiveData);
 						  
 					  if (loopCounter % 100 == 0)
