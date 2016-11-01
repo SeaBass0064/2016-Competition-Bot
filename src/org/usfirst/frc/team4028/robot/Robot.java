@@ -7,10 +7,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -19,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -43,12 +38,10 @@ import org.usfirst.frc.team4028.robot.RobotData.WorkingData;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.CANTalon.FeedbackDevice;
 import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
@@ -68,9 +61,6 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.I2C;
 
 import com.kauailabs.navx.frc.AHRS;
-
-import com.ni.vision.NIVision;
-import com.ni.vision.NIVision.Image;
 
 /**
  * Date			Rev		Author						Comments
@@ -130,7 +120,6 @@ public class Robot extends IterativeRobot
 	// Pneumatic Solenoids for Air Cylinders
 	private DoubleSolenoid _pumaFrontSolenoid;
 	private DoubleSolenoid _pumaBackSolenoid;
-	private DoubleSolenoid _shifterSolenoid;
 	private DoubleSolenoid _perimeterExpansionSolenoid;
 	
 	// Camera
@@ -147,22 +136,6 @@ public class Robot extends IterativeRobot
 	private Servo _cupidServo;
 	private Servo _and1Servo;
 	//private Victor _and1Servo;
-	
-	// Vision 
-	private Socket _visionServer;	
-	private DataInputStream _inFromServer;
-	private DataOutputStream _outToServer;
-	
-	private String visionData;
-	
-	private Long lastCycleTime;
-	private Thread _pollingThread;
-	
-	// ==================
-	// PID Controller
-	// ==================
-	//private PIDController _turretControl;
-	//private Encoder _turretEncoder;
 	
 	// ===========================================================
 	//   Define class level working variables 
@@ -214,7 +187,9 @@ public class Robot extends IterativeRobot
 	
 	boolean _isClimbEnabled = false;
 	boolean _isShooterinAltMode = false;
-
+	
+	double _currentTurretVBusCmdBias = 0;
+	double _turretEncoderLastScanPosition;
 	
     /*****************************************************************************************************
      * This function is run when the robot is first started up.
@@ -383,7 +358,6 @@ public class Robot extends IterativeRobot
     	//===================
     	_pumaFrontSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_FRONT_SOLENOID_RETRACT);
     	_pumaBackSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_EXTEND, RobotMap.PCM_PORT_PUMA_BACK_SOLENOID_RETRACT);
-    	_shifterSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_SHIFTER_SOLENOID_EXTEND, RobotMap.PCM_PORT_SHIFTER_SOLENOID_RETRACT);
     	_perimeterExpansionSolenoid = new DoubleSolenoid(RobotMap.CAN_ADDR_PCM, RobotMap.PCM_PORT_PERIMETER_EXPANSION_EXTEND, RobotMap.PCM_PORT_PERIMETER_EXPANSION_RETRACT);
     	
     	//===================
@@ -562,15 +536,6 @@ public class Robot extends IterativeRobot
     // ========================================================================
     public void autonomousInit() 
     {
-    	/*
-    	try {
-			server.wait();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	*/
-    	
     	// create a new instance of the RobotData object
     	_robotLiveData = new RobotData();
     	
@@ -1612,12 +1577,12 @@ public class Robot extends IterativeRobot
 	    				
 	    				if (turretPositionErrorInRotations > 0)
 	    				{
-	        				outputDataValues.TurretVelocityCmd = 0.15;
+	        				outputDataValues.TurretVelocityCmd = 0.12;
 	        				//DriverStation.reportError("Turret Speed at 10% | ", false);
 	    				}
 	    				else
 	    				{
-	        				outputDataValues.TurretVelocityCmd = -0.15;
+	        				outputDataValues.TurretVelocityCmd = -0.12;
 	        				//DriverStation.reportError("Turret Speed at -10% | ", false);
 	    				}  
     				}
@@ -1635,7 +1600,7 @@ public class Robot extends IterativeRobot
     			break;
     			
     		case COARSE_TURRET_TO_TARGET:
-    			if (visionData.IsValidData == true){
+    			if (visionData != null && visionData.IsValidData == true){
     				outputDataValues.TurretVelocityCmd = 0.0;
     				
 	    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) > RobotMap.AUTO_AIM_COARSE_ADJUST_DEADBAND) // Originally was 10
@@ -1670,6 +1635,7 @@ public class Robot extends IterativeRobot
 	    			else if (Math.abs(visionData.DesiredTurretTurnInDegrees) > 0.0)
 	    			{
 	    				_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
+	    				_currentTurretVBusCmdBias = 0;
 	    				//outputDataValues.TurretVelocityCmd = 0.0;
 						DriverStation.reportError("Changing Auton State To: FINE_TURRET_TO_TARGET | ", false);
 	    			}
@@ -1702,17 +1668,40 @@ public class Robot extends IterativeRobot
 	        				DriverStation.reportError("Turret changing to PercentVBus mode", false);
 	    				}
 	    				
+	    				// calc new bias if we have not moved
+	    				if((_turretEncoderLastScanPosition != 0)
+	    						&& (_turretEncoderLastScanPosition == inputDataValues.TurretEncoderCurrentPosition))
+	    				{
+	    					// if we have not moved since last scan, bump bias
+	    					if (_currentTurretVBusCmdBias < RobotMap.TURRET_VBUS_CMD_MAX_BUMP)
+	    					{
+		    					_currentTurretVBusCmdBias = (_currentTurretVBusCmdBias + RobotMap.TURRET_VBUS_CMD_BUMP);
+		    					DriverStation.reportError("Fine adjustment vbus cmd increased", false);
+	    					}
+	    					else 
+	    					{
+	    						DriverStation.reportError("Fine adjustment vbus cmd maxed out", false);
+	    					}
+	    				}
+	    				else 
+	    				{
+	    					_currentTurretVBusCmdBias = 0.0;
+	    					DriverStation.reportError("V bus cmd bias reset", false);
+	    				}
+	    				
 	    				// decide what direction turn
 	    				if (visionData.DesiredTurretTurnInDegrees > 0)
 	    				{
-		    				outputDataValues.TurretVelocityCmd = RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
+		    				outputDataValues.TurretVelocityCmd = (RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED + _currentTurretVBusCmdBias) ;
 		    				//DriverStation.reportError("Turret Speed at 5% | ", false);
 	    				}
 	    				else
 	    				{
-		    				outputDataValues.TurretVelocityCmd = -1.0 * RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED;
+		    				outputDataValues.TurretVelocityCmd = -1.0 * (RobotMap.AUTO_AIM_FINE_ADJUST_TURN_SPEED + _currentTurretVBusCmdBias);
 		    				//DriverStation.reportError("Turret Speed at -5% | ", false);
 	    				}
+	    				
+	    				_turretEncoderLastScanPosition = inputDataValues.TurretEncoderCurrentPosition;
     				}
     				else
     				{
@@ -1755,33 +1744,24 @@ public class Robot extends IterativeRobot
 				break;
     			
     		case SHOOT:
-    			if (Math.abs(visionData.DesiredTurretTurnInDegrees) <= 1.0)
+				// wait until we reach 95% of target wheel speed
+    			if (Math.abs(_navXSensor.getRawAccelX()) > 0.0)
     			{
-					// wait until we reach 95% of target wheel speed
-	    			if (Math.abs(_navXSensor.getRawAccelX()) > 0.0)
-	    			{
-	    				DriverStation.reportError("AccelX= " + _navXSensor.getRawAccelX() + " | ", false);
-	    			}
-	    			if (Math.abs(_navXSensor.getRawAccelY()) > 0.0)
-	    			{
-	    				DriverStation.reportError("AccelY= " + _navXSensor.getRawAccelY() + " | ", false);
-	    			}
-	    			
-					if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
-					{
-						// start the infeed to drive the ball up into the shooter
-						outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
-					}
-					// drive both sets of wheels
-	    			outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
-					outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
+    				DriverStation.reportError("AccelX= " + _navXSensor.getRawAccelX() + " | ", false);
     			}
-    			else
+    			if (Math.abs(_navXSensor.getRawAccelY()) > 0.0)
     			{
-    				_crossDefenseAutoAimAndShootState = Cross_Defense_Auto_Aim_And_Shoot_State.FINE_TURRET_TO_TARGET;
+    				DriverStation.reportError("AccelY= " + _navXSensor.getRawAccelY() + " | ", false);
     			}
-    				
-				
+    			
+				if (inputDataValues.ShooterActualSpeed > (RobotMap.SHOOTER_TARGET_MOTOR_RPM * 0.95))
+				{
+					// start the infeed to drive the ball up into the shooter
+					outputDataValues.InfeedAcqMtrVelocityCmd = 1.0;
+				}
+				// drive both sets of wheels
+    			outputDataValues.ShooterMtrCurrentVelocityCmd = RobotMap.SHOOTER_TARGET_MOTOR_RPM;
+				outputDataValues.KickerMtrVelocityCmd = RobotMap.KICKER_TARGET_PERCENT_VBUS_CMD;
     			break;
     			
     		case TIMEOUT:
@@ -1798,7 +1778,6 @@ public class Robot extends IterativeRobot
     public void teleopInit()
     {
     	//server.startAutomaticCapture(_currentCameraName);
-    	
     	
     	_robotLiveData = new RobotData();
     	//get local references to make variable references shorter
@@ -1832,12 +1811,8 @@ public class Robot extends IterativeRobot
     	//_sliderMtr.set(outputDataValues.SliderVelocityCmd);
     	_cupidServo.set(outputDataValues.CupidServoPositionCmd);
     	  	    	
-    	// init the drive speed scaling factor to 95%
-    	workingDataValues.DriveSpeedScalingFactor = 0.95;
-
-    	// get initial values from Encoders
-    	workingDataValues.LeftDriveEncoderInitialCount = _leftDriveMasterMtr.getPosition();
-    	workingDataValues.RightDriveEncoderInitialCount = _rightDriveMasterMtr.getPosition();
+    	// init the drive speed scaling factor to 70%
+    	workingDataValues.DriveSpeedScalingFactor = 0.7;
 
     	// set our desired default state for the puma solenoids
     	outputDataValues.PumaFrontSolenoidPosition = RobotMap.PUMA_FRONT_SOLENOID_UP_POSITION;
@@ -1847,7 +1822,6 @@ public class Robot extends IterativeRobot
     	// set initial state of "pressed last scan" working values to be false
     	workingDataValues.IsPumaFrontToggleBtnPressedLastScan = false;
     	workingDataValues.IsPumaBackToggleBtnPressedLastScan = false;
-    	workingDataValues.IsShifterToggleBtnPressedLastScan = false;
     	
     	// send the initial states to the solenoids
     	_pumaFrontSolenoid.set(outputDataValues.PumaFrontSolenoidPosition);
@@ -1864,7 +1838,8 @@ public class Robot extends IterativeRobot
     	
     	_and1ServoDirState = And1_Servo_Dir_State.UNDEFINED;
     	
-    	workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
+    	workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2800;
+    	outputDataValues.ShooterMtrAltTargetVelocityCmd = 2800;
     	
     	workingDataValues.IsShooterAltModeEnabledLastScan = false;
     	
@@ -1966,7 +1941,7 @@ public class Robot extends IterativeRobot
     			&& inputDataValues.IsScaleDriveSpeedDownBtnPressed)
     	{
     		// scale down
-    		workingDataValues.DriveSpeedScalingFactor = 0.8;
+    		workingDataValues.DriveSpeedScalingFactor = 0.65;
     	}
     	else if(!inputDataValues.IsScaleDriveSpeedUpBtnPressed 
     			&& !inputDataValues.IsScaleDriveSpeedDownBtnPressed)
@@ -2549,59 +2524,38 @@ public class Robot extends IterativeRobot
     	// ============================
     	//  Step 2.6: Shooter 
     	// ============================
-    	/*
+    	
     	if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && !workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
     	{
     		switch (workingDataValues.ShooterTargetSpeed)
     		{
     			case UNDEFINED:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 3500;
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2800;
+    				outputDataValues.ShooterMtrAltTargetVelocityCmd = 2800;
     				break;
     				
-    			case _2500:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2750;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 2750;
+    			case _2700:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2800;
+    				outputDataValues.ShooterMtrAltTargetVelocityCmd = 2800;
     				break;
     				
-    			case _2750:
+    			case _2800:
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2900;
+    				outputDataValues.ShooterMtrAltTargetVelocityCmd = 2900;
+    				break;
+    				
+    			case _2900:
     				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3000;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 3000;
+    				outputDataValues.ShooterMtrAltTargetVelocityCmd = 3000;
     				break;
     				
     			case _3000:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3250;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 3250;
+    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2700;
+    				outputDataValues.ShooterMtrAltTargetVelocityCmd = 2700;
     				break;
-    				
-    			case _3250:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3500;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 3500;
-    				break;
-    				
-    			case _3500:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._3750;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 3750;
-    				break;
-    				
-    			case _3750:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._4000;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 4000;
-    				break;
-    				
-    			case _4000:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._4250;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 4250;
-    				break;
-    				
-    			case _4250:
-    				workingDataValues.ShooterTargetSpeed = Shooter_Target_Speed._2500;
-    				outputDataValues.ShooterMtrTargetVelocityCmd = 2500;
-    				break;
-    				
     		}
     	}
-    	*/
+    	
     	
     	if (inputDataValues.ShooterRawVelocityCmd < -0.1)
     	{    	
@@ -2615,8 +2569,7 @@ public class Robot extends IterativeRobot
     			}
     			else
     			{
-    				outputDataValues.ShooterMtrTargetVelocityCmd = RobotMap.SHOOTER_ALT_MODE_TARGET_MOTOR_RPM;
-    				outputDataValues.ShooterMtrCurrentVelocityCmd = outputDataValues.ShooterMtrTargetVelocityCmd;
+    				outputDataValues.ShooterMtrCurrentVelocityCmd = outputDataValues.ShooterMtrAltTargetVelocityCmd;
     			}
     		}
     		else if (_shooterMasterMtr.getControlMode() == CANTalon.TalonControlMode.PercentVbus)
@@ -2745,39 +2698,6 @@ public class Robot extends IterativeRobot
     	// ===========================
     	// Step 2.11 And1 (Defensive Shield)
     	// ===========================
-    	/*
-    	if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
-    	{
-//    		DriverStation.reportError("And1 Servo set to 1.0", false);
-    	}
-    	else if (inputDataValues.IsShooterTargetSpeedToggleBtnPressed && !workingDataValues.IsShooterTargetSpeedToggleBtnPressedLastScan)
-    	{
-    		switch(_and1ServoDirState){
-    			case UNDEFINED:
-    			case UP:
-    				_and1ServoDirState = And1_Servo_Dir_State.DOWN;
-    	    		outputDataValues.And1ServoPositionCmd = 0.0;
-//    	    		outputDataValues.And1ServoPWMCmd = 200;
-    	    		//DriverStation.reportError("And1 Servo toggled down", false);
-				break;
-				
-    			case DOWN:
-    				_and1ServoDirState = And1_Servo_Dir_State.UP;
-    	    		outputDataValues.And1ServoPositionCmd = 1.0;
-//    	    		outputDataValues.And1ServoPWMCmd = 0;
-    	    		//DriverStation.reportError("And1 Servo toggled up", false);
-				break;
-    		}
-     		
-    	}
-    	else
-    	{
-    		// stop motor
-//    		outputDataValues.And1ServoPositionCmd = 0;
-//    		outputDataValues.And1ServoPWMCmd = 127;
-     		//DriverStation.reportError("And1 Servo stopped", false);
-    	}
-    	*/
     	//DriverStation.reportError("And1 position: " + outputDataValues.And1ServoPositionCmd, false);
     	if (inputDataValues.And1RawCmd > 0.1)
     	{
@@ -2796,7 +2716,7 @@ public class Robot extends IterativeRobot
     	// =====================================
     	
     	// ==========================
-    	// 3.1 Handle Puma Front, Back and Shifter Solenoids
+    	// 3.1 Handle Puma Front and Back Solenoids
     	//		Solenoids work like a toggle, the current value is retained until it is changed
     	// ==========================
     	if (!workingDataValues.IsPumaBothToggleBtnPressedLastScan && inputDataValues.IsPumaBothToggleBtnPressed)
@@ -2882,18 +2802,9 @@ public class Robot extends IterativeRobot
     	
     	_and1Servo.setPosition(outputDataValues.And1ServoPositionCmd);
     	_cupidServo.set(outputDataValues.CupidServoPositionCmd);
-//    	_and1Servo.setRaw(outputDataValues.And1ServoPWMCmd);
-    	    
     	
     	// ==========================
-    	// 4.0 publish image from currently selected Camera to the dashboard
-    	// ==========================
-    	//VisionData visionData = _visionClient.GetVisionData();
-    	//visionData.DesiredTurretTurnInDegrees
-    	//CameraServer.getInstance().setImage(_cameraFrame);
-    	
-    	// ==========================
-    	// 5.0 Update Dashboard
+    	// 4.0 Update Dashboard
     	// ==========================
     	UpdateDashboard(_robotLiveData);
     	
@@ -2907,7 +2818,7 @@ public class Robot extends IterativeRobot
     	}
     	
     	// ==========================
-    	// 6.0 Optional Data logging
+    	// 5.0 Optional Data logging
     	// ==========================
     	if(workingDataValues.IsLoggingEnabled == true)
     	{
@@ -2944,17 +2855,6 @@ public class Robot extends IterativeRobot
     }
     
     // ==========  Absolute Axis Homing Logic ==============================================
-    
-    private double CalcInfeedTiltAngleInRotations(double InfeedAssemblyAngleInDegrees, double HomePositionAngleInDegrees)
-    {   
-    	double InfeedAssemblyTiltTargetPositionInRotationsCmd = InfeedAssemblyAngleInDegrees/360.0;
-    	double HomePositionAngleInRotations = HomePositionAngleInDegrees/360.0;
-    	
-    	double InfeedMtrTiltTargetPositionInRotationsCmd = (RobotMap.INFEED_TILT_GEAR_RATIO * (InfeedAssemblyTiltTargetPositionInRotationsCmd
-    															- HomePositionAngleInRotations)) + HomePositionAngleInRotations;
-    	
-    	return -0.11;
-    }
     
     // caluclate the appropriate # of leadscrew rotations
     private double CalcSliderTargetPositionCmd(double targetPositionFromHomeInRotations)
@@ -3000,13 +2900,6 @@ public class Robot extends IterativeRobot
     	double turretSetPositionInRotations = TurretAngleInRotations;
     	
     	return turretSetPositionInRotations;
-    }
-    
-    private double CalcTurretAutoAimTargetPosition(double TurretAngleInRotations, double DesiredTurretTurnInDegrees)
-    {
-    	double DesiredTurretTurnInRotations = DesiredTurretTurnInDegrees / 360;
-    	double AutoAimTargetPosition = TurretAngleInRotations + DesiredTurretTurnInRotations;
-    	return AutoAimTargetPosition;
     }
     
     // This method Zeros (ie Homes) the Infeed Tilt Axis
@@ -3357,12 +3250,12 @@ public class Robot extends IterativeRobot
 	    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 	    	
 	    	// drive the axis up at 15%
-	    	outputDataValues.TurretVelocityCmd = 0.1;
+	    	outputDataValues.TurretVelocityCmd = 0.15;
 	    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
 	    	
 	    	long startTime = System.currentTimeMillis();
 	    	long elapsedTime = 0L;
-	    	long maxTimeInMSec = 5000; // 5 secs
+	    	long maxTimeInMSec = 9000; // 9 secs
 	    	
 	    	// if we are not on the limit switch, drive up until we hit it but only wait for 10 secs max
 	    	while(!isOnApproachingHomeSwitch && !isTimeout)
@@ -3479,7 +3372,7 @@ public class Robot extends IterativeRobot
 		    	_turretMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		    	
 		    	// drive the axis up at 15%
-		    	outputDataValues.TurretVelocityCmd = 0.10;
+		    	outputDataValues.TurretVelocityCmd = 0.15;
 		    	_turretMtr.set(outputDataValues.TurretVelocityCmd);
     			
     			if(!isOnApproachingHomeSwitch)
@@ -3623,9 +3516,9 @@ public class Robot extends IterativeRobot
     	inputDataValues.IsInfeedReleaseBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_INFEED_RELEASE_BTN);
     	inputDataValues.IsCameraSwitchBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN);
     	inputDataValues.IsElevatorTimerOverrideBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN);
-    	//inputDataValues.IsShooterTargetSpeedToggleBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN);
+    	inputDataValues.IsShooterTargetSpeedToggleBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN);
     	inputDataValues.IsShooterAltModeEnableBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN);
-    	inputDataValues.IsAutoAimBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_AUTO_AIM_BTN);
+    	//inputDataValues.IsAutoAimBtnPressed = _operatorGamepad.getRawButton(RobotMap.OPERATOR_GAMEPAD_AUTO_AIM_BTN);
     	
     	// remember:	on gamepads fwd/up = -1 and rev/down = +1 so invert the values
     	inputDataValues.ArcadeDriveThrottleRawCmd = _driverGamepad.getRawAxis(RobotMap.DRIVER_GAMEPAD_THROTTLE_AXIS_JOYSTICK);
@@ -3696,46 +3589,8 @@ public class Robot extends IterativeRobot
     	// speed units are are sensor's native ticks per 100mSec
     	//  1000 counts => 10 RPS (Rotation per second)
     	
-    	// 2.1 Left Axis
     	
-		workingDataValues.LeftDriveEncoderLastDeltaCount = (inputDataValues.LeftDriveEncoderCurrentCount 
-																- workingDataValues.LeftDriveEncoderLastCount);
-		workingDataValues.LeftDriveEncoderTotalDeltaCount = (inputDataValues.LeftDriveEncoderCurrentCount 
-																- workingDataValues.LeftDriveEncoderInitialCount);
-		workingDataValues.LeftDriveEncoderLastCount = inputDataValues.LeftDriveEncoderCurrentCount;
-    	
-    	//workingDataValues.LeftDriveEncoderCurrentCPS = _leftDriveMasterMtr.getSpeed() * 10.0;
-
-    	workingDataValues.LeftDriveWheelsCurrentSpeedIPS = workingDataValues.LeftDriveEncoderCurrentCPS
-    														* RobotMap.LEFT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_COUNT;
-
-    	workingDataValues.LeftDriveGearBoxCurrentRPM = (workingDataValues.LeftDriveEncoderCurrentCPS 
-															* 60										// CPS -> CPM
-															/ RobotMap.LEFT_DRIVE_ENCODER_COUNTS_PER_REV);		// CPM -> RPM
-
-		workingDataValues.LeftDriveMotorCurrentRPM = workingDataValues.LeftDriveGearBoxCurrentRPM
-														* RobotMap.LEFT_DRIVE_GEAR_BOX_RATIO;
-    	
-		// 2.2 Right Axis
-		workingDataValues.RightDriveEncoderLastDeltaCount = (inputDataValues.RightDriveEncoderCurrentCount 
-																- workingDataValues.RightDriveEncoderLastCount);
-		workingDataValues.RightDriveEncoderTotalDeltaCount = (inputDataValues.RightDriveEncoderCurrentCount 
-																- workingDataValues.RightDriveEncoderInitialCount);
-		workingDataValues.RightDriveEncoderLastCount = inputDataValues.RightDriveEncoderCurrentCount;
-		
-    	//workingDataValues.RightDriveEncoderCurrentCPS = _rightDriveMasterMtr.getSpeed() * 10.0;
-    	
-    	workingDataValues.RightDriveWheelsCurrentSpeedIPS = workingDataValues.RightDriveEncoderCurrentCPS
-    															* RobotMap.RIGHT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_COUNT;
-    	
-    	workingDataValues.RightDriveGearBoxCurrentRPM = (workingDataValues.RightDriveEncoderCurrentCPS 
-															* 60										// CPS -> CPM
-															/ RobotMap.RIGHT_DRIVE_ENCODER_COUNTS_PER_REV);		// CPM -> RPM
-    	
-    	workingDataValues.RightDriveMotorCurrentRPM = workingDataValues.RightDriveGearBoxCurrentRPM
-														* RobotMap.RIGHT_DRIVE_GEAR_BOX_RATIO;
-    	
-    	// 2.3 Turret
+    	// 2.1 Turret
     	
     	//workingDataValues.TurretEncoderTotalDeltaCount = (inputDataValues.TurretEncoderCurrentPosition
     	//													- workingDataValues.TurretEncoderInitialCount);
@@ -3744,7 +3599,7 @@ public class Robot extends IterativeRobot
     	//												* RobotMap.TURRET_TRAVEL_DEGREES_PER_COUNT;
     	
     	
-    	// 2.4 Shooter 
+    	// 2.2 Shooter 
     	inputDataValues.ShooterEncoderCurrentCP100MS = _shooterMasterMtr.getSpeed();
     	
     	// Counts per 100 ms * 60 seconds per minute * 10 (100 ms per second)/ 4096 counts per rev
@@ -3830,10 +3685,12 @@ public class Robot extends IterativeRobot
 		if (_isShooterinAltMode)
 		{
 			SmartDashboard.putString("Shooter in: ", "ALT");
+			SmartDashboard.putNumber("Shooter.TargetSpeed", outputDataValues.ShooterMtrAltTargetVelocityCmd);
 		}
 		else if (!_isShooterinAltMode)
 		{
 			SmartDashboard.putString("Shooter in: ", "STOCK");
+			SmartDashboard.putNumber("Shooter.TargetSpeed", RobotMap.SHOOTER_TARGET_MOTOR_RPM);
 		}
 		
 		// Kangaroo Charge Level

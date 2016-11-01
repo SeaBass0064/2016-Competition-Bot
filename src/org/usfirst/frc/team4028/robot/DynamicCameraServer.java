@@ -253,8 +253,15 @@ public class DynamicCameraServer {
 	  
 	  System.out.println("It's dead Jim...");
 	  
-	  m_camera.stopCapture();
-	  m_camera.closeCamera();
+	  try
+	  {
+		  m_camera.stopCapture();
+		  m_camera.closeCamera();
+	  }
+	  catch(Exception ex)
+	  {
+		  // don't care
+	  }
 	  
 	  startAutomaticCapture(cameraName);
   }

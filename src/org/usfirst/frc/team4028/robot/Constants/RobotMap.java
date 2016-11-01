@@ -1,7 +1,5 @@
 package org.usfirst.frc.team4028.robot.Constants;
 
-import java.net.InetAddress;
-
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
@@ -20,7 +18,7 @@ public class RobotMap
 	// define constants for the socket connecting to the vision PC
 	public static final int VISION_PC_PORT = 5806;  // Allowed to use 5800-5810
 	public static final int CAMERA_SWAP_PORT = 5807;
-	public static final String VISION_PC_IP_ADDRESS = "10.40.28.78";
+	public static final String VISION_PC_IP_ADDRESS = "10.40.28.10";  // "10.40.28.78";
 	
 	// define constants for array values of vision data
 	public static final int IS_VALID_DATA_ARRAY_POSITION = 0;
@@ -77,8 +75,6 @@ public class RobotMap
 	public static final int PCM_PORT_PUMA_FRONT_SOLENOID_EXTEND = 3;
 	public static final int PCM_PORT_PUMA_BACK_SOLENOID_RETRACT = 0;   	// 3
 	public static final int PCM_PORT_PUMA_BACK_SOLENOID_EXTEND = 1;		// 2
-	public static final int PCM_PORT_SHIFTER_SOLENOID_EXTEND = 7;
-	public static final int PCM_PORT_SHIFTER_SOLENOID_RETRACT = 6;
 	public static final int PCM_PORT_PERIMETER_EXPANSION_EXTEND = 4;
 	public static final int PCM_PORT_PERIMETER_EXPANSION_RETRACT = 5;
 	
@@ -90,8 +86,6 @@ public class RobotMap
 	public static final Value PUMA_FRONT_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;		
 	public static final Value PUMA_BACK_SOLENOID_UP_POSITION = DoubleSolenoid.Value.kForward;
 	public static final Value PUMA_BACK_SOLENOID_DOWN_POSITION = DoubleSolenoid.Value.kReverse;
-	public static final Value SHIFTER_HIGH_GEAR_POSITION = DoubleSolenoid.Value.kForward;
-	public static final Value SHIFTER_LOW_GEAR_POSITION = DoubleSolenoid.Value.kReverse;
 	public static final Value PERIMETER_EXPANSION_IN = DoubleSolenoid.Value.kForward;
 	public static final Value PERIMETER_EXPANSION_OUT = DoubleSolenoid.Value.kReverse;
 	
@@ -99,26 +93,6 @@ public class RobotMap
 	// define constants for the navx
 	// ======================================
 	public static final double NAVX_MAX_ALLOWABLE_ANGLE = 0.0;
-	
-	// ======================================
-	// define constants for Left Drive Motor
-	// ======================================
-	public static final int LEFT_DRIVE_ENCODER_COUNTS_PER_REV = 1000;					// 250 CPR, 4X (Quad Encoder)
-	public static final double LEFT_DRIVE_GEAR_BOX_RATIO = 14.88;						// 14:88 : 1 (not relevant since encoder is on output shaft of gearbox)
-	public static final double LEFT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_REV = 18.850;		// 6" Wheel Dia, C = 2*Pi*R
-	
-	public static final double LEFT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_COUNT 
-			= LEFT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_REV / LEFT_DRIVE_ENCODER_COUNTS_PER_REV;
-	
-	// ======================================
-	// Define constants for Right Drive Motor
-	// ======================================
-	public static final int RIGHT_DRIVE_ENCODER_COUNTS_PER_REV = 1000;					// 250 CPR, 4X (Quad Encoder)
-	public static final double RIGHT_DRIVE_GEAR_BOX_RATIO = 14.88;						// 14:88 : 1 (not relevant since encoder is on output shaft of gearbox)
-	public static final double RIGHT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_REV = 18.850;		// 6" Wheel Dia, C = 2*Pi*R
-
-	public static final double RIGHT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_COUNT 
-			= RIGHT_DRIVE_TRAVEL_DISTANCE_INCHES_PER_REV / RIGHT_DRIVE_ENCODER_COUNTS_PER_REV;
 	
 	// ======================================
 	// Define constants for Infeed Tilt Motor
@@ -156,8 +130,8 @@ public class RobotMap
 	public static final double TURRET_GEAR_RATIO = 9.5556;								// gear ratio from motor assy output shaft to big gear under the turret
 	public static final double TURRET_TRAVEL_DISTANCE_DEGREES_PER_REV = 37.674;			// 360deg / TURRET_GEAR_RATIO
 	
-	public static final double TURRET_MAX_TRAVEL_IN_ROTATIONS = 0.36;
-	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -1.41;
+	public static final double TURRET_MAX_TRAVEL_IN_ROTATIONS = 0.60;	// was 0.36, adjusted to accommodate  	
+	public static final double TURRET_MIN_TRAVEL_IN_ROTATIONS = -2.131;	// was -1.41, adjusted at Ciarniello's request 5/18 by Cool
 	public static final double TURRET_DEFAULT_POSITION_IN_ROTATIONS = 0.0; //-2.413;
 	
 	public static final double TURRET_PERCENTVBUS_SCALING_FACTOR = 0.25;
@@ -189,6 +163,8 @@ public class RobotMap
 	public static final double TURRET_FAST_RAMPRATE = 64; // Volts/Second
 	public static final int TURRET_FAST_PROFILE = 1;
 	
+	public static final double TURRET_VBUS_CMD_BUMP = 0.0038;	// Mikey Mode
+	public static final double TURRET_VBUS_CMD_MAX_BUMP = 0.10;	
 	
 	
 	public static final double TURRET_TRAVEL_DEGREES_PER_COUNT 
@@ -217,7 +193,7 @@ public class RobotMap
 	public static final double SHOOTER_RAMPRATE = 64;
 	public static final int SHOOTER_PROFILE = 1;
 	public static final int SHOOTER_TARGET_MOTOR_RPM = 3500;
-	public static final int SHOOTER_ALT_MODE_TARGET_MOTOR_RPM = 3000;
+	public static final int SHOOTER_ALT_MODE_TARGET_MOTOR_RPM = 2800;
 	public static final int SHOOTER_MAX_MOTOR_RPM = 4600;
 	
 	// ======================================
@@ -228,7 +204,7 @@ public class RobotMap
 	public static final double SLIDER_ROTATIONS_PER_INCH = 16.0;						// lead screw 
 	public static final double SLIDER_FWD_MAX_TRAVEL_IN_ROTATIONS = 60.0;
 	public static final double SLIDER_REV_MAX_TRAVEL_IN_ROTATIONS = 0.0;
-	public static final double SLIDER_DEFAULT_TARGET_POSITION = 38.0;  //38.0;
+	public static final double SLIDER_DEFAULT_TARGET_POSITION = 42.0; //38.0; 
 	
 	public static final double SLIDER_KP = 0.5;
 	public static final double SLIDER_KI = 0.0;
@@ -241,10 +217,10 @@ public class RobotMap
 	// ======================================
 	// Vision
 	// ======================================
-	public static final double AUTO_AIM_COARSE_ADJUST_DEADBAND = 15.0;
+	public static final double AUTO_AIM_COARSE_ADJUST_DEADBAND = 8.0;
 	public static final double AUTO_AIM_FINE_ADJUST_DEADBAND = 1.0;
-	public static final double AUTO_AIM_COARSE_ADJUST_TURN_SPEED = 0.15;
-	public static final double AUTO_AIM_FINE_ADJUST_TURN_SPEED = 0.06;
+	public static final double AUTO_AIM_COARSE_ADJUST_TURN_SPEED = 0.12;
+	public static final double AUTO_AIM_FINE_ADJUST_TURN_SPEED = 0.07;
 	
 		
 	// ======================================
@@ -308,8 +284,8 @@ public class RobotMap
 	public static final int OPERATOR_GAMEPAD_AND1_AXIS = LogitechF310.RIGHT_Y_AXIS;
 	public static final int OPERATOR_GAMEPAD_CAMERA_SWITCH_BTN = LogitechF310.GREEN_BUTTON_A;
 	public static final int OPERATOR_GAMEPAD_ELEVATOR_TIMER_OVERRIDE_BTN = LogitechF310.RED_BUTTON_B;
-	//public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
-	public static final int OPERATOR_GAMEPAD_AUTO_AIM_BTN = LogitechF310.BLUE_BUTTON_X;
+	public static final int OPERATOR_GAMEPAD_SHOOTER_TARGET_SPEED_TOGGLE_BTN = LogitechF310.BLUE_BUTTON_X;
+	//public static final int OPERATOR_GAMEPAD_AUTO_AIM_BTN = LogitechF310.BLUE_BUTTON_X;
 	public static final int OPERATOR_GAMEPAD_SHOOTER_ALT_MODE_TOGGLE_BTN = LogitechF310.YELLOW_BUTTON_Y;
 	public static final int OPERATOR_GAMEPAD_SLIDER_FWD_BTN = LogitechF310.START_BUTTON;
 	public static final int OPERATOR_GAMEPAD_SLIDER_REV_BTN = LogitechF310.BACK_BUTTON;	
@@ -337,9 +313,9 @@ public class RobotMap
 	// ======================================
 	// Define constants for Robot Tilt Angle Protection
 	// ======================================
-	public static final float ROBOT_FWD_DRIVE_MAX_TILT_CUTOFF = 30.0f;
-	public static final float ROBOT_FWD_DRIVE_MAX_TILT_REENABLE = 28.0f;
+	public static final float ROBOT_FWD_DRIVE_MAX_TILT_CUTOFF = 28.0f;
+	public static final float ROBOT_FWD_DRIVE_MAX_TILT_REENABLE = 26.0f;
 		
-	public static final float ROBOT_REV_DRIVE_MAX_TILT_CUTOFF = -32.0f;
-	public static final float ROBOT_REV_DRIVE_MAX_TILT_REENABLE = -30.0f;
+	public static final float ROBOT_REV_DRIVE_MAX_TILT_CUTOFF = -31.0f;
+	public static final float ROBOT_REV_DRIVE_MAX_TILT_REENABLE = -29.0f;
 }

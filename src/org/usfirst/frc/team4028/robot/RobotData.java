@@ -217,14 +217,10 @@ public class RobotData
 	public enum Shooter_Target_Speed
 	{
 		UNDEFINED,
-		_2500,
-		_2750,
-		_3000,
-		_3250,
-		_3500,
-		_3750,
-		_4000,
-		_4250,
+		_2700,
+		_2800,
+		_2900,
+		_3000
 	}
 	
 	// class constructor
@@ -566,7 +562,6 @@ public class RobotData
 		public boolean IsPumaFrontToggleBtnPressedLastScan;
 		public boolean IsPumaBackToggleBtnPressedLastScan;
 		public boolean IsPumaBothToggleBtnPressedLastScan;
-		public boolean IsShifterToggleBtnPressedLastScan;
 		public boolean IsSliderFwdBtnPressedLastScan;
 		public boolean IsSliderRevBtnPressedLastScan;
 		public boolean IsPrintDataBtnPressedLastScan;
@@ -589,26 +584,6 @@ public class RobotData
 		
 		public boolean IsTurretEncoderDegreesZeroYet;
 		public boolean IsTurretEncoderDegreesTargetYet;
-		
-		public double LeftDriveEncoderInitialCount;
-		public double LeftDriveEncoderLastCount;
-		public double LeftDriveEncoderLastDeltaCount;
-		public double LeftDriveEncoderTotalDeltaCount;
-		
-		public double LeftDriveMotorCurrentRPM;
-    	public double LeftDriveEncoderCurrentCPS;
-    	public double LeftDriveGearBoxCurrentRPM;
-    	public double LeftDriveWheelsCurrentSpeedIPS;
-		
-		public double RightDriveEncoderInitialCount;
-		public double RightDriveEncoderLastCount;
-		public double RightDriveEncoderLastDeltaCount;
-		public double RightDriveEncoderTotalDeltaCount;
-		
-		public double RightDriveMotorCurrentRPM;
-    	public double RightDriveEncoderCurrentCPS;
-    	public double RightDriveGearBoxCurrentRPM;
-    	public double RightDriveWheelsCurrentSpeedIPS;
 		
     	public double TurretEncoderInitialCount;
     	//public double TurretEncoderTotalDeltaCount;
@@ -649,7 +624,6 @@ public class RobotData
 			sb.append("WorkingData:IsPumaFrontToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsPumaBackToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsPumaBothToggleBtnPressedLastScan" + "\t");
-			sb.append("WorkingData:IsShifterToggleBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsSliderFwdBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsSliderRevBtnPressedLastScan" + "\t");
 			sb.append("WorkingData:IsPrintDataBtnPressedLastScan" + "\t");
@@ -671,26 +645,6 @@ public class RobotData
 			
 			sb.append("WorkingData:IsTurretEncoderDegreesZeroYet" + "\t");
 			sb.append("WorkingData:IsTurretEncoderDegreesTargetYet" + "\t");
-			
-			sb.append("WorkingData:LeftDriveEncoderInitialCount" + "\t");
-			sb.append("WorkingData:LeftDriveEncoderLastCount" + "\t");
-			sb.append("WorkingData:LeftDriveEncoderLastDeltaCount" + "\t");
-			sb.append("WorkingData:LeftDriveEncoderTotalDeltaCount" + "\t");
-			
-			sb.append("WorkingData:LeftDriveMotorCurrentRPM" + "\t");
-			sb.append("WorkingData:LeftDriveEncoderCurrentCPS" + "\t");
-			sb.append("WorkingData:LeftDriveGearBoxCurrentRPM" + "\t");
-			sb.append("WorkingData:LeftDriveWheelsCurrentSpeedIPS" + "\t");
-			
-			sb.append("WorkingData:RightDriveEncoderInitialCount" + "\t");
-			sb.append("WorkingData:RightDriveEncoderLastCount" + "\t");
-			sb.append("WorkingData:RightDriveEncoderLastDeltaCount" + "\t");
-			sb.append("WorkingData:RightDriveEncoderTotalDeltaCount" + "\t");
-			
-			sb.append("WorkingData:RightDriveMotorCurrentRPM" + "\t");
-			sb.append("WorkingData:RightDriveEncoderCurrentCPS" + "\t");
-			sb.append("WorkingData:RightDriveGearBoxCurrentRPM" + "\t");
-			sb.append("WorkingData:RightDriveWheelsCurrentSpeedIPS" + "\t");
 			
 			sb.append("WorkingData:TurretEncoderInitialCount" + "\t");
 			//sb.append("WorkingData:TurretEncoderTotalDeltaCount" + "\t");
@@ -733,7 +687,6 @@ public class RobotData
 			sb.append(IsPumaFrontToggleBtnPressedLastScan + "\t");
 			sb.append(IsPumaBackToggleBtnPressedLastScan + "\t");
 			sb.append(IsPumaBothToggleBtnPressedLastScan + "\t");
-			sb.append(IsShifterToggleBtnPressedLastScan + "\t");
 			sb.append(IsSliderFwdBtnPressedLastScan + "\t");
 			sb.append(IsSliderRevBtnPressedLastScan + "\t");
 			sb.append(IsPrintDataBtnPressedLastScan + "\t");
@@ -755,26 +708,6 @@ public class RobotData
 		
 			sb.append(IsTurretEncoderDegreesZeroYet + "\t");
 			sb.append(IsTurretEncoderDegreesTargetYet + "\t");
-			
-			sb.append(LeftDriveEncoderInitialCount + "\t");
-			sb.append(LeftDriveEncoderLastCount + "\t");
-			sb.append(LeftDriveEncoderLastDeltaCount + "\t");
-			sb.append(LeftDriveEncoderTotalDeltaCount + "\t");
-			
-			sb.append(LeftDriveMotorCurrentRPM + "\t");
-			sb.append(LeftDriveEncoderCurrentCPS + "\t");
-			sb.append(LeftDriveGearBoxCurrentRPM + "\t");
-			sb.append(LeftDriveWheelsCurrentSpeedIPS + "\t");
-			
-			sb.append(RightDriveEncoderInitialCount + "\t");
-			sb.append(RightDriveEncoderLastCount + "\t");
-			sb.append(RightDriveEncoderLastDeltaCount + "\t");
-			sb.append(RightDriveEncoderTotalDeltaCount + "\t");
-			
-			sb.append(RightDriveMotorCurrentRPM + "\t");
-			sb.append(RightDriveEncoderCurrentCPS + "\t");
-			sb.append(RightDriveGearBoxCurrentRPM + "\t");
-			sb.append(RightDriveWheelsCurrentSpeedIPS + "\t");
 			
 			sb.append(TurretEncoderInitialCount + "\t");
 			//sb.append(TurretEncoderTotalDeltaCount + "\t");
@@ -825,6 +758,7 @@ public class RobotData
 		public double KickerMtrVelocityCmd;
 		public double ShooterMtrCurrentVelocityCmd;
 		public double ShooterMtrTargetVelocityCmd;
+		public double ShooterMtrAltTargetVelocityCmd;
 		public double SliderVelocityCmd;
 
 		public double WinchVelocityCmd;
@@ -856,6 +790,7 @@ public class RobotData
 			sb.append("OutputData:KickerMtrVelocityCmd"+ "\t");
 			sb.append("OutputData:ShooterCurrentMtrVelocityCmd" + "\t");
 			sb.append("OutputData:ShooterTargetMtrVelocityCmd" + "\t");
+			sb.append("OutputData:ShooterMtrAltTargetVelocityCmd" + "\t");
 			sb.append("OutputData:SliderVelocityCmd" + "\t");
 			sb.append("OutputData:WinchVelocityCmd" + "\t");
 			sb.append("OutputData:CupidServoPositionCmd" + "\t");
@@ -884,6 +819,7 @@ public class RobotData
 			sb.append(KickerMtrVelocityCmd + "\t");
 			sb.append(ShooterMtrCurrentVelocityCmd + "\t");
 			sb.append(ShooterMtrTargetVelocityCmd + "\t");
+			sb.append(ShooterMtrAltTargetVelocityCmd + "\t");
 			sb.append(SliderVelocityCmd + "\t");
 			sb.append(WinchVelocityCmd + "\t");
 			sb.append(CupidServoPositionCmd + "\t");
